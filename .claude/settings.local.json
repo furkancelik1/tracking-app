@@ -21,7 +21,8 @@
       "Bash(npm run:*)",
       "Bash(taskkill /PID 19776 /F)",
       "Bash(taskkill:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(ls C:\\\\Users\\\\FURKAN\\\\Desktop\\\\tracking-app\\\\.env*)"
     ]
   }
 }

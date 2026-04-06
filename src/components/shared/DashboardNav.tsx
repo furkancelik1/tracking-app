@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const NAV_ITEMS: { href: Route; label: string }[] = [
+  { href: "/dashboard" as Route, label: "Rutinlerim" },
   { href: "/basket" as Route, label: "My Basket" },
   { href: "/catalogue" as Route, label: "Catalogue" },
   { href: "/settings" as Route, label: "Settings" },

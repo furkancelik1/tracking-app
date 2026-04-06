@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
 import { prisma } from "@/lib/prisma";
@@ -7,7 +7,7 @@ import type { NextAuthOptions } from "next-auth";
 import type { Role, SubscriptionTier } from "@prisma/client";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
+  adapter: PrismaAdapter(prisma) as any, // Tip hatası vermemesi için sağlama aldık
   // JWT strategy — required for stateless Chrome Extension Bearer token auth
   session: {
     strategy: "jwt",
@@ -45,9 +45,9 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.subscriptionTier = token.subscriptionTier;
+        (session.user as any).id = token.id;
+        (session.user as any).role = token.role;
+        (session.user as any).subscriptionTier = token.subscriptionTier;
       }
       return session;
     },

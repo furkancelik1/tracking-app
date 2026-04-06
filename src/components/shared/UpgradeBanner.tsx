@@ -4,7 +4,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { TIER_LIMITS } from "@/lib/stripe";
 import { useBasket } from "@/hooks/useBasket";
 
 /**
@@ -18,7 +17,9 @@ export function UpgradeBanner() {
 
   if (auth.status !== "authenticated" || auth.isPro) return null;
 
-  const limit = TIER_LIMITS.FREE;
+  // TIER_LIMITS'i stripe dosyasından çekmek yerine şimdilik buraya sabitliyoruz.
+  // İleride bunu ortak bir constants (sabitler) dosyasına taşıyabilirsin.
+  const limit = 5; 
   const count = items.length;
   const atLimit = count >= limit;
   const nearLimit = count >= limit - 1;

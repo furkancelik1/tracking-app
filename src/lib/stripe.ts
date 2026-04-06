@@ -12,7 +12,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 /** Plans */
 export const STRIPE_PLANS = {
   PRO: {
-    priceId: process.env.STRIPE_PRO_PRICE_ID ?? "",
+    priceId:"price_1TJEZY1TpPEEqgy4bVhnSqhN",
     name: "Pro",
     price: "$9",
     interval: "month",

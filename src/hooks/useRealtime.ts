@@ -45,6 +45,11 @@ export function useRealtime({
     setStatus("connecting");
     const supabase = getBrowserSupabaseClient();
 
+    if (!supabase) {
+      setStatus("disconnected");
+      return;
+    }
+
     const channel = supabase
       .channel(channelName)
       .on(
@@ -61,7 +66,7 @@ export function useRealtime({
       });
 
     return () => {
-      void supabase.removeChannel(channel);
+      void supabase!.removeChannel(channel);
     };
   }, [channelName, event, enabled]);
 

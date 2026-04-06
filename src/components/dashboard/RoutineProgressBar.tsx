@@ -5,9 +5,16 @@ type Props = {
   routines: RoutineWithMeta[];
 };
 
+/** Bugünün UTC başlangıcı ile karşılaştır — 30 günlük loglardan sadece bugünküleri say */
+function isTodayCompleted(routine: RoutineWithMeta): boolean {
+  const todayUTC = new Date();
+  todayUTC.setUTCHours(0, 0, 0, 0);
+  return routine.logs.some((l) => new Date(l.completedAt) >= todayUTC);
+}
+
 export function RoutineProgressBar({ routines }: Props) {
   const total = routines.length;
-  const completed = routines.filter((r) => r.logs.length > 0).length;
+  const completed = routines.filter(isTodayCompleted).length;
   const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
 
   return (

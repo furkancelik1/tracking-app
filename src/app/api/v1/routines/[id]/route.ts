@@ -9,100 +9,126 @@ const updateRoutineSchema = z.object({
   title: z.string().min(1).max(100).optional(),
   description: z.string().max(500).optional(),
   frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
+  category: z.string().max(50).optional(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  icon: z.string().max(50).optional(),
   sortOrder: z.number().int().min(0).optional(),
 });
 
 // PATCH /api/v1/routines/[id] — rutin güncelle
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getSession();
-  if (!session?.user) {
-    return NextResponse.json<ApiResponse<never>>(
-      { success: false, error: "Unauthorized", code: "UNAUTHORIZED" },
-      { status: 401 }
-    );
-  }
+  try {
+    const { id } = await params;
+    const session = await getSession();
+    if (!session?.user) {
+      return NextResponse.json<ApiResponse<never>>(
+        { success: false, error: "Unauthorized", code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
+    }
 
-  const userId = (session.user as any).id as string;
+    const userId = (session.user as any).id as string;
 
-  const routine = await prisma.routine.findFirst({
-    where: { id: params.id, userId, isActive: true },
-    select: { id: true },
-  });
+    const routine = await prisma.routine.findFirst({
+      where: { id, userId, isActive: true },
+      select: { id: true },
+    });
 
-  if (!routine) {
-    return NextResponse.json<ApiResponse<never>>(
-      { success: false, error: "Rutin bulunamadı", code: "NOT_FOUND" },
-      { status: 404 }
-    );
-  }
+    if (!routine) {
+      return NextResponse.json<ApiResponse<never>>(
+        { success: false, error: "Rutin bulunamadı", code: "NOT_FOUND" },
+        { status: 404 }
+      );
+    }
 
-  const body = await req.json().catch(() => null);
-  if (!body) {
-    return NextResponse.json<ApiResponse<never>>(
-      { success: false, error: "Geçersiz JSON gövdesi", code: "BAD_REQUEST" },
-      { status: 400 }
-    );
-  }
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json<ApiResponse<never>>(
+        { success: false, error: "Geçersiz JSON gövdesi", code: "BAD_REQUEST" },
+        { status: 400 }
+      );
+    }
 
-  const parsed = updateRoutineSchema.safeParse(body);
-  if (!parsed.success) {
+    const parsed = updateRoutineSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json<ApiResponse<never>>(
+        {
+          success: false,
+          error: parsed.error.issues.map((i) => i.message).join(", "),
+          code: "VALIDATION_ERROR",
+        },
+        { status: 422 }
+      );
+    }
+
+    const updated = await prisma.routine.update({
+      where: { id },
+      data: parsed.data,
+    });
+
+    return NextResponse.json<ApiResponse<Routine>>({ success: true, data: updated });
+  } catch (err) {
+    console.error("[PATCH /api/v1/routines/[id]] Hata:", err);
     return NextResponse.json<ApiResponse<never>>(
       {
         success: false,
-        error: parsed.error.issues.map((i) => i.message).join(", "),
-        code: "VALIDATION_ERROR",
+        error: err instanceof Error ? err.message : "Sunucu hatası",
+        code: "INTERNAL_ERROR",
       },
-      { status: 422 }
+      { status: 500 }
     );
   }
-
-  const updated = await prisma.routine.update({
-    where: { id: params.id },
-    data: parsed.data,
-  });
-
-  return NextResponse.json<ApiResponse<Routine>>({ success: true, data: updated });
 }
 
 // DELETE /api/v1/routines/[id] — soft-delete (isActive: false)
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getSession();
-  if (!session?.user) {
+  try {
+    const { id } = await params;
+    const session = await getSession();
+    if (!session?.user) {
+      return NextResponse.json<ApiResponse<never>>(
+        { success: false, error: "Unauthorized", code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
+    }
+
+    const userId = (session.user as any).id as string;
+
+    const routine = await prisma.routine.findFirst({
+      where: { id, userId, isActive: true },
+      select: { id: true },
+    });
+
+    if (!routine) {
+      return NextResponse.json<ApiResponse<never>>(
+        { success: false, error: "Rutin bulunamadı", code: "NOT_FOUND" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.routine.update({
+      where: { id },
+      data: { isActive: false },
+    });
+
+    return NextResponse.json<ApiResponse<null>>({ success: true, data: null });
+  } catch (err) {
+    console.error("[DELETE /api/v1/routines/[id]] Hata:", err);
     return NextResponse.json<ApiResponse<never>>(
-      { success: false, error: "Unauthorized", code: "UNAUTHORIZED" },
-      { status: 401 }
+      {
+        success: false,
+        error: err instanceof Error ? err.message : "Sunucu hatası",
+        code: "INTERNAL_ERROR",
+      },
+      { status: 500 }
     );
   }
-
-  const userId = (session.user as any).id as string;
-
-  const routine = await prisma.routine.findFirst({
-    where: { id: params.id, userId, isActive: true },
-    select: { id: true },
-  });
-
-  if (!routine) {
-    return NextResponse.json<ApiResponse<never>>(
-      { success: false, error: "Rutin bulunamadı", code: "NOT_FOUND" },
-      { status: 404 }
-    );
-  }
-
-  await prisma.routine.update({
-    where: { id: params.id },
-    data: { isActive: false },
-  });
-
-  return NextResponse.json<ApiResponse<null>>(
-    { success: true, data: null },
-    { status: 200 }
-  );
 }
 
 // OPTIONS — CORS preflight

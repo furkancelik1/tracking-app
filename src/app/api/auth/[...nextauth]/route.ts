@@ -4,11 +4,9 @@ import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
 import { prisma } from "@/lib/prisma";
 import type { NextAuthOptions } from "next-auth";
-import type { Role, SubscriptionTier } from "@prisma/client";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any, // Tip hatası vermemesi için sağlama aldık
-  // JWT strategy — required for stateless Chrome Extension Bearer token auth
+  adapter: PrismaAdapter(prisma) as any,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -36,17 +34,15 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { role: true, subscriptionTier: true },
+          select: { subscriptionTier: true },
         });
-        token.role = dbUser?.role as Role;
-        token.subscriptionTier = dbUser?.subscriptionTier as SubscriptionTier;
+        token.subscriptionTier = dbUser?.subscriptionTier ?? "FREE";
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
         (session.user as any).subscriptionTier = token.subscriptionTier;
       }
       return session;

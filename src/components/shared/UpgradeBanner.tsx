@@ -4,23 +4,23 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { useBasket } from "@/hooks/useBasket";
 
 /**
- * Shown at the top of the basket page for FREE users who are
- * approaching or at their item limit.
+ * Shown on pages where a FREE user hits the plan limit.
+ * Pass `count` and `limit` from the parent so this component
+ * stays decoupled from any specific data hook.
  */
-export function UpgradeBanner() {
+type Props = {
+  count: number;
+  limit: number;
+};
+
+export function UpgradeBanner({ count, limit }: Props) {
   const auth = useAuth();
-  const { data: items = [] } = useBasket();
   const [loading, setLoading] = useState(false);
 
   if (auth.status !== "authenticated" || auth.isPro) return null;
 
-  // TIER_LIMITS'i stripe dosyasından çekmek yerine şimdilik buraya sabitliyoruz.
-  // İleride bunu ortak bir constants (sabitler) dosyasına taşıyabilirsin.
-  const limit = 5; 
-  const count = items.length;
   const atLimit = count >= limit;
   const nearLimit = count >= limit - 1;
 
@@ -32,7 +32,7 @@ export function UpgradeBanner() {
       const res = await fetch("/api/v1/stripe/checkout", { method: "POST" });
       const json = await res.json();
       if (!json.success) {
-        toast.error(json.error ?? "Could not start checkout.");
+        toast.error(json.error ?? "Ödeme başlatılamadı.");
         return;
       }
       window.location.href = json.data.url;
@@ -46,20 +46,20 @@ export function UpgradeBanner() {
       <p className="text-amber-800 dark:text-amber-200">
         {atLimit ? (
           <>
-            <span className="font-semibold">Basket is full</span> — Free plan
-            allows {limit} items.
+            <span className="font-semibold">Limit doldu</span> — Ücretsiz planda
+            en fazla {limit} rutin oluşturabilirsin.
           </>
         ) : (
           <>
             <span className="font-semibold">
-              {count}/{limit} items
+              {count}/{limit} rutin
             </span>{" "}
-            — Upgrade for unlimited basket items.
+            — Sınırsız rutin için PRO&apos;ya geç.
           </>
         )}
       </p>
       <Button size="sm" onClick={handleUpgrade} disabled={loading}>
-        {loading ? "Redirecting…" : "Upgrade to Pro"}
+        {loading ? "Yönlendiriliyor…" : "PRO'ya Geç"}
       </Button>
     </div>
   );

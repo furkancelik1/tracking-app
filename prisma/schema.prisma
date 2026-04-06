@@ -1,217 +1,72 @@
-// ============================================================
-// SaaS Productivity & Routine Tracker — Prisma Schema
-// Database: MySQL (PlanetScale compatible)
-// ============================================================
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma" // PlanetScale: foreign keys enforced at Prisma level
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-// ============================================================
-// Enums
-// ============================================================
-
-enum Role {
-  USER
-  ADMIN
+model User {
+  id               String    @id @default(cuid()) @db.VarChar(191)
+  name             String?
+  email            String?   @unique @db.VarChar(191)
+  emailVerified    DateTime?
+  image            String?
+  subscriptionTier String    @default("FREE") // PRO veya FREE
+  stripeCustomerId String?   @unique @db.VarChar(191)
+  stripeSubscriptionId String? @unique @db.VarChar(191)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  routines         Routine[]
+  logs             RoutineLog[]
 }
 
-enum SubscriptionTier {
-  FREE
-  PRO
+model Routine {
+  id              String       @id @default(cuid()) @db.VarChar(191)
+  title           String       @db.VarChar(191)
+  description     String?      @db.Text
+  icon            String       @default("Check") @db.VarChar(191)
+  category        String       @default("Genel") @db.VarChar(191)
+  color           String       @default("#3b82f6") @db.VarChar(191)
+  frequency       RoutineFrequency @default(DAILY)
+  isActive        Boolean      @default(true)
+  
+  // Dashboard sıralaması için kritik alan
+  sortOrder       Int          @default(0) 
+  
+  // Streak (Seri) Sistemi
+  currentStreak   Int          @default(0)
+  longestStreak   Int          @default(0)
+  lastCompletedAt DateTime?
+  
+  userId          String       @db.VarChar(191)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  logs            RoutineLog[]
+
+  @@index([userId])
 }
 
-enum ResetType {
-  ROLLING // nextResetAt = now + card.duration
-  FIXED   // nextResetAt = startOfNextDay (00:00 local)
-}
+model RoutineLog {
+  id          String   @id @default(cuid()) @db.VarChar(191)
+  completedAt DateTime @default(now())
+  note        String?  @db.Text
+  
+  routineId   String   @db.VarChar(191)
+  routine     Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  
+  userId      String   @db.VarChar(191)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-enum BasketStatus {
-  PENDING
-  ACTIVE
-  COMPLETED
-}
-
-enum ActivityAction {
-  ACTIVATED
-  COMPLETED
-  RESET
-  AFFILIATE_CLICK
+  @@index([routineId])
+  @@index([userId])
 }
 
 enum RoutineFrequency {
   DAILY
   WEEKLY
   MONTHLY
-}
-
-// ============================================================
-// NextAuth.js — Required Models
-// ============================================================
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@index([userId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-// ============================================================
-// Core Models
-// ============================================================
-
-model User {
-  id               String           @id @default(cuid())
-  name             String?
-  email            String?          @unique
-  emailVerified    DateTime?
-  image            String?
-  role             Role             @default(USER)
-  subscriptionTier SubscriptionTier @default(FREE)
-  stripeId         String?          @unique // Stripe Customer ID
-  stripeSubId      String?          @unique // Stripe Subscription ID
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  accounts     Account[]
-  sessions     Session[]
-  basketItems  BasketItem[]
-  activityLogs ActivityLog[]
-  routines     Routine[]
-  routineLogs  RoutineLog[]
-}
-
-model Card {
-  id           String    @id @default(cuid())
-  title        String
-  description  String    @db.Text
-  content      String    @db.LongText // Markdown / HTML
-  category     String
-  affiliateUrl String?
-  resetType    ResetType @default(ROLLING)
-  duration     Int // seconds (e.g. 3600 = 1 hour)
-  isActive     Boolean   @default(true)
-  sortOrder    Int       @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  basketItems  BasketItem[]
-  activityLogs ActivityLog[]
-
-  @@index([category])
-  @@index([isActive])
-  @@index([isActive, category]) // Catalogue listing queries
-}
-
-model BasketItem {
-  id              String       @id @default(cuid())
-  userId          String
-  cardId          String
-  status          BasketStatus @default(PENDING)
-  lastActivatedAt DateTime?
-  nextResetAt     DateTime? // Compared against current time to trigger auto-reset
-  sortOrder       Int          @default(0)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, cardId]) // A user can add a card only once
-  @@index([userId])
-  @@index([cardId])
-  @@index([nextResetAt]) // Efficient polling for expired timers
-  @@index([userId, status]) // Dashboard status filter queries
-}
-
-model ActivityLog {
-  id        String         @id @default(cuid())
-  userId    String
-  cardId    String
-  action    ActivityAction
-  metadata  Json? // Flexible extra data: { affiliateUrl, duration, etc. }
-  createdAt DateTime       @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([cardId])
-  @@index([userId, createdAt]) // Paginated user history queries
-  @@index([createdAt]) // Admin analytics / global reports
-}
-
-// ============================================================
-// Routine Tracker Models
-// ============================================================
-
-model Routine {
-  id          String           @id @default(cuid())
-  userId      String
-  title       String
-  description String?          @db.Text
-  frequency   RoutineFrequency @default(DAILY)
-  isActive    Boolean          @default(true)
-  sortOrder   Int              @default(0)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  logs RoutineLog[]
-
-  @@index([userId])
-  @@index([userId, isActive]) // Dashboard aktif rutin sorguları
-}
-
-model RoutineLog {
-  id          String   @id @default(cuid())
-  routineId   String
-  userId      String
-  completedAt DateTime @default(now())
-  note        String?  @db.Text
-
-  routine Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([routineId])
-  @@index([userId])
-  @@index([userId, completedAt]) // Günlük/haftalık tamamlanma geçmişi
 }

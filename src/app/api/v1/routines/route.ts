@@ -11,106 +11,133 @@ const createRoutineSchema = z.object({
   title: z.string().min(1, "Başlık zorunludur").max(100),
   description: z.string().max(500).optional(),
   frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).default("DAILY"),
+  category: z.string().max(50).default("Genel"),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Geçersiz renk").default("#3b82f6"),
+  icon: z.string().max(50).default("CheckCircle"),
   sortOrder: z.number().int().min(0).default(0),
 });
 
 // GET /api/v1/routines — kullanıcının rutinlerini listele
 export async function GET() {
-  const session = await getSession();
-  if (!session?.user) {
+  try {
+    const session = await getSession();
+    if (!session?.user) {
+      return NextResponse.json<ApiResponse<never>>(
+        { success: false, error: "Unauthorized", code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
+    }
+
+    const userId = (session.user as any).id as string;
+
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+
+    const routines = await prisma.routine.findMany({
+      where: { userId, isActive: true },
+      include: {
+        logs: {
+          where: { completedAt: { gte: todayStart } },
+          select: { id: true, completedAt: true },
+          orderBy: { completedAt: "desc" },
+          take: 1,
+        },
+        _count: { select: { logs: true } },
+      },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    });
+
+    return NextResponse.json<ApiResponse<typeof routines>>({
+      success: true,
+      data: routines,
+    });
+  } catch (err) {
+    console.error("[GET /api/v1/routines] Hata:", err);
     return NextResponse.json<ApiResponse<never>>(
-      { success: false, error: "Unauthorized", code: "UNAUTHORIZED" },
-      { status: 401 }
+      {
+        success: false,
+        error: err instanceof Error ? err.message : "Sunucu hatası",
+        code: "INTERNAL_ERROR",
+      },
+      { status: 500 }
     );
   }
-
-  const userId = (session.user as any).id as string;
-
-  const routines = await prisma.routine.findMany({
-    where: { userId, isActive: true },
-    include: {
-      // Bugün tamamlandı mı? (UTC gece yarısından itibaren)
-      logs: {
-        where: {
-          completedAt: { gte: new Date(new Date().setUTCHours(0, 0, 0, 0)) },
-        },
-        select: { id: true, completedAt: true },
-        orderBy: { completedAt: "desc" },
-        take: 1,
-      },
-      _count: { select: { logs: true } },
-    },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-  });
-
-  return NextResponse.json<ApiResponse<typeof routines>>({
-    success: true,
-    data: routines,
-  });
 }
 
 // POST /api/v1/routines — yeni rutin oluştur
 export async function POST(req: Request) {
-  const session = await getSession();
-  if (!session?.user) {
-    return NextResponse.json<ApiResponse<never>>(
-      { success: false, error: "Unauthorized", code: "UNAUTHORIZED" },
-      { status: 401 }
-    );
-  }
+  try {
+    const session = await getSession();
+    if (!session?.user) {
+      return NextResponse.json<ApiResponse<never>>(
+        { success: false, error: "Unauthorized", code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
+    }
 
-  const userId = (session.user as any).id as string;
-  const subscriptionTier = (session.user as any).subscriptionTier as string;
+    const userId = (session.user as any).id as string;
+    const subscriptionTier = (session.user as any).subscriptionTier as string;
 
-  // FREE tier limiti kontrolü
-  if (subscriptionTier === "FREE") {
-    const count = await prisma.routine.count({
-      where: { userId, isActive: true },
-    });
-    if (count >= FREE_ROUTINE_LIMIT) {
+    // FREE tier limiti kontrolü
+    if (subscriptionTier === "FREE") {
+      const count = await prisma.routine.count({
+        where: { userId, isActive: true },
+      });
+      if (count >= FREE_ROUTINE_LIMIT) {
+        return NextResponse.json<ApiResponse<never>>(
+          {
+            success: false,
+            error: `Ücretsiz planda en fazla ${FREE_ROUTINE_LIMIT} rutin oluşturabilirsiniz. PRO'ya geçerek sınırsız rutin ekleyin.`,
+            code: "PLAN_LIMIT_REACHED",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json<ApiResponse<never>>(
+        { success: false, error: "Geçersiz JSON gövdesi", code: "BAD_REQUEST" },
+        { status: 400 }
+      );
+    }
+
+    const parsed = createRoutineSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json<ApiResponse<never>>(
         {
           success: false,
-          error: `Ücretsiz planda en fazla ${FREE_ROUTINE_LIMIT} rutin oluşturabilirsiniz. PRO'ya geçerek sınırsız rutin ekleyin.`,
-          code: "PLAN_LIMIT_REACHED",
+          error: parsed.error.issues.map((i) => i.message).join(", "),
+          code: "VALIDATION_ERROR",
         },
-        { status: 403 }
+        { status: 422 }
       );
     }
-  }
 
-  const body = await req.json().catch(() => null);
-  if (!body) {
-    return NextResponse.json<ApiResponse<never>>(
-      { success: false, error: "Geçersiz JSON gövdesi", code: "BAD_REQUEST" },
-      { status: 400 }
+    const routine = await prisma.routine.create({
+      data: {
+        userId,
+        ...parsed.data,
+        frequency: parsed.data.frequency as RoutineFrequency,
+      },
+    });
+
+    return NextResponse.json<ApiResponse<Routine>>(
+      { success: true, data: routine },
+      { status: 201 }
     );
-  }
-
-  const parsed = createRoutineSchema.safeParse(body);
-  if (!parsed.success) {
+  } catch (err) {
+    console.error("[POST /api/v1/routines] Hata:", err);
     return NextResponse.json<ApiResponse<never>>(
       {
         success: false,
-        error: parsed.error.issues.map((i) => i.message).join(", "),
-        code: "VALIDATION_ERROR",
+        error: err instanceof Error ? err.message : "Sunucu hatası",
+        code: "INTERNAL_ERROR",
       },
-      { status: 422 }
+      { status: 500 }
     );
   }
-
-  const routine = await prisma.routine.create({
-    data: {
-      userId,
-      ...parsed.data,
-      frequency: parsed.data.frequency as RoutineFrequency,
-    },
-  });
-
-  return NextResponse.json<ApiResponse<Routine>>(
-    { success: true, data: routine },
-    { status: 201 }
-  );
 }
 
 // OPTIONS — CORS preflight

@@ -11,9 +11,16 @@ export type RoutineWithMeta = {
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
   isActive: boolean;
   sortOrder: number;
+  category: string;
+  color: string;
+  icon: string;
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  logs: { id: string; completedAt: string }[];
+  /** Son 30 günün logları (heatmap + isCompleted hesabı için) */
+  logs: { id: string; completedAt: string; note: string | null }[];
   _count: { logs: number };
 };
 
@@ -41,6 +48,9 @@ export function useCreateRoutine() {
       title: string;
       description?: string;
       frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+      category?: string;
+      color?: string;
+      icon?: string;
     }) => {
       const res = await fetch("/api/v1/routines", {
         method: "POST",
@@ -61,47 +71,13 @@ export function useCreateRoutine() {
   });
 }
 
-export function useToggleRoutine() {
+/**
+ * TQ cache'ini dışarıdan temizlemek için utility.
+ * RoutineList'te Server Action bittikten sonra çağrılır.
+ */
+export function useRoutineQueryClient() {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      id,
-      completed,
-    }: {
-      id: string;
-      completed: boolean;
-    }) => {
-      const res = await fetch(`/api/v1/routines/${id}/logs`, {
-        method: completed ? "DELETE" : "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const json: ApiResponse<unknown> = await res.json();
-      if (!json.success) throw new Error((json as any).error);
-    },
-    onSuccess: (_, { completed }) => {
-      void qc.invalidateQueries({ queryKey: ROUTINES_KEY });
-      toast.success(completed ? "Tamamlama geri alındı." : "Rutin tamamlandı!");
-    },
-    onError: (err: Error) => {
-      toast.error(err.message);
-    },
-  });
-}
-
-export function useDeleteRoutine() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const res = await fetch(`/api/v1/routines/${id}`, { method: "DELETE" });
-      const json: ApiResponse<null> = await res.json();
-      if (!json.success) throw new Error((json as any).error);
-    },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ROUTINES_KEY });
-      toast.success("Rutin silindi.");
-    },
-    onError: (err: Error) => {
-      toast.error(err.message);
-    },
-  });
+  return {
+    invalidate: () => qc.invalidateQueries({ queryKey: ROUTINES_KEY }),
+  };
 }

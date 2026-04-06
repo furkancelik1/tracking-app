@@ -2,15 +2,13 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import type { Role, SubscriptionTier } from "@prisma/client";
 
 export type AuthUser = {
   id: string;
   name: string | null;
   email: string | null;
   image: string | null;
-  role: Role;
-  subscriptionTier: SubscriptionTier;
+  subscriptionTier: string;
 };
 
 type UseAuthReturn =
@@ -46,7 +44,7 @@ export function useAuth(): UseAuthReturn {
   return {
     status: "authenticated",
     user,
-    isAdmin: user.role === "ADMIN",
+    isAdmin: false,
     isPro: user.subscriptionTier === "PRO",
     signOut: async () => {
       await signOut({ redirect: false });

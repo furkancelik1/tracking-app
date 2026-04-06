@@ -12,8 +12,9 @@ export default async function SettingsPage() {
       email: true,
       name: true,
       subscriptionTier: true,
-      stripeSubId: true,
-      _count: { select: { basketItems: true } },
+      stripeCustomerId: true,
+      createdAt: true,
+      _count: { select: { routines: true } },
     },
   });
 
@@ -21,7 +22,7 @@ export default async function SettingsPage() {
 
   const tier = user.subscriptionTier;
   const limit = TIER_LIMITS[tier];
-  const basketCount = user._count.basketItems;
+  const routineCount = user._count.routines;
 
   return (
     <div className="p-6 max-w-2xl space-y-8">
@@ -41,8 +42,8 @@ export default async function SettingsPage() {
           <Row label="Name" value={user.name ?? "—"} />
           <Row label="Email" value={user.email ?? "—"} />
           <Row
-            label="Basket items"
-            value={`${basketCount} / ${limit === Infinity ? "∞" : limit}`}
+            label="Routines"
+            value={`${routineCount} / ${limit === Infinity ? "∞" : limit}`}
           />
         </div>
       </section>
@@ -54,7 +55,7 @@ export default async function SettingsPage() {
         </h2>
         <SubscriptionCard
           tier={tier}
-          hasStripeCustomer={!!user.stripeSubId}
+          hasStripeCustomer={!!user.stripeCustomerId}
           plan={STRIPE_PLANS.PRO}
         />
       </section>

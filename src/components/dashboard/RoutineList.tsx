@@ -1,26 +1,150 @@
 "use client";
 
-import { useState } from "react";
+import { useOptimistic, useTransition, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { useRoutines } from "@/hooks/useRoutines";
+import { useRoutines, useRoutineQueryClient } from "@/hooks/useRoutines";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { RoutineCard } from "@/components/dashboard/RoutineCard";
 import { RoutineProgressBar } from "@/components/dashboard/RoutineProgressBar";
 import { AddRoutineDialog } from "@/components/dashboard/AddRoutineDialog";
+import {
+  completeRoutineAction,
+  undoRoutineAction,
+  deleteRoutineAction,
+} from "@/actions/routine.actions";
 
-type Props = {
-  initialRoutines: RoutineWithMeta[];
-};
+// ─── Optimistic reducer ───────────────────────────────────────────────────────
+
+type OptimisticAction =
+  | { type: "toggle"; id: string; completed: boolean }
+  | { type: "delete"; id: string };
+
+function optimisticReducer(
+  state: RoutineWithMeta[],
+  action: OptimisticAction
+): RoutineWithMeta[] {
+  const todayUTC = new Date();
+  todayUTC.setUTCHours(0, 0, 0, 0);
+  const todayISO = todayUTC.toISOString();
+
+  switch (action.type) {
+    case "toggle":
+      return state.map((r) => {
+        if (r.id !== action.id) return r;
+        if (action.completed) {
+          // Geri al: bugünkü log kaldır, streak azalt
+          return {
+            ...r,
+            logs: r.logs.filter((l) => l.completedAt < todayISO),
+            currentStreak: Math.max(0, r.currentStreak - 1),
+          };
+        }
+        // Tamamla: log ekle, streak artır
+        return {
+          ...r,
+          logs: [{ id: "_opt", completedAt: todayISO, note: null }, ...r.logs],
+          currentStreak: r.currentStreak + 1,
+          _count: { logs: r._count.logs + 1 },
+        };
+      });
+
+    case "delete":
+      return state.filter((r) => r.id !== action.id);
+
+    default:
+      return state;
+  }
+}
+
+// ─── Bileşen ─────────────────────────────────────────────────────────────────
+
+type Props = { initialRoutines: RoutineWithMeta[] };
+
+const ALL = "Tümü";
 
 export function RoutineList({ initialRoutines }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const auth = useAuth();
-  const { data: routines = [], isLoading } = useRoutines(initialRoutines);
+  const [activeCategory, setActiveCategory] = useState(ALL);
 
+  // Sunucu verisi (TanStack Query — polling + refetch)
+  const { data: serverRoutines = [], isLoading } = useRoutines(initialRoutines);
+  // Server Action tamamlandıktan sonra TQ cache'ini temizle
+  const { invalidate } = useRoutineQueryClient();
+
+  // ── useOptimistic: serverRoutines baz alınır, dispatch ile anında güncellenir.
+  //    Transition bitince serverRoutines'e (sunucu doğrusu) döner.
+  const [optimisticRoutines, dispatch] = useOptimistic(serverRoutines, optimisticReducer);
+
+  // ── useTransition: async Server Action'ı sarar; isPending = "uçuşta mı?"
+  const [isTogglePending, startToggle] = useTransition();
+  const [isDeletePending, startDelete] = useTransition();
+
+  const auth = useAuth();
   const isPro = auth.status === "authenticated" && auth.isPro;
-  const atLimit = !isPro && routines.length >= 5;
+  const atLimit = !isPro && serverRoutines.length >= 5;
+
+  // ── Handler'lar ────────────────────────────────────────────────────────────
+
+  /**
+   * Tamamla / Geri Al
+   *
+   * Akış:
+   *  1. dispatch → useOptimistic anında UI günceller (0 ms)
+   *  2. Server Action → Prisma + revalidatePath (ağ gecikmesi)
+   *  3. invalidate → TQ cache temizlenir → refetch başlar
+   *  4. Hata → useOptimistic otomatik eski state'e döner + toast
+   */
+  function handleToggle(id: string, completed: boolean) {
+    startToggle(async () => {
+      dispatch({ type: "toggle", id, completed });
+      try {
+        await (completed ? undoRoutineAction(id) : completeRoutineAction(id));
+        toast.success(completed ? "Tamamlama geri alındı." : "Rutin tamamlandı! 🔥");
+      } catch (err) {
+        // useOptimistic transition bittiğinde otomatik geri alır
+        toast.error(err instanceof Error ? err.message : "İşlem başarısız.");
+      } finally {
+        invalidate();
+      }
+    });
+  }
+
+  function handleDelete(id: string) {
+    startDelete(async () => {
+      dispatch({ type: "delete", id });
+      try {
+        await deleteRoutineAction(id);
+        toast.success("Rutin silindi.");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Silinemedi.");
+      } finally {
+        invalidate();
+      }
+    });
+  }
+
+  // ── Türev veriler (optimistic veriden beslenir) ────────────────────────────
+
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(optimisticRoutines.map((r) => r.category))).sort();
+    return [ALL, ...cats];
+  }, [optimisticRoutines]);
+
+  const filtered = useMemo(
+    () =>
+      activeCategory === ALL
+        ? optimisticRoutines
+        : optimisticRoutines.filter((r) => r.category === activeCategory),
+    [optimisticRoutines, activeCategory]
+  );
+
+  const isPending = isTogglePending || isDeletePending;
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
@@ -54,22 +178,78 @@ export function RoutineList({ initialRoutines }: Props) {
         </div>
       )}
 
-      {/* Progress bar */}
-      {routines.length > 0 && <RoutineProgressBar routines={routines} />}
+      {/* Progress bar — optimistic veriden beslenir → anında güncellenir */}
+      {optimisticRoutines.length > 0 && (
+        <RoutineProgressBar routines={optimisticRoutines} />
+      )}
 
-      {/* Liste */}
+      {/* Kategori filtre tabs — optimistic veriden beslenir */}
+      {categories.length > 2 && (
+        <div className="flex gap-1.5 flex-wrap">
+          {categories.map((cat) => {
+            const count =
+              cat === ALL
+                ? optimisticRoutines.length
+                : optimisticRoutines.filter((r) => r.category === cat).length;
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  activeCategory === cat
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background border-input text-muted-foreground hover:text-foreground hover:bg-accent"
+                )}
+              >
+                {cat}
+                <span
+                  className={cn(
+                    "ml-1.5 tabular-nums",
+                    activeCategory === cat
+                      ? "text-primary-foreground/70"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Rutin listesi */}
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-xl" />
+            <Skeleton key={i} className="h-56 rounded-xl" />
           ))}
         </div>
-      ) : routines.length === 0 ? (
-        <EmptyState onAdd={() => setDialogOpen(true)} />
+      ) : filtered.length === 0 ? (
+        optimisticRoutines.length === 0 ? (
+          <EmptyState onAdd={() => setDialogOpen(true)} />
+        ) : (
+          <div className="text-center py-12 text-sm text-muted-foreground">
+            <p>Bu kategoride rutin yok.</p>
+            <button
+              onClick={() => setActiveCategory(ALL)}
+              className="mt-2 text-primary hover:underline"
+            >
+              Tümünü göster
+            </button>
+          </div>
+        )
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {routines.map((r) => (
-            <RoutineCard key={r.id} routine={r} />
+          {filtered.map((r) => (
+            <RoutineCard
+              key={r.id}
+              routine={r}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
+              isPending={isPending}
+            />
           ))}
         </div>
       )}

@@ -1,0 +1,133 @@
+import { stripe, STRIPE_PLANS } from "@/lib/stripe";
+import { prisma } from "@/lib/prisma";
+import type Stripe from "stripe";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+// ─── Checkout ─────────────────────────────────────────────────────────────────
+
+export async function createCheckoutSession(
+  userId: string,
+  userEmail: string
+): Promise<string> {
+  // Reuse existing Stripe customer if available
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { stripeId: true, subscriptionTier: true },
+  });
+
+  if (user?.subscriptionTier === "PRO") {
+    throw new Error("ALREADY_PRO");
+  }
+
+  let customerId = user?.stripeId ?? undefined;
+
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email: userEmail,
+      metadata: { userId },
+    });
+    customerId = customer.id;
+    await prisma.user.update({
+      where: { id: userId },
+      data: { stripeId: customerId },
+    });
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: "subscription",
+    line_items: [{ price: STRIPE_PLANS.PRO.priceId, quantity: 1 }],
+    success_url: `${APP_URL}/settings?checkout=success`,
+    cancel_url: `${APP_URL}/settings?checkout=cancel`,
+    metadata: { userId },
+    subscription_data: { metadata: { userId } },
+    allow_promotion_codes: true,
+  });
+
+  if (!session.url) throw new Error("Failed to create Stripe session URL");
+  return session.url;
+}
+
+// ─── Billing Portal ───────────────────────────────────────────────────────────
+
+export async function createBillingPortalSession(
+  userId: string
+): Promise<string> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { stripeId: true },
+  });
+
+  if (!user?.stripeId) throw new Error("NO_STRIPE_CUSTOMER");
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: user.stripeId,
+    return_url: `${APP_URL}/settings`,
+  });
+
+  return session.url;
+}
+
+// ─── Webhook Handlers ─────────────────────────────────────────────────────────
+
+export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      if (session.mode !== "subscription") break;
+
+      const userId = session.metadata?.userId;
+      const subId =
+        typeof session.subscription === "string"
+          ? session.subscription
+          : session.subscription?.id;
+
+      if (!userId || !subId) break;
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          subscriptionTier: "PRO",
+          stripeSubId: subId,
+          stripeId: session.customer as string,
+        },
+      });
+      break;
+    }
+
+    case "customer.subscription.updated": {
+      const sub = event.data.object as Stripe.Subscription;
+      const userId = sub.metadata?.userId;
+      if (!userId) break;
+
+      const isActive =
+        sub.status === "active" || sub.status === "trialing";
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          subscriptionTier: isActive ? "PRO" : "FREE",
+          stripeSubId: isActive ? sub.id : null,
+        },
+      });
+      break;
+    }
+
+    case "customer.subscription.deleted": {
+      const sub = event.data.object as Stripe.Subscription;
+      const userId = sub.metadata?.userId;
+      if (!userId) break;
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { subscriptionTier: "FREE", stripeSubId: null },
+      });
+      break;
+    }
+
+    // Ignore all other events
+    default:
+      break;
+  }
+}

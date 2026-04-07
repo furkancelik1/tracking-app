@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { DashboardNav } from "@/components/shared/DashboardNav";
 import { RoutineList } from "@/components/dashboard/RoutineList";
 import { WeeklyStatsChart } from "@/components/dashboard/WeeklyStatsChart";
+import { StreakAlert } from "@/components/dashboard/StreakAlert";
+import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
+import { TestEmailButton } from "@/components/dashboard/TestEmailButton";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import type { DayStat } from "@/components/dashboard/WeeklyStatsChart";
 
@@ -94,7 +97,10 @@ export default async function DashboardPage() {
     <>
       <DashboardNav />
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+        <StreakAlert routines={routines} />
         <WeeklyStatsChart data={weeklyStats} isPro={isPro} />
+        <PushNotificationButton />
+        <TestEmailButton />
         <RoutineList initialRoutines={routines} />
       </main>
     </>

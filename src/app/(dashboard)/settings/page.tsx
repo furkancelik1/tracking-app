@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
+import { EmailNotificationsToggle } from "@/components/settings/EmailNotificationsToggle";
 import { STRIPE_PLANS, TIER_LIMITS } from "@/lib/stripe";
 
 export default async function SettingsPage() {
@@ -12,6 +13,7 @@ export default async function SettingsPage() {
       email: true,
       name: true,
       subscriptionTier: true,
+      emailNotificationsEnabled: true,
       stripeCustomerId: true,
       createdAt: true,
       _count: { select: { routines: true } },
@@ -21,6 +23,7 @@ export default async function SettingsPage() {
   if (!user) return null;
 
   const tier = user.subscriptionTier;
+  const isPro = tier === "PRO";
   const limit = TIER_LIMITS[tier];
   const routineCount = user._count.routines;
 
@@ -58,6 +61,19 @@ export default async function SettingsPage() {
           hasStripeCustomer={!!user.stripeCustomerId}
           plan={STRIPE_PLANS.PRO}
         />
+      </section>
+
+      {/* Bildirimler */}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Bildirimler
+        </h2>
+        <div className="rounded-lg border p-4 divide-y">
+          <EmailNotificationsToggle
+            enabled={user.emailNotificationsEnabled}
+            isPro={isPro}
+          />
+        </div>
       </section>
     </div>
   );

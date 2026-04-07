@@ -13,8 +13,9 @@ model User {
   email            String?   @unique @db.VarChar(191)
   emailVerified    DateTime?
   image            String?
-  subscriptionTier String    @default("FREE") // PRO veya FREE
-  stripeCustomerId String?   @unique @db.VarChar(191)
+  subscriptionTier   String    @default("FREE") // PRO veya FREE
+  emailNotificationsEnabled Boolean @default(true)
+  stripeCustomerId   String?  @unique @db.VarChar(191)
   stripeSubscriptionId String? @unique @db.VarChar(191)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

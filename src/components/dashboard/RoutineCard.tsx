@@ -44,8 +44,7 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
         "flex flex-col transition-all duration-200",
         isCompleted
           ? "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20"
-          : "hover:shadow-md",
-        isPending && "opacity-70"
+          : "hover:shadow-md"
       )}
     >
       <CardHeader className="pb-2">
@@ -138,13 +137,7 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
           disabled={isPending}
           onClick={() => onToggle(routine.id, isCompleted)}
         >
-          {isPending ? (
-            <span className="animate-pulse">…</span>
-          ) : isCompleted ? (
-            "Geri Al"
-          ) : (
-            "Tamamla"
-          )}
+          {isCompleted ? "Geri Al" : "Tamamla"}
         </Button>
 
         <Button

@@ -69,6 +69,7 @@ const ALL = "Tümü";
 export function RoutineList({ initialRoutines }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(ALL);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
   // Sunucu verisi (TanStack Query — polling + refetch)
   const { data: serverRoutines = [], isLoading } = useRoutines(initialRoutines);
@@ -79,9 +80,10 @@ export function RoutineList({ initialRoutines }: Props) {
   //    Transition bitince serverRoutines'e (sunucu doğrusu) döner.
   const [optimisticRoutines, dispatch] = useOptimistic(serverRoutines, optimisticReducer);
 
-  // ── useTransition: async Server Action'ı sarar; isPending = "uçuşta mı?"
-  const [isTogglePending, startToggle] = useTransition();
-  const [isDeletePending, startDelete] = useTransition();
+  // ── useTransition: async Server Action'ı sarar (isPending kullanılmıyor —
+  //    görsel durum pendingId üzerinden yönetilir)
+  const [, startToggle] = useTransition();
+  const [, startDelete] = useTransition();
 
   const auth = useAuth();
   const isPro = auth.status === "authenticated" && auth.isPro;
@@ -99,6 +101,7 @@ export function RoutineList({ initialRoutines }: Props) {
    *  4. Hata → useOptimistic otomatik eski state'e döner + toast
    */
   function handleToggle(id: string, completed: boolean) {
+    setPendingId(id);
     startToggle(async () => {
       dispatch({ type: "toggle", id, completed });
       try {
@@ -108,12 +111,14 @@ export function RoutineList({ initialRoutines }: Props) {
         // useOptimistic transition bittiğinde otomatik geri alır
         toast.error(err instanceof Error ? err.message : "İşlem başarısız.");
       } finally {
+        setPendingId(null);
         invalidate();
       }
     });
   }
 
   function handleDelete(id: string) {
+    setPendingId(id);
     startDelete(async () => {
       dispatch({ type: "delete", id });
       try {
@@ -122,6 +127,7 @@ export function RoutineList({ initialRoutines }: Props) {
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Silinemedi.");
       } finally {
+        setPendingId(null);
         invalidate();
       }
     });
@@ -141,8 +147,6 @@ export function RoutineList({ initialRoutines }: Props) {
         : optimisticRoutines.filter((r) => r.category === activeCategory),
     [optimisticRoutines, activeCategory]
   );
-
-  const isPending = isTogglePending || isDeletePending;
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -248,7 +252,7 @@ export function RoutineList({ initialRoutines }: Props) {
               routine={r}
               onToggle={handleToggle}
               onDelete={handleDelete}
-              isPending={isPending}
+              isPending={pendingId === r.id}
             />
           ))}
         </div>

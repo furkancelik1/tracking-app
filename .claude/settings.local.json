@@ -22,7 +22,8 @@
       "Bash(taskkill /PID 19776 /F)",
       "Bash(taskkill:*)",
       "Bash(curl:*)",
-      "Bash(ls C:\\\\Users\\\\FURKAN\\\\Desktop\\\\tracking-app\\\\.env*)"
+      "Bash(ls C:\\\\Users\\\\FURKAN\\\\Desktop\\\\tracking-app\\\\.env*)",
+      "Skill(update-config)"
     ]
   }
 }

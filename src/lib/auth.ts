@@ -1,8 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
-import type { Role } from "@prisma/client";
-
+type Role = "USER" | "ADMIN";
 /**
  * Server-side auth helper. Returns the session or redirects to /login.
  * Use inside Server Components and Route Handlers.
@@ -20,8 +19,8 @@ export async function requireAuth() {
  */
 export async function requireAdmin() {
   const session = await requireAuth();
-  if ((session.user.role as Role) !== "ADMIN") {
-    redirect("/basket");
+  if (session.user.subscriptionTier !== "PRO") {
+    redirect("/basket" as any);
   }
   return session;
 }

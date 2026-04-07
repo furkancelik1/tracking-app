@@ -6,8 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import type { SubscriptionTier } from "@prisma/client";
-import type { STRIPE_PLANS } from "@/lib/stripe";
+import type { STRIPE_PLANS, SubscriptionTier } from "@/lib/stripe";
 
 type Plan = (typeof STRIPE_PLANS)["PRO"];
 

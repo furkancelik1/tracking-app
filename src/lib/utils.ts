@@ -6,8 +6,7 @@ import {
   formatDuration,
   intervalToDuration,
 } from "date-fns";
-import type { ResetType } from "@prisma/client";
-
+export type ResetType = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "ROLLING" | "FIXED";
 // ─── Shadcn default ──────────────────────────────────────────────────────────
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

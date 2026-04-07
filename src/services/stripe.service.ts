@@ -13,14 +13,14 @@ export async function createCheckoutSession(
   // Reuse existing Stripe customer if available
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { stripeId: true, subscriptionTier: true },
+    select: { stripeCustomerId: true, subscriptionTier: true },
   });
 
   if (user?.subscriptionTier === "PRO") {
     throw new Error("ALREADY_PRO");
   }
 
-  let customerId = user?.stripeId ?? undefined;
+  let customerId = user?.stripeCustomerId ?? undefined;
 
   if (!customerId) {
     const customer = await stripe.customers.create({
@@ -30,7 +30,7 @@ export async function createCheckoutSession(
     customerId = customer.id;
     await prisma.user.update({
       where: { id: userId },
-      data: { stripeId: customerId },
+      data: { stripeCustomerId: customerId },
     });
   }
 
@@ -56,13 +56,13 @@ export async function createBillingPortalSession(
 ): Promise<string> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { stripeId: true },
+    select: { stripeCustomerId: true },
   });
 
-  if (!user?.stripeId) throw new Error("NO_STRIPE_CUSTOMER");
+  if (!user?.stripeCustomerId) throw new Error("NO_STRIPE_CUSTOMER");
 
   const session = await stripe.billingPortal.sessions.create({
-    customer: user.stripeId,
+    customer: user.stripeCustomerId,
     return_url: `${APP_URL}/settings`,
   });
 
@@ -89,8 +89,8 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
         where: { id: userId },
         data: {
           subscriptionTier: "PRO",
-          stripeSubId: subId,
-          stripeId: session.customer as string,
+          stripeSubscriptionId: subId,
+          stripeCustomerId: session.customer as string,
         },
       });
       break;
@@ -108,7 +108,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
         where: { id: userId },
         data: {
           subscriptionTier: isActive ? "PRO" : "FREE",
-          stripeSubId: isActive ? sub.id : null,
+          stripeSubscriptionId: isActive ? sub.id : null,
         },
       });
       break;
@@ -121,7 +121,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
 
       await prisma.user.update({
         where: { id: userId },
-        data: { subscriptionTier: "FREE", stripeSubId: null },
+        data: { subscriptionTier: "FREE", stripeSubscriptionId: null },
       });
       break;
     }

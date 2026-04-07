@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getSubscriptionTier } from "@/lib/stripe";
 import { z } from "zod";
 import type { ApiResponse } from "@/types";
 import type { Routine, RoutineFrequency } from "@prisma/client";
@@ -28,7 +29,7 @@ export async function GET() {
       );
     }
 
-    const userId = (session.user as any).id as string;
+    const userId = session.user.id;
 
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
@@ -75,8 +76,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const userId = (session.user as any).id as string;
-    const subscriptionTier = (session.user as any).subscriptionTier as string;
+    const userId = session.user.id;
+    const subscriptionTier = getSubscriptionTier(session.user.subscriptionTier);
 
     // FREE tier limiti kontrolü
     if (subscriptionTier === "FREE") {

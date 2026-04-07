@@ -118,7 +118,7 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
                   boxShadow: "0 4px 12px rgba(0,0,0,.08)",
                 }}
                 labelStyle={{ fontWeight: 600, marginBottom: 2 }}
-                formatter={(v: number) => [v, "Tamamlanan rutin"]}
+                formatter={(value) => [value ?? 0, "Tamamlanan rutin"]}
               />
 
               <Area

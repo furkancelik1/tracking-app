@@ -6,6 +6,7 @@ import { WeeklyStatsChart } from "@/components/dashboard/WeeklyStatsChart";
 import { StreakAlert } from "@/components/dashboard/StreakAlert";
 import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
 import { TestEmailButton } from "@/components/dashboard/TestEmailButton";
+import { getSubscriptionTier } from "@/lib/stripe";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import type { DayStat } from "@/components/dashboard/WeeklyStatsChart";
 
@@ -16,8 +17,8 @@ const TR_DAYS = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"] as const;
 
 export default async function DashboardPage() {
   const session = await requireAuth();
-  const userId = (session.user as any).id as string;
-  const subscriptionTier = (session.user as any).subscriptionTier as "FREE" | "PRO";
+  const userId = session.user.id;
+  const subscriptionTier = getSubscriptionTier(session.user.subscriptionTier);
   const isPro = subscriptionTier === "PRO";
 
   const todayStart = new Date();
@@ -90,7 +91,7 @@ export default async function DashboardPage() {
       (l) => l.completedAt >= dayStart && l.completedAt < dayEnd
     ).length;
 
-    return { name: TR_DAYS[dayStart.getUTCDay()], count };
+    return { name: TR_DAYS[dayStart.getUTCDay()] ?? "", count };
   });
 
   return (

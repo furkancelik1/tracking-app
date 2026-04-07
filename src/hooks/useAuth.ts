@@ -2,13 +2,14 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import type { SubscriptionTier } from "@/lib/stripe";
 
 export type AuthUser = {
   id: string;
   name: string | null;
   email: string | null;
   image: string | null;
-  subscriptionTier: string;
+  subscriptionTier: SubscriptionTier;
 };
 
 type UseAuthReturn =

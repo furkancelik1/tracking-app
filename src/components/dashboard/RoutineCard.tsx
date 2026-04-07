@@ -1,5 +1,6 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +37,7 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
     (l) => new Date(l.completedAt) >= todayUTC
   );
 
-  const Icon = ICON_MAP[routine.icon] ?? ICON_MAP["CheckCircle"];
+  const Icon = (ICON_MAP[routine.icon] ?? ICON_MAP["CheckCircle"]) as LucideIcon;
 
   return (
     <Card

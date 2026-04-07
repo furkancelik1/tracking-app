@@ -30,3 +30,11 @@ export const TIER_LIMITS = {
   FREE: 5,
   PRO: Infinity,
 } as const;
+
+export type SubscriptionTier = keyof typeof TIER_LIMITS;
+
+export function getSubscriptionTier(
+  value: string | null | undefined
+): SubscriptionTier {
+  return value === "PRO" ? "PRO" : "FREE";
+}

@@ -2,7 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
 import { EmailNotificationsToggle } from "@/components/settings/EmailNotificationsToggle";
-import { STRIPE_PLANS, TIER_LIMITS } from "@/lib/stripe";
+import { STRIPE_PLANS, TIER_LIMITS, getSubscriptionTier } from "@/lib/stripe";
 
 export default async function SettingsPage() {
   const session = await requireAuth();
@@ -22,7 +22,7 @@ export default async function SettingsPage() {
 
   if (!user) return null;
 
-  const tier = user.subscriptionTier;
+  const tier = getSubscriptionTier(user.subscriptionTier);
   const isPro = tier === "PRO";
   const limit = TIER_LIMITS[tier];
   const routineCount = user._count.routines;

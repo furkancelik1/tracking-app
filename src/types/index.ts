@@ -1,3 +1,5 @@
+import type { SubscriptionTier } from "@/lib/stripe";
+
 // ─── API Helpers ──────────────────────────────────────────────────────────────
 
 export type ApiResponse<T> =
@@ -19,5 +21,5 @@ export type SessionUser = {
   name: string | null;
   email: string | null;
   image: string | null;
-  subscriptionTier: string;
+  subscriptionTier: SubscriptionTier;
 };

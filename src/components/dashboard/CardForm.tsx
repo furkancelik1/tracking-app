@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { cardSchema, type CardInput } from "@/lib/validations/card";
-import type { Card } from "@prisma/client";
 
 const RESET_TYPES = [
   {
@@ -36,7 +35,20 @@ const DURATION_PRESETS = [
   { label: "24h", seconds: 86400 },
 ];
 
-type Props = { card?: Card };
+type EditableCard = {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  category: string;
+  affiliateUrl: string | null;
+  resetType: CardInput["resetType"];
+  duration: number;
+  isActive: boolean;
+  sortOrder: number;
+};
+
+type Props = { card?: EditableCard };
 
 export function CardForm({ card }: Props) {
   const router = useRouter();
@@ -94,7 +106,7 @@ export function CardForm({ card }: Props) {
     }
 
     toast.success(isEditing ? "Card updated." : "Card created.");
-    router.push("/admin/cards");
+    router.back();
     router.refresh();
   }
 
@@ -264,7 +276,7 @@ export function CardForm({ card }: Props) {
         <Button
           type="button"
           variant="ghost"
-          onClick={() => router.push("/admin/cards")}
+          onClick={() => router.back()}
           disabled={isSubmitting}
         >
           Cancel

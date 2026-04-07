@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
 import { prisma } from "@/lib/prisma";
+import { getSubscriptionTier } from "@/lib/stripe";
 import type { NextAuthOptions } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
@@ -36,14 +37,14 @@ export const authOptions: NextAuthOptions = {
           where: { id: user.id },
           select: { subscriptionTier: true },
         });
-        token.subscriptionTier = dbUser?.subscriptionTier ?? "FREE";
+        token.subscriptionTier = getSubscriptionTier(dbUser?.subscriptionTier);
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).subscriptionTier = token.subscriptionTier;
+        session.user.id = token.id;
+        session.user.subscriptionTier = token.subscriptionTier;
       }
       return session;
     },

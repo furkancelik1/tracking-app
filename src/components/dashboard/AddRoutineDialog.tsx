@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -175,7 +176,7 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
             <Label>İkon</Label>
             <div className="grid grid-cols-8 gap-1.5">
               {ICON_OPTIONS.map((name) => {
-                const Icon = ICON_MAP[name];
+                  const Icon = ICON_MAP[name] as LucideIcon;
                 return (
                   <button
                     key={name}

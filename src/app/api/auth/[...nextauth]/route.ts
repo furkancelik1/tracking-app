@@ -1,60 +1,41 @@
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import EmailProvider from "next-auth/providers/email";
-import { db, prisma } from "@/lib/prisma";
-import { getSubscriptionTier } from "@/lib/stripe";
-import type { NextAuthOptions } from "next-auth";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+// 1. KRİTİK NOKTA: db'yi doğru import ettiğinden emin ol.
+// Senin db.ts dosyan nerede duruyorsa yolu ona göre ver. Örneğin:
+import { db } from "@/lib/db"; 
+
+// 2. KRİTİK NOKTA: Eğer bu dosyanın en üstünde veya herhangi bir yerinde
+// export const runtime = "edge"; 
+// yazıyorsa, ONU KESİNLİKLE SİL! Prisma standart sürümde Edge'de çalışmaz.
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db) as any,
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
+  // 3. KRİTİK NOKTA: db nesnesini adaptöre bu şekilde ver
+  adapter: PrismaAdapter(db), 
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    EmailProvider({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST ?? "smtp.gmail.com",
-        port: Number(process.env.EMAIL_SERVER_PORT ?? 587),
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
-        },
-      },
-      from: process.env.EMAIL_FROM ?? "noreply@tracking-app.com",
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
   ],
+  session: {
+    strategy: "jwt", // Prisma kullansan bile JWT stratejisi Google için daha stabildir
+  },
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
+  pages: {
+    signIn: "/login",
+  },
+  // İsteğe bağlı: Callbacks ile oturum bilgilerini zenginleştirebilirsin
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { subscriptionTier: true },
-        });
-        token.subscriptionTier = getSubscriptionTier(dbUser?.subscriptionTier);
-      }
-      return token;
-    },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.subscriptionTier = token.subscriptionTier;
+      if (token && session.user) {
+        session.user.id = token.sub as string;
       }
       return session;
     },
   },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-    verifyRequest: "/login?verify=1",
-  },
 };
 
 const handler = NextAuth(authOptions);
+
 export { handler as GET, handler as POST };

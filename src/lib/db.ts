@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client"
+// src/lib/db.ts
+import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient }
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
+// Değişken adının 'prisma' (küçük harf) olduğundan emin oluyoruz
 export const prisma =
   globalForPrisma.prisma ||
-  new PrismaClient({
-    log: ["query"],
-  })
+  new PrismaClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

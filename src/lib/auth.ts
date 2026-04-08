@@ -2,7 +2,7 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma"; // ← değişti
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
@@ -26,7 +26,8 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id as string;
-        (session.user as any).subscriptionTier = (token.subscriptionTier as string) ?? "FREE";
+        (session.user as any).subscriptionTier =
+          (token.subscriptionTier as string) ?? "FREE";
       }
       return session;
     },

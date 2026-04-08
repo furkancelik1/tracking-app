@@ -1,13 +1,11 @@
 // src/lib/auth-options.ts
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/prisma"; // Prisma client dosyanın yolu
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { db } from "@/lib/prisma";
 import GoogleProvider from "next-auth/providers/google";
 import { NextAuthOptions } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
-  // HATANIN KAYNAĞI BURASI OLABİLİR:
-  // Mutlaka PrismaAdapter(prisma) şeklinde, yani prisma'yı içine göndererek çağır!
-  adapter: PrismaAdapter(prisma) as any, 
+  adapter: PrismaAdapter(db) as any,
   
   providers: [
     GoogleProvider({

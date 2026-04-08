@@ -1,11 +1,7 @@
-// src/lib/db.ts
-import { PrismaClient } from "@prisma/client";
+// src/app/api/auth/[...nextauth]/route.ts
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-// Değişken adının 'prisma' (küçük harf) olduğundan emin oluyoruz
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient();
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };

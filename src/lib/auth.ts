@@ -1,34 +1,48 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { redirect } from "next/navigation";
-type Role = "USER" | "ADMIN";
-/**
- * Server-side auth helper. Returns the session or redirects to /login.
- * Use inside Server Components and Route Handlers.
- */
-export async function requireAuth() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    redirect("/login");
-  }
-  return session;
-}
+// src/lib/authOptions.ts
 
-/**
- * Server-side admin guard. Redirects non-admins to /basket.
- */
-export async function requireAdmin() {
-  const session = await requireAuth();
-  if (session.user.subscriptionTier !== "PRO") {
-    redirect("/basket" as any);
-  }
-  return session;
-}
-
-/**
- * Returns the session without redirecting — use in API route handlers
- * to return 401 instead of redirecting.
- */
-export async function getSession() {
-  return getServerSession(authOptions);
-}
+import { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import EmailProvider from "next-auth/providers/email";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { prisma } from "@/lib/db";
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    EmailProvider({
+      server: {
+        host: process.env.EMAIL_SERVER_HOST,
+        port: Number(process.env.EMAIL_SERVER_PORT),
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
+      },
+      from: process.env.EMAIL_FROM,
+    }),
+  ],
+  session: { strategy: "jwt" },
+  secret: process.env.NEXTAUTH_SECRET,
+  pages: { signIn: "/login" },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.subscriptionTier =
+          (user as any).subscriptionTier ?? "FREE";
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.subscriptionTier =
+          (token.subscriptionTier as string) ?? "FREE";
+      }
+      return session;
+    },
+  },
+};

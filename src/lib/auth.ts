@@ -5,8 +5,11 @@ import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/db";
+
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // Prisma v6 tipiyle NextAuth adaptörü arasındaki uyuşmazlığı susturuyoruz
+  adapter: PrismaAdapter(prisma) as any,
+  
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -31,16 +34,15 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.subscriptionTier =
-          (user as any).subscriptionTier ?? "FREE";
+        token.subscriptionTier = (user as any).subscriptionTier ?? "FREE";
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        session.user.subscriptionTier =
-          (token.subscriptionTier as string) ?? "FREE";
+        // TypeScript'in standart user objesinde id ve tier aramamasını sağlıyoruz
+        (session.user as any).id = token.id as string;
+        (session.user as any).subscriptionTier = (token.subscriptionTier as string) ?? "FREE";
       }
       return session;
     },

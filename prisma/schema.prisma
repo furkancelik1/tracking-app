@@ -8,44 +8,90 @@ datasource db {
 }
 
 model User {
-  id               String    @id @default(cuid()) @db.VarChar(191)
-  name             String?
-  email            String?   @unique @db.VarChar(191)
-  emailVerified    DateTime?
-  image            String?
-  subscriptionTier   String    @default("FREE") // PRO veya FREE
-  emailNotificationsEnabled Boolean @default(true)
-  stripeCustomerId   String?  @unique @db.VarChar(191)
-  stripeSubscriptionId String? @unique @db.VarChar(191)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  routines         Routine[]
-  logs             RoutineLog[]
+  id                        String       @id @default(cuid()) @db.VarChar(191)
+  name                      String?
+  email                     String?      @unique @db.VarChar(191)
+  emailVerified             DateTime?
+  image                     String?
+  subscriptionTier          String       @default("FREE") // PRO veya FREE
+  emailNotificationsEnabled Boolean      @default(true)
+  stripeCustomerId          String?      @unique @db.VarChar(191)
+  stripeSubscriptionId      String?      @unique @db.VarChar(191)
+  createdAt                 DateTime     @default(now())
+  updatedAt                 DateTime     @updatedAt
+  routines                  Routine[]
+  logs                      RoutineLog[]
+
+  // NextAuth için zorunlu ilişkiler eklendi
+  accounts                  Account[]
+  sessions                  Session[]
 }
 
+// --- NEXTAUTH ZORUNLU TABLOLARI ---
+
+model Account {
+  id                 String  @id @default(cuid()) @db.VarChar(191)
+  userId             String  @db.VarChar(191)
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid()) @db.VarChar(191)
+  sessionToken String   @unique @db.VarChar(191)
+  userId       String   @db.VarChar(191)
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String   @db.VarChar(191)
+  token      String   @unique @db.VarChar(191)
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- SENİN SAAS PROJENİN TABLOLARI ---
+
 model Routine {
-  id              String       @id @default(cuid()) @db.VarChar(191)
-  title           String       @db.VarChar(191)
-  description     String?      @db.Text
-  icon            String       @default("Check") @db.VarChar(191)
-  category        String       @default("Genel") @db.VarChar(191)
-  color           String       @default("#3b82f6") @db.VarChar(191)
+  id              String           @id @default(cuid()) @db.VarChar(191)
+  title           String           @db.VarChar(191)
+  description     String?          @db.Text
+  icon            String           @default("Check") @db.VarChar(191)
+  category        String           @default("Genel") @db.VarChar(191)
+  color           String           @default("#3b82f6") @db.VarChar(191)
   frequency       RoutineFrequency @default(DAILY)
-  isActive        Boolean      @default(true)
+  isActive        Boolean          @default(true)
   
   // Dashboard sıralaması için kritik alan
-  sortOrder       Int          @default(0) 
+  sortOrder       Int              @default(0) 
   
   // Streak (Seri) Sistemi
-  currentStreak   Int          @default(0)
-  longestStreak   Int          @default(0)
+  currentStreak   Int              @default(0)
+  longestStreak   Int              @default(0)
   lastCompletedAt DateTime?
   
-  userId          String       @db.VarChar(191)
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String           @db.VarChar(191)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   logs            RoutineLog[]
 
   @@index([userId])

@@ -17,8 +17,10 @@ const TR_DAYS = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"] as const;
 
 export default async function DashboardPage() {
   const session = await requireAuth();
-  const userId = session.user.id;
-  const subscriptionTier = getSubscriptionTier(session.user.subscriptionTier);
+  const userId = (session.user as any).id as string;
+  const subscriptionTier = getSubscriptionTier(
+    (session.user as any).subscriptionTier
+  );
   const isPro = subscriptionTier === "PRO";
 
   const todayStart = new Date();
@@ -33,7 +35,7 @@ export default async function DashboardPage() {
 
   // Paralel sorgular
   const [raw, recentLogs] = await Promise.all([
-    // Aktif rutinler + son 30 günün logları (heatmap + isCompleted için)
+    // Aktif rutinler + son 30 günün logları
     prisma.routine.findMany({
       where: { userId, isActive: true },
       include: {
@@ -48,7 +50,7 @@ export default async function DashboardPage() {
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     }),
 
-    // Son 7 günün TÜM logları (haftalık grafik için — rutinlere göre gruplanmamış)
+    // Son 7 günün tüm logları (haftalık grafik için)
     prisma.routineLog.findMany({
       where: { userId, completedAt: { gte: sevenDaysAgo } },
       select: { completedAt: true },

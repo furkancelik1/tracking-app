@@ -1,89 +1,111 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
-import { EmailNotificationsToggle } from "@/components/settings/EmailNotificationsToggle";
-import { STRIPE_PLANS, TIER_LIMITS, getSubscriptionTier } from "@/lib/stripe";
+import { DashboardNav } from "@/components/shared/DashboardNav";
+import { RoutineList } from "@/components/dashboard/RoutineList";
+import { WeeklyStatsChart } from "@/components/dashboard/WeeklyStatsChart";
+import { StreakAlert } from "@/components/dashboard/StreakAlert";
+import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
+import { TestEmailButton } from "@/components/dashboard/TestEmailButton";
+import { getSubscriptionTier } from "@/lib/stripe";
+import type { RoutineWithMeta } from "@/hooks/useRoutines";
+import type { DayStat } from "@/components/dashboard/WeeklyStatsChart";
 
-export default async function SettingsPage() {
+export const metadata = { title: "Rutinlerim" };
+
+// Türkçe gün kısaltmaları — Pazar = 0
+const TR_DAYS = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"] as const;
+
+export default async function DashboardPage() {
   const session = await requireAuth();
+  const userId = (session.user as any).id as string;
+  const subscriptionTier = getSubscriptionTier(
+    (session.user as any).subscriptionTier
+  );
+  const isPro = subscriptionTier === "PRO";
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      email: true,
-      name: true,
-      subscriptionTier: true,
-      emailNotificationsEnabled: true,
-      stripeCustomerId: true,
-      createdAt: true,
-      _count: { select: { routines: true } },
-    },
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+
+  // Heatmap için 30 gün, haftalık chart için 7 gün
+  const thirtyDaysAgo = new Date(todayStart);
+  thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
+
+  const sevenDaysAgo = new Date(todayStart);
+  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 6);
+
+  // Paralel sorgular
+  const [raw, recentLogs] = await Promise.all([
+    // Aktif rutinler + son 30 günün logları
+    prisma.routine.findMany({
+      where: { userId, isActive: true },
+      include: {
+        logs: {
+          where: { completedAt: { gte: thirtyDaysAgo } },
+          select: { id: true, completedAt: true, note: true },
+          orderBy: { completedAt: "desc" },
+          take: 30,
+        },
+        _count: { select: { logs: true } },
+      },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    }),
+
+    // Son 7 günün tüm logları (haftalık grafik için)
+    prisma.routineLog.findMany({
+      where: { userId, completedAt: { gte: sevenDaysAgo } },
+      select: { completedAt: true },
+    }),
+  ]);
+
+  // Rutinleri JSON-serializable hale getir
+  const routines: RoutineWithMeta[] = raw.map((r) => ({
+    id: r.id,
+    title: r.title,
+    description: r.description,
+    frequency: r.frequency,
+    isActive: r.isActive,
+    sortOrder: r.sortOrder,
+    category: r.category,
+    color: r.color,
+    icon: r.icon,
+    currentStreak: r.currentStreak,
+    longestStreak: r.longestStreak,
+    lastCompletedAt: r.lastCompletedAt?.toISOString() ?? null,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+    logs: r.logs.map((l) => ({
+      id: l.id,
+      completedAt: l.completedAt.toISOString(),
+      note: l.note,
+    })),
+    _count: r._count,
+  }));
+
+  // Haftalık istatistikleri gün gün hesapla
+  const weeklyStats: DayStat[] = Array.from({ length: 7 }, (_, i) => {
+    const dayStart = new Date(sevenDaysAgo);
+    dayStart.setUTCDate(sevenDaysAgo.getUTCDate() + i);
+
+    const dayEnd = new Date(dayStart);
+    dayEnd.setUTCDate(dayStart.getUTCDate() + 1);
+
+    const count = recentLogs.filter(
+      (l) => l.completedAt >= dayStart && l.completedAt < dayEnd
+    ).length;
+
+    return { name: TR_DAYS[dayStart.getUTCDay()] ?? "", count };
   });
 
-  if (!user) return null;
-
-  const tier = getSubscriptionTier(user.subscriptionTier);
-  const isPro = tier === "PRO";
-  const limit = TIER_LIMITS[tier];
-  const routineCount = user._count.routines;
-
   return (
-    <div className="p-6 max-w-2xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          Manage your account and subscription
-        </p>
-      </div>
-
-      {/* Account info */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Account
-        </h2>
-        <div className="rounded-lg border p-4 space-y-2 text-sm">
-          <Row label="Name" value={user.name ?? "—"} />
-          <Row label="Email" value={user.email ?? "—"} />
-          <Row
-            label="Routines"
-            value={`${routineCount} / ${limit === Infinity ? "∞" : limit}`}
-          />
-        </div>
-      </section>
-
-      {/* Subscription */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Subscription
-        </h2>
-        <SubscriptionCard
-          tier={tier}
-          hasStripeCustomer={!!user.stripeCustomerId}
-          plan={STRIPE_PLANS.PRO}
-        />
-      </section>
-
-      {/* Bildirimler */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Bildirimler
-        </h2>
-        <div className="rounded-lg border p-4 divide-y">
-          <EmailNotificationsToggle
-            enabled={user.emailNotificationsEnabled}
-            isPro={isPro}
-          />
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
-    </div>
+    <>
+      <DashboardNav />
+      <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+        <StreakAlert routines={routines} />
+        <WeeklyStatsChart data={weeklyStats} isPro={isPro} />
+        <PushNotificationButton />
+        <TestEmailButton />
+        <RoutineList initialRoutines={routines} />
+      </main>
+    </>
   );
 }

@@ -10,7 +10,6 @@ export const metadata = {
     "Günlük alışkanlıklarını kolayca takip et. Streak sistemi ve haftalık istatistiklerle motivasyonunu canlı tut.",
 };
 
-// ─── Sayfayı her istekte taze getir (session kontrolü için) ──────────────────
 export const dynamic = "force-dynamic";
 
 export default async function LandingPage() {
@@ -22,13 +21,11 @@ export default async function LandingPage() {
       {/* ─── HEADER ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
         <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-semibold text-sm">
             <span className="size-5 rounded-full bg-primary inline-block" />
             Routine Tracker
           </Link>
 
-          {/* Nav */}
           <nav className="hidden sm:flex items-center gap-1">
             <a
               href="#features"
@@ -44,7 +41,6 @@ export default async function LandingPage() {
             </a>
           </nav>
 
-          {/* CTA */}
           {isLoggedIn ? (
             <Button asChild size="sm">
               <Link href="/dashboard">Panele Git</Link>
@@ -60,12 +56,10 @@ export default async function LandingPage() {
       <main className="flex-1">
         {/* ─── HERO ───────────────────────────────────────────────────────────── */}
         <section className="relative overflow-hidden">
-          {/* Arka plan ızgara deseni */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:48px_48px] opacity-50"
           />
-          {/* Radial gradient — ızgarayı ortada solar */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(var(--background))_0%,transparent_100%)]"
@@ -199,7 +193,7 @@ export default async function LandingPage() {
                 </Button>
               </div>
 
-              {/* Pro — highlighted */}
+              {/* Pro */}
               <div className="rounded-xl border-2 border-primary bg-card p-8 flex flex-col gap-6 relative shadow-lg">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary text-primary-foreground text-xs font-semibold px-3 py-1">
                   En Popüler
@@ -245,12 +239,7 @@ export default async function LandingPage() {
               Binlerce kullanıcı rutinlerini takip etmek için Routine Tracker&apos;ı
               kullanıyor. Sıra sende.
             </p>
-            <Button
-              asChild
-              size="lg"
-              variant="secondary"
-              className="px-8"
-            >
+            <Button asChild size="lg" variant="secondary" className="px-8">
               <Link href={isLoggedIn ? "/dashboard" : "/login"}>
                 Hemen Başla — Ücretsiz
               </Link>

@@ -1,8 +1,17 @@
 // src/lib/auth.ts
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import type { Adapter, AdapterUser, AdapterSession, AdapterAccount } from "next-auth/adapters";
+import type {
+  Adapter,
+  AdapterUser,
+  AdapterSession,
+  AdapterAccount,
+} from "next-auth/adapters";
+
+// ─── Custom Prisma Adapter (Prisma v6 uyumlu) ────────────────────────────────
 
 function CustomPrismaAdapter(): Adapter {
   return {
@@ -10,10 +19,14 @@ function CustomPrismaAdapter(): Adapter {
       return prisma.user.create({ data }) as unknown as AdapterUser;
     },
     async getUser(id) {
-      return prisma.user.findUnique({ where: { id } }) as Promise<AdapterUser | null>;
+      return prisma.user.findUnique({
+        where: { id },
+      }) as Promise<AdapterUser | null>;
     },
     async getUserByEmail(email) {
-      return prisma.user.findUnique({ where: { email } }) as Promise<AdapterUser | null>;
+      return prisma.user.findUnique({
+        where: { email },
+      }) as Promise<AdapterUser | null>;
     },
     async getUserByAccount({ providerAccountId, provider }) {
       const account = await prisma.account.findUnique({
@@ -25,7 +38,10 @@ function CustomPrismaAdapter(): Adapter {
       return (account?.user ?? null) as AdapterUser | null;
     },
     async updateUser({ id, ...data }) {
-      return prisma.user.update({ where: { id }, data }) as unknown as AdapterUser;
+      return prisma.user.update({
+        where: { id },
+        data,
+      }) as unknown as AdapterUser;
     },
     async linkAccount(data: AdapterAccount) {
       await prisma.account.create({
@@ -74,6 +90,8 @@ function CustomPrismaAdapter(): Adapter {
   };
 }
 
+// ─── NextAuth Options ────────────────────────────────────────────────────────
+
 export const authOptions: NextAuthOptions = {
   adapter: CustomPrismaAdapter(),
 
@@ -97,6 +115,8 @@ export const authOptions: NextAuthOptions = {
     async session({ session, user }) {
       if (user && session.user) {
         (session.user as any).id = user.id;
+        (session.user as any).subscriptionTier =
+          (user as any).subscriptionTier ?? "FREE";
       }
       return session;
     },
@@ -105,3 +125,56 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
 };
+
+// ─── Helper Functions ────────────────────────────────────────────────────────
+
+/**
+ * Server-side session getter.
+ * Kullanım: API route'larında ve Server Component'larda.
+ */
+export async function getSession() {
+  return await getServerSession(authOptions);
+}
+
+/**
+ * Oturum zorunlu olan sayfalarda kullanılır.
+ * Oturum yoksa /login'e yönlendirir.
+ */
+export async function requireAuth() {
+  const session = await getSession();
+  if (!session?.user) {
+    redirect("/login");
+  }
+  return session as typeof session & {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      subscriptionTier: string;
+    };
+  };
+}
+
+/**
+ * Admin sayfaları için guard.
+ * Oturum yoksa /login'e, admin değilse /dashboard'a yönlendirir.
+ */
+export async function requireAdmin() {
+  const session = await getSession();
+  if (!session?.user) {
+    redirect("/login");
+  }
+  // Şu an admin rolü DB'de tutulmuyor; ileride genişletilebilir.
+  // Geçici olarak sadece oturum kontrolü yapılıyor.
+  // Gerçek admin kontrolü için User modeline role alanı eklenebilir.
+  const user = await prisma.user.findUnique({
+    where: { id: (session.user as any).id },
+    select: { email: true },
+  });
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim());
+  if (!user?.email || !adminEmails.includes(user.email)) {
+    redirect("/dashboard");
+  }
+  return session;
+}

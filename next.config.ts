@@ -1,12 +1,5 @@
-const nextConfig = {
-  // Vercel'in RAM'i şişmesin diye TS kontrolünü atlıyoruz
-  // (Zaten yerelde test ettik ve sorunsuz!)
+export default {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 };
-
-export default nextConfig;

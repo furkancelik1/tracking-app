@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db"; // İŞTE KRİTİK NOKTA: db.ts'den gelmeli!
 
 export const authOptions: NextAuthOptions = {
   // Veritabanı bağlantısı burada kuruluyor
-  adapter: PrismaAdapter(prisma), 
+  adapter: PrismaAdapter(prisma as any), 
   
   providers: [
     GoogleProvider({

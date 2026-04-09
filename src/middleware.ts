@@ -17,11 +17,6 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Giriş yapmış kullanıcı /login'e gelirse dashboard'a yönlendir
-  if (pathname === "/login" && token) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-
   // Admin guard
   if (pathname.startsWith("/admin") && token) {
     const adminEmails = (process.env.ADMIN_EMAILS ?? "")

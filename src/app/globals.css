@@ -27,25 +27,43 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Deep zinc/slate dark foundation */
+    --background: 240 10% 4%; /* #09090b */
+    --foreground: 210 20% 96%;
+
+    /* Elevated surfaces */
+    --card: 240 4% 7%; /* #121214 */
+    --card-foreground: 210 20% 96%;
+    --popover: 240 4% 7%; /* #121214 */
+    --popover-foreground: 210 20% 96%;
+
+    /* Core semantic tokens */
     --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --primary-foreground: 240 6% 10%;
+    --secondary: 240 4% 13%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 240 4% 13%;
+    --muted-foreground: 240 5% 65%; /* #a1a1aa */
+    --accent: 240 4% 13%;
+    --accent-foreground: 210 20% 96%;
+
+    --destructive: 0 75% 45%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+
+    /* Subtle light-break borders/inputs */
+    --border: 240 5% 16%; /* #27272a */
+    --input: 240 5% 16%;
+    --ring: 212 92% 65%;
+
+    /* Neon-ish accent colors for charts/status/streaks */
+    --accent-blue: 212 96% 68%;
+    --accent-blue-glow: 212 100% 74%;
+
+    --accent-green: 142 84% 58%;
+    --accent-green-glow: 142 90% 66%;
+
+    --accent-orange: 30 100% 62%;
+    --accent-orange-glow: 31 100% 70%;
   }
 }
 
@@ -55,5 +73,42 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(
+      circle at top,
+      hsl(var(--accent-blue) / 0.06),
+      transparent 42%
+    );
+  }
+}
+
+@layer components {
+  .dark-surface {
+    background-color: hsl(var(--card) / 0.82);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(var(--border) / 0.85);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.03),
+      inset 0 -1px 0 hsl(240 10% 2% / 0.35),
+      0 8px 28px hsl(240 40% 2% / 0.45);
+    transition:
+      border-color 200ms ease,
+      box-shadow 220ms ease,
+      transform 220ms ease;
+  }
+
+  .dark-surface-hover {
+    transition:
+      border-color 200ms ease,
+      box-shadow 220ms ease,
+      transform 220ms ease;
+  }
+
+  .dark-surface-hover:hover {
+    border-color: hsl(var(--accent-blue) / 0.38);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.05),
+      0 10px 30px hsl(240 40% 2% / 0.52),
+      0 0 0 1px hsl(var(--accent-blue) / 0.14);
+    transform: translateY(-1px);
   }
 }

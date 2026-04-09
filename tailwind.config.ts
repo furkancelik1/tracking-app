@@ -52,11 +52,32 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        accentBlue: {
+          DEFAULT: "hsl(var(--accent-blue))",
+          glow: "hsl(var(--accent-blue-glow))",
+        },
+        accentGreen: {
+          DEFAULT: "hsl(var(--accent-green))",
+          glow: "hsl(var(--accent-green-glow))",
+        },
+        accentOrange: {
+          DEFAULT: "hsl(var(--accent-orange))",
+          glow: "hsl(var(--accent-orange-glow))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        "dark-card":
+          "inset 0 1px 0 hsl(0 0% 100% / 0.03), inset 0 -1px 0 hsl(240 10% 2% / 0.35), 0 8px 28px hsl(240 40% 2% / 0.45)",
+        "dark-card-hover":
+          "inset 0 1px 0 hsl(0 0% 100% / 0.05), 0 10px 30px hsl(240 40% 2% / 0.52), 0 0 0 1px hsl(var(--accent-blue) / 0.14)",
+        "neon-blue": "0 0 0 1px hsl(var(--accent-blue) / 0.45), 0 0 28px hsl(var(--accent-blue-glow) / 0.35)",
+        "neon-green": "0 0 0 1px hsl(var(--accent-green) / 0.4), 0 0 24px hsl(var(--accent-green-glow) / 0.32)",
+        "neon-orange": "0 0 0 1px hsl(var(--accent-orange) / 0.42), 0 0 24px hsl(var(--accent-orange-glow) / 0.32)",
       },
       keyframes: {
         "accordion-down": {

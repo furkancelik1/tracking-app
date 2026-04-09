@@ -120,6 +120,14 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Relative URL ise direkt kullan
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Aynı origin ise kullan
+      if (new URL(url).origin === baseUrl) return url;
+      // Diğer durumlarda dashboard'a gönder
+      return `${baseUrl}/dashboard`;
+    },
   },
 
   secret: process.env.NEXTAUTH_SECRET,

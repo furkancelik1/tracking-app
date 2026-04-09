@@ -119,7 +119,20 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+
+    // FIX: Önceki versiyon TÜM redirect'leri /dashboard'a zorluyordu.
+    // Bu, NextAuth'un dahili OAuth callback redirect'lerini bozuyordu.
+    // Doğru yaklaşım: sadece harici URL'leri engelle, dahili URL'lere izin ver.
     async redirect({ url, baseUrl }) {
+      // Aynı origin'deki URL'lere izin ver (OAuth callback dahil)
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      // Göreceli yollara izin ver
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      // Harici URL'leri dashboard'a yönlendir
       return `${baseUrl}/dashboard`;
     },
   },
@@ -167,9 +180,6 @@ export async function requireAdmin() {
   if (!session?.user) {
     redirect("/login");
   }
-  // Şu an admin rolü DB'de tutulmuyor; ileride genişletilebilir.
-  // Geçici olarak sadece oturum kontrolü yapılıyor.
-  // Gerçek admin kontrolü için User modeline role alanı eklenebilir.
   const user = await prisma.user.findUnique({
     where: { id: (session.user as any).id },
     select: { email: true },

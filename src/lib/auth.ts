@@ -2,33 +2,47 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/lib/db"; // "@/lib/prisma" değil, dosyanın adı neyse o!
+import { prisma } from "@/lib/db"; // İŞTE KRİTİK NOKTA: db.ts'den gelmeli!
+
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  // Veritabanı bağlantısı burada kuruluyor
+  adapter: PrismaAdapter(prisma), 
+  
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
-  pages: { signIn: "/login" },
+  
+  // ÖNEMLİ: Callback hatasını engellemek için strateji seçimi
+  session: {
+    strategy: "jwt", // Veritabanı (database) yerine JWT kullanmak bazen bağlantı yükünü hafifletir
+  },
+
+  pages: {
+    signIn: "/login",
+    error: "/login", // Hata aldığında tekrar login'e atar
+  },
+
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.subscriptionTier = (user as any).subscriptionTier ?? "FREE";
-      }
-      return token;
-    },
     async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id as string;
-        (session.user as any).subscriptionTier =
-          (token.subscriptionTier as string) ?? "FREE";
+      if (token && session.user) {
+        // Kullanıcı ID'sini session'a ekleyelim ki Dashboard'da kullanabilesin
+        (session.user as any).id = token.sub;
       }
       return session;
     },
+    // Google'dan dönen veriyi kontrol edelim
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google") {
+        return true; // Girişe izin ver
+      }
+      return true;
+    },
   },
+  
+  // Debug modunu açarsan Vercel loglarında hatayı daha net görürüz
+  debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET,
 };

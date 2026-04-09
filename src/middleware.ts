@@ -2,19 +2,28 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  // Kimliği doğrulanmamış kullanıcılar giriş sayfasına yönlendirilir.
-  if (!token) {
+  // Korumalı rotalar — oturum yoksa login'e yönlendir
+  const protectedPaths = ["/dashboard", "/settings", "/admin"];
+  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
+
+  if (isProtected && !token) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Admin route guard — admin olmayanlar dashboard'a gönderilir.
-  if (pathname.startsWith("/admin")) {
+  // Giriş yapmış kullanıcı /login'e gelirse dashboard'a yönlendir
+  if (pathname === "/login" && token) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  // Admin guard
+  if (pathname.startsWith("/admin") && token) {
     const adminEmails = (process.env.ADMIN_EMAILS ?? "")
       .split(",")
       .map((e) => e.trim())
@@ -31,7 +40,6 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    // Auth ve framework içsellerini hariç tut.
-    "/((?!api|_next/static|_next/image|favicon.ico|login|register).*)",
+    "/((?!api|_next/static|_next/image|favicon\\.ico).*)",
   ],
 };

@@ -43,6 +43,11 @@ export const authOptions: NextAuthOptions = {
   },
   
   // Debug modunu açarsan Vercel loglarında hatayı daha net görürüz
-  debug: process.env.NODE_ENV === "development",
+  // src/lib/auth.ts
+
+// ... diğer kodlar aynı
+
+  // BUNU ŞÖYLE DEĞİŞTİR:
+  debug: true, 
   secret: process.env.NEXTAUTH_SECRET,
 };

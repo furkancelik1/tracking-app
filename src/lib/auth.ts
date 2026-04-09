@@ -94,7 +94,6 @@ function CustomPrismaAdapter(): Adapter {
 
 export const authOptions: NextAuthOptions = {
   adapter: CustomPrismaAdapter(),
-
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -121,11 +120,8 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Relative URL ise direkt kullan
       if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Aynı origin ise kullan
-      if (new URL(url).origin === baseUrl) return url;
-      // Diğer durumlarda dashboard'a gönder
+      if (url.includes("/dashboard")) return `${baseUrl}/dashboard`;
       return `${baseUrl}/dashboard`;
     },
   },

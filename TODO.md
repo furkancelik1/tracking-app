@@ -1,13 +1,31 @@
-# Deep Dark Mode Implementation TODO
+# Analytics Implementation TODO
 
-- [x] Update `src/app/globals.css` with premium deep dark tokens
-  - [x] Redefine `.dark` palette (background/card/popover/border/input/muted text)
-  - [x] Add neon accent tokens (blue/green/orange + glow variants)
-  - [x] Add reusable premium dark surface effect class (inner shadow + subtle glass)
-  - [x] Add hover polish class (border clarification + soft glow)
+- [ ] Add shared analytics service at `src/lib/analytics.ts`
+  - [ ] Build 30-day window helpers
+  - [ ] Compute daily completions from `RoutineLog` with optimized query strategy
+  - [ ] Compute category distribution from routine relations
+  - [ ] Compute summary metrics (`totalCompletions`, `longestStreak`)
+  - [ ] Export typed analytics response model
 
-- [x] Update `tailwind.config.ts` to map new tokens
-  - [x] Add `accentBlue`, `accentGreen`, `accentOrange` color groups
-  - [x] Add boxShadow presets for deep dark cards/glow
+- [ ] Add API endpoint `GET /api/v1/stats`
+  - [ ] Create `src/app/api/v1/stats/route.ts`
+  - [ ] Enforce authenticated user context
+  - [ ] Return analytics payload from shared service
 
-- [x] Validate token compatibility with shadcn variable-based color system
+- [ ] Add analytics UI components
+  - [ ] Create `src/components/dashboard/StatsCard.tsx`
+  - [ ] Create `src/components/dashboard/CategoryPieChart.tsx` (Recharts PieChart)
+
+- [ ] Update dashboard analytics layout
+  - [ ] Update `src/app/dashboard/page.tsx` to use shared analytics data
+  - [ ] Render summary stats cards
+  - [ ] Render weekly AreaChart in stats section
+  - [ ] Render category PieChart with dark mode friendly styles
+
+- [ ] Update chart compatibility
+  - [ ] Apply minimal updates to `src/components/dashboard/WeeklyStatsChart.tsx` if needed
+  - [ ] Keep PRO behavior compatible with new analytics section
+
+- [ ] Verification
+  - [ ] Run type-check/build and resolve errors
+  - [ ] Validate dark mode chart/card contrast

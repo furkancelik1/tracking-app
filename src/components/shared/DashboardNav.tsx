@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Route } from "next";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,6 +25,7 @@ const NAV_ITEMS: { href: Route; label: string }[] = [
 export function DashboardNav() {
   const pathname = usePathname();
   const auth = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
 
   if (auth.status !== "authenticated") return null;
 
@@ -78,6 +81,22 @@ export function DashboardNav() {
                 <p className="font-medium truncate">{auth.user.name}</p>
                 <p className="text-muted-foreground text-xs truncate">{auth.user.email}</p>
               </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              >
+                {resolvedTheme === "dark" ? (
+                  <>
+                    <Sun className="mr-2 h-4 w-4" />
+                    Açık Moda Geç
+                  </>
+                ) : (
+                  <>
+                    <Moon className="mr-2 h-4 w-4" />
+                    Karanlık Moda Geç
+                  </>
+                )}
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => void auth.signOut()}>
                 Çıkış Yap

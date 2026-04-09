@@ -3,10 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { DashboardNav } from "@/components/shared/DashboardNav";
 import { RoutineList } from "@/components/dashboard/RoutineList";
 import { WeeklyStatsChart } from "@/components/dashboard/WeeklyStatsChart";
+import { CategoryPieChart } from "@/components/dashboard/CategoryPieChart";
+import { StatsCard } from "@/components/dashboard/StatsCard";
 import { StreakAlert } from "@/components/dashboard/StreakAlert";
 import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
 import { TestEmailButton } from "@/components/dashboard/TestEmailButton";
 import { getSubscriptionTier } from "@/lib/stripe";
+import { getUserAnalytics } from "@/lib/analytics";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import type { DayStat } from "@/components/dashboard/WeeklyStatsChart";
 
@@ -34,7 +37,7 @@ export default async function DashboardPage() {
   sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 6);
 
   // Paralel sorgular
-  const [raw, recentLogs] = await Promise.all([
+  const [raw, recentLogs, analytics] = await Promise.all([
     // Aktif rutinler + son 30 günün logları
     prisma.routine.findMany({
       where: { userId, isActive: true },
@@ -55,6 +58,7 @@ export default async function DashboardPage() {
       where: { userId, completedAt: { gte: sevenDaysAgo } },
       select: { completedAt: true },
     }),
+    getUserAnalytics(userId, 30),
   ]);
 
   // Rutinleri JSON-serializable hale getir
@@ -101,7 +105,34 @@ export default async function DashboardPage() {
       <DashboardNav />
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
         <StreakAlert routines={routines} />
-        <WeeklyStatsChart data={weeklyStats} isPro={isPro} />
+
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <StatsCard
+            title="Toplam Tamamlama"
+            value={analytics.summary.totalCompletions}
+            description="Son 30 gün"
+          />
+          <StatsCard
+            title="En Uzun Seri"
+            value={analytics.summary.longestStreak}
+            description="Tüm aktif rutinler"
+          />
+          <StatsCard
+            title="Aktif Kategori"
+            value={analytics.categoryDistribution.length}
+            description="Veri üreten kategori sayısı"
+          />
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <WeeklyStatsChart data={weeklyStats} isPro={isPro} />
+          </div>
+          <div className="lg:col-span-1">
+            <CategoryPieChart data={analytics.categoryDistribution} />
+          </div>
+        </section>
+
         <PushNotificationButton />
         <TestEmailButton />
         <RoutineList initialRoutines={routines} />

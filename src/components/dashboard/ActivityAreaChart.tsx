@@ -71,7 +71,8 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
         </div>
       </CardHeader>
       <CardContent className="pb-6">
-        <ResponsiveContainer width="100%" height={240}>
+        <div className="h-[260px] min-h-0 w-full">
+        <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
             margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
@@ -145,6 +146,7 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
             />
           </AreaChart>
         </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

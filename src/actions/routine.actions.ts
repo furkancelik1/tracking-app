@@ -82,34 +82,39 @@ async function requireUser() {
 export async function completeRoutineAction(routineId: string, note?: string): Promise<void> {
   const userId = await requireUser();
 
-  const routine = await prisma.routine.findFirst({
-    where: { id: routineId, userId, isActive: true },
-    select: { id: true, frequency: true, currentStreak: true, longestStreak: true, lastCompletedAt: true },
-  });
-  if (!routine) throw new Error("Rutin bulunamadı.");
+  try {
+    const routine = await prisma.routine.findFirst({
+      where: { id: routineId, userId, isActive: true },
+      select: { id: true, frequency: true, currentStreak: true, longestStreak: true, lastCompletedAt: true },
+    });
+    if (!routine) throw new Error("Rutin bulunamadı.");
 
-  const periodStart = getPeriodStart(routine.frequency);
+    const periodStart = getPeriodStart(routine.frequency);
 
-  const alreadyLogged = await prisma.routineLog.findFirst({
-    where: { routineId, userId, completedAt: { gte: periodStart } },
-    select: { id: true },
-  });
-  if (alreadyLogged) throw new Error("Bu periyot için zaten tamamlandı.");
+    const alreadyLogged = await prisma.routineLog.findFirst({
+      where: { routineId, userId, completedAt: { gte: periodStart } },
+      select: { id: true },
+    });
+    if (alreadyLogged) throw new Error("Bu periyot için zaten tamamlandı.");
 
-  const newStreak = calcNewStreak(routine.frequency, routine.currentStreak, routine.lastCompletedAt);
-  const newLongest = Math.max(newStreak, routine.longestStreak);
+    const newStreak = calcNewStreak(routine.frequency, routine.currentStreak, routine.lastCompletedAt);
+    const newLongest = Math.max(newStreak, routine.longestStreak);
 
-  await prisma.$transaction([
-    prisma.routineLog.create({
-      data: { routineId, userId, completedAt: periodStart, note: note?.trim() || null },
-    }),
-    prisma.routine.update({
-      where: { id: routineId },
-      data: { currentStreak: newStreak, longestStreak: newLongest, lastCompletedAt: periodStart },
-    }),
-  ]);
+    await prisma.$transaction([
+      prisma.routineLog.create({
+        data: { routineId, userId, completedAt: periodStart, note: note?.trim() || null },
+      }),
+      prisma.routine.update({
+        where: { id: routineId },
+        data: { currentStreak: newStreak, longestStreak: newLongest, lastCompletedAt: periodStart },
+      }),
+    ]);
 
-  revalidatePath("/dashboard");
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("[completeRoutineAction] Hata:", error);
+    throw error;
+  }
 }
 
 /**
@@ -118,37 +123,42 @@ export async function completeRoutineAction(routineId: string, note?: string): P
 export async function undoRoutineAction(routineId: string): Promise<void> {
   const userId = await requireUser();
 
-  const routine = await prisma.routine.findFirst({
-    where: { id: routineId, userId },
-    select: { frequency: true, currentStreak: true },
-  });
-  if (!routine) throw new Error("Rutin bulunamadı.");
+  try {
+    const routine = await prisma.routine.findFirst({
+      where: { id: routineId, userId },
+      select: { frequency: true, currentStreak: true },
+    });
+    if (!routine) throw new Error("Rutin bulunamadı.");
 
-  const periodStart = getPeriodStart(routine.frequency);
-  const prevPeriodStart = getPrevPeriodStart(routine.frequency);
+    const periodStart = getPeriodStart(routine.frequency);
+    const prevPeriodStart = getPrevPeriodStart(routine.frequency);
 
-  const log = await prisma.routineLog.findFirst({
-    where: { routineId, userId, completedAt: { gte: periodStart } },
-    select: { id: true },
-  });
-  if (!log) throw new Error("Bu periyotta tamamlanma kaydı yok.");
+    const log = await prisma.routineLog.findFirst({
+      where: { routineId, userId, completedAt: { gte: periodStart } },
+      select: { id: true },
+    });
+    if (!log) throw new Error("Bu periyotta tamamlanma kaydı yok.");
 
-  const prevLog = await prisma.routineLog.findFirst({
-    where: { routineId, userId, completedAt: { gte: prevPeriodStart, lt: periodStart } },
-    select: { id: true },
-  });
+    const prevLog = await prisma.routineLog.findFirst({
+      where: { routineId, userId, completedAt: { gte: prevPeriodStart, lt: periodStart } },
+      select: { id: true },
+    });
 
-  const restoredStreak = prevLog ? Math.max(0, routine.currentStreak - 1) : 0;
+    const restoredStreak = prevLog ? Math.max(0, routine.currentStreak - 1) : 0;
 
-  await prisma.$transaction([
-    prisma.routineLog.delete({ where: { id: log.id } }),
-    prisma.routine.update({
-      where: { id: routineId },
-      data: { currentStreak: restoredStreak, lastCompletedAt: prevLog ? prevPeriodStart : null },
-    }),
-  ]);
+    await prisma.$transaction([
+      prisma.routineLog.delete({ where: { id: log.id } }),
+      prisma.routine.update({
+        where: { id: routineId },
+        data: { currentStreak: restoredStreak, lastCompletedAt: prevLog ? prevPeriodStart : null },
+      }),
+    ]);
 
-  revalidatePath("/dashboard");
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("[undoRoutineAction] Hata:", error);
+    throw error;
+  }
 }
 
 /**
@@ -157,16 +167,21 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
 export async function deleteRoutineAction(routineId: string): Promise<void> {
   const userId = await requireUser();
 
-  const routine = await prisma.routine.findFirst({
-    where: { id: routineId, userId, isActive: true },
-    select: { id: true },
-  });
-  if (!routine) throw new Error("Rutin bulunamadı.");
+  try {
+    const routine = await prisma.routine.findFirst({
+      where: { id: routineId, userId, isActive: true },
+      select: { id: true },
+    });
+    if (!routine) throw new Error("Rutin bulunamadı.");
 
-  await prisma.routine.update({
-    where: { id: routineId },
-    data: { isActive: false },
-  });
+    await prisma.routine.update({
+      where: { id: routineId },
+      data: { isActive: false },
+    });
 
-  revalidatePath("/dashboard");
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("[deleteRoutineAction] Hata:", error);
+    throw error;
+  }
 }

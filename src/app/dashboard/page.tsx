@@ -36,69 +36,80 @@ export default async function DashboardPage() {
   const sevenDaysAgo = new Date(todayStart);
   sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 6);
 
-  // Paralel sorgular
-  const [raw, recentLogs, analytics] = await Promise.all([
-    // Aktif rutinler + son 30 günün logları
-    prisma.routine.findMany({
-      where: { userId, isActive: true },
-      include: {
-        logs: {
-          where: { completedAt: { gte: thirtyDaysAgo } },
-          select: { id: true, completedAt: true, note: true },
-          orderBy: { completedAt: "desc" },
-          take: 30,
-        },
-        _count: { select: { logs: true } },
-      },
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    }),
-
-    // Son 7 günün tüm logları (haftalık grafik için)
-    prisma.routineLog.findMany({
-      where: { userId, completedAt: { gte: sevenDaysAgo } },
-      select: { completedAt: true },
-    }),
-    getUserAnalytics(userId, 30),
-  ]);
-
-  // Rutinleri JSON-serializable hale getir
-  const routines: RoutineWithMeta[] = raw.map((r) => ({
-    id: r.id,
-    title: r.title,
-    description: r.description,
-    frequency: r.frequency,
-    isActive: r.isActive,
-    sortOrder: r.sortOrder,
-    category: r.category,
-    color: r.color,
-    icon: r.icon,
-    currentStreak: r.currentStreak,
-    longestStreak: r.longestStreak,
-    lastCompletedAt: r.lastCompletedAt?.toISOString() ?? null,
-    createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt.toISOString(),
-    logs: r.logs.map((l) => ({
-      id: l.id,
-      completedAt: l.completedAt.toISOString(),
-      note: l.note,
-    })),
-    _count: r._count,
-  }));
-
-  // Haftalık istatistikleri gün gün hesapla
-  const weeklyStats: DayStat[] = Array.from({ length: 7 }, (_, i) => {
-    const dayStart = new Date(sevenDaysAgo);
-    dayStart.setUTCDate(sevenDaysAgo.getUTCDate() + i);
-
-    const dayEnd = new Date(dayStart);
-    dayEnd.setUTCDate(dayStart.getUTCDate() + 1);
-
-    const count = recentLogs.filter(
-      (l) => l.completedAt >= dayStart && l.completedAt < dayEnd
-    ).length;
-
-    return { name: TR_DAYS[dayStart.getUTCDay()] ?? "", count };
+  let routines: RoutineWithMeta[] = [];
+  let weeklyStats: DayStat[] = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(sevenDaysAgo);
+    d.setUTCDate(sevenDaysAgo.getUTCDate() + i);
+    return { name: TR_DAYS[d.getUTCDay()] ?? "", count: 0 };
   });
+  let analytics = await getUserAnalytics(userId, 30);
+
+  try {
+    // Paralel sorgular
+    const [raw, recentLogs] = await Promise.all([
+      // Aktif rutinler + son 30 günün logları
+      prisma.routine.findMany({
+        where: { userId, isActive: true },
+        include: {
+          logs: {
+            where: { completedAt: { gte: thirtyDaysAgo } },
+            select: { id: true, completedAt: true, note: true },
+            orderBy: { completedAt: "desc" },
+            take: 30,
+          },
+          _count: { select: { logs: true } },
+        },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      }),
+
+      // Son 7 günün tüm logları (haftalık grafik için)
+      prisma.routineLog.findMany({
+        where: { userId, completedAt: { gte: sevenDaysAgo } },
+        select: { completedAt: true },
+      }),
+    ]);
+
+    // Rutinleri JSON-serializable hale getir
+    routines = raw.map((r) => ({
+      id: r.id,
+      title: r.title,
+      description: r.description,
+      frequency: r.frequency,
+      isActive: r.isActive,
+      sortOrder: r.sortOrder,
+      category: r.category,
+      color: r.color ?? "#3b82f6",
+      icon: r.icon ?? "Check",
+      currentStreak: r.currentStreak,
+      longestStreak: r.longestStreak,
+      lastCompletedAt: r.lastCompletedAt?.toISOString() ?? null,
+      createdAt: r.createdAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString(),
+      logs: r.logs.map((l) => ({
+        id: l.id,
+        completedAt: l.completedAt.toISOString(),
+        note: l.note,
+      })),
+      _count: r._count,
+    }));
+
+    // Haftalık istatistikleri gün gün hesapla
+    weeklyStats = Array.from({ length: 7 }, (_, i) => {
+      const dayStart = new Date(sevenDaysAgo);
+      dayStart.setUTCDate(sevenDaysAgo.getUTCDate() + i);
+
+      const dayEnd = new Date(dayStart);
+      dayEnd.setUTCDate(dayStart.getUTCDate() + 1);
+
+      const count = recentLogs.filter(
+        (l) => l.completedAt >= dayStart && l.completedAt < dayEnd
+      ).length;
+
+      return { name: TR_DAYS[dayStart.getUTCDay()] ?? "", count };
+    });
+  } catch (error) {
+    console.error("[DashboardPage] Veri çekme hatası:", error);
+  }
 
   return (
     <>

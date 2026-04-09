@@ -59,12 +59,13 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
           )}
         </div>
       </CardHeader>
-      <CardContent className="h-[260px]">
+      <CardContent>
         {!hasData ? (
-          <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+          <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
             Henüz kategori verisi yok
           </div>
         ) : (
+          <div className="h-[260px] min-h-0 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -110,6 +111,7 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
               />
             </PieChart>
           </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>

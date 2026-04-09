@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -104,6 +105,9 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
             </span>
             Yeni Rutin
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Yeni bir rutin oluşturmak için formu doldurun.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 py-1">

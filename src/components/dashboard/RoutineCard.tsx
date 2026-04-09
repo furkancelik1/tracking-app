@@ -14,6 +14,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -192,6 +193,9 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
               </span>
               {routine.title}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Bu rutini tamamlamak için not ekleyebilirsiniz.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2">

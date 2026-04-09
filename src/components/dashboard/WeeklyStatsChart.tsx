@@ -68,7 +68,8 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
             !isPro && "blur-sm select-none pointer-events-none"
           )}
         >
-          <ResponsiveContainer width="100%" height={180}>
+          <div className="h-[200px] min-h-0 w-full">
+          <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
               margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
@@ -140,6 +141,7 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
               />
             </AreaChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         {/* FREE paywall overlay */}

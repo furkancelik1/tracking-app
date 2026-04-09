@@ -104,7 +104,7 @@ function buildGrid(data: HeatPoint[]): {
   for (const cell of cells) {
     if (cell.dayOfWeek === 0 && cell.month !== prevMonth) {
       monthLabels.push({
-        label: TR_MONTHS[cell.month],
+        label: TR_MONTHS[cell.month] ?? "",
         weekIndex: cell.weekIndex,
       });
       prevMonth = cell.month;
@@ -169,9 +169,10 @@ export function YearlyActivityHeatmap({
           {/* Ay etiketleri */}
           <div className="flex pl-[28px]" style={{ gap: 0 }}>
             {monthLabels.map((m, i) => {
+              const next = monthLabels[i + 1];
               const nextStart =
-                i + 1 < monthLabels.length
-                  ? monthLabels[i + 1].weekIndex
+                next !== undefined
+                  ? next.weekIndex
                   : weeks;
               const span = nextStart - m.weekIndex;
               return (

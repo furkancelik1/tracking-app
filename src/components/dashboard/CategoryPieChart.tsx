@@ -23,6 +23,7 @@ export type CategorySlice = {
 
 type Props = {
   data: CategorySlice[];
+  rangeDays?: number;
 };
 
 const COLORS = [
@@ -36,14 +37,27 @@ const COLORS = [
   "#f97316",
 ];
 
-export function CategoryPieChart({ data }: Props) {
+export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
   const hasData = data.length > 0;
+  const total = data.reduce((s, d) => s + d.count, 0);
 
   return (
-    <Card className="h-full">
+    <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm h-full">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Kategori Dağılımı</CardTitle>
-        <CardDescription>Son 30 gündeki tamamlamalar</CardDescription>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <CardTitle className="text-base">Kategori Dağılımı</CardTitle>
+            <CardDescription className="mt-0.5">
+              Son {rangeDays} günde tamamlamalar
+            </CardDescription>
+          </div>
+          {hasData && (
+            <div className="text-right shrink-0">
+              <p className="text-lg font-semibold tabular-nums">{data.length}</p>
+              <p className="text-[11px] text-muted-foreground">Kategori</p>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="h-[260px]">
         {!hasData ? (
@@ -62,13 +76,17 @@ export function CategoryPieChart({ data }: Props) {
                 outerRadius={82}
                 innerRadius={48}
                 paddingAngle={3}
+                label={({ name, value }: { name?: string; value?: number }) =>
+                  `${name ?? ""} (${Math.round(((value ?? 0) / total) * 100)}%)`
+                }
+                labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
               >
                 {data.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}
                     stroke="hsl(var(--background))"
-                    strokeWidth={1}
+                    strokeWidth={2}
                   />
                 ))}
               </Pie>
@@ -78,10 +96,18 @@ export function CategoryPieChart({ data }: Props) {
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
                   fontSize: "13px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,.15)",
                 }}
-                formatter={(value) => [value ?? 0, "Tamamlama"]}
+                formatter={(value, name) => [
+                  `${value} (${Math.round((Number(value ?? 0) / total) * 100)}%)`,
+                  String(name),
+                ]}
               />
-              <Legend />
+              <Legend
+                wrapperStyle={{ fontSize: "12px" }}
+                iconType="circle"
+                iconSize={8}
+              />
             </PieChart>
           </ResponsiveContainer>
         )}

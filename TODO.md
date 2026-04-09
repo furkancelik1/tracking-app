@@ -1,31 +1,32 @@
-# Analytics Implementation TODO
+# Dashboard Stats Page TODO
 
-- [ ] Add shared analytics service at `src/lib/analytics.ts`
-  - [ ] Build 30-day window helpers
-  - [ ] Compute daily completions from `RoutineLog` with optimized query strategy
-  - [ ] Compute category distribution from routine relations
-  - [ ] Compute summary metrics (`totalCompletions`, `longestStreak`)
-  - [ ] Export typed analytics response model
+- [x] Align Prisma schema with current app/runtime fields
+  - [x] Sync Routine model fields (`sortOrder`, `category`, `currentStreak`, `longestStreak`, `lastCompletedAt`)
+  - [x] Add missing auth compatibility models/fields used in production
+  - [x] Regenerate Prisma client successfully
 
-- [ ] Add API endpoint `GET /api/v1/stats`
-  - [ ] Create `src/app/api/v1/stats/route.ts`
-  - [ ] Enforce authenticated user context
-  - [ ] Return analytics payload from shared service
+- [x] Stabilize existing analytics foundation
+  - [x] Add shared analytics service (`src/lib/analytics.ts`)
+  - [x] Add `GET /api/v1/stats` endpoint
+  - [x] Add reusable `StatsCard` and `CategoryPieChart`
+  - [x] Integrate analytics blocks into `/dashboard`
 
-- [ ] Add analytics UI components
-  - [ ] Create `src/components/dashboard/StatsCard.tsx`
-  - [ ] Create `src/components/dashboard/CategoryPieChart.tsx` (Recharts PieChart)
+- [ ] Implement dedicated stats route `/dashboard/stats`
+  - [ ] Create `src/app/(dashboard)/stats/page.tsx` as server component
+  - [ ] Add server-side metrics (all-time + selected range)
+  - [ ] Add quick stat cards and premium layout structure
 
-- [ ] Update dashboard analytics layout
-  - [ ] Update `src/app/dashboard/page.tsx` to use shared analytics data
-  - [ ] Render summary stats cards
-  - [ ] Render weekly AreaChart in stats section
-  - [ ] Render category PieChart with dark mode friendly styles
+- [ ] Add range filtering UX
+  - [ ] Create `src/components/dashboard/StatsRangeTabs.tsx`
+  - [ ] Support `7d`, `30d`, `all` via URL query params
 
-- [ ] Update chart compatibility
-  - [ ] Apply minimal updates to `src/components/dashboard/WeeklyStatsChart.tsx` if needed
-  - [ ] Keep PRO behavior compatible with new analytics section
+- [ ] Add advanced visualizations
+  - [ ] Reuse/add trend line chart block (smooth 30-day trend)
+  - [ ] Reuse/add category pie chart block
+  - [ ] Create `src/components/dashboard/YearlyActivityHeatmap.tsx` (GitHub-style yearly heatmap)
 
-- [ ] Verification
-  - [ ] Run type-check/build and resolve errors
-  - [ ] Validate dark mode chart/card contrast
+- [ ] Verification (thorough)
+  - [ ] Test `/dashboard/stats` render in light/dark mode
+  - [ ] Test range switching behavior and URL state
+  - [ ] Test auth gate + session handling for stats page
+  - [ ] Run API checks for `/api/v1/stats` (error + happy path where possible)

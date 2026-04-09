@@ -2,6 +2,23 @@ import { stripe, STRIPE_PLANS } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import type Stripe from "stripe";
 
+async function resolveUserIdFromSubscription(sub: Stripe.Subscription): Promise<string | null> {
+  const fromMetadata = sub.metadata?.userId;
+  if (fromMetadata) return fromMetadata;
+
+  const customerId =
+    typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+
+  if (!customerId) return null;
+
+  const user = await prisma.user.findFirst({
+    where: { stripeCustomerId: customerId },
+    select: { id: true },
+  });
+
+  return user?.id ?? null;
+}
+
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 // ─── Checkout ─────────────────────────────────────────────────────────────────
@@ -96,19 +113,49 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
       break;
     }
 
-    case "customer.subscription.updated": {
-      const sub = event.data.object as Stripe.Subscription;
-      const userId = sub.metadata?.userId;
+    case "invoice.payment_succeeded": {
+      const invoice = event.data.object as Stripe.Invoice;
+      const invoiceWithSubscription = invoice as Stripe.Invoice & {
+        subscription?: string | Stripe.Subscription | null;
+      };
+
+      const subId =
+        typeof invoiceWithSubscription.subscription === "string"
+          ? invoiceWithSubscription.subscription
+          : invoiceWithSubscription.subscription?.id;
+
+      if (!subId) break;
+
+      const sub = await stripe.subscriptions.retrieve(subId);
+      const userId = await resolveUserIdFromSubscription(sub);
       if (!userId) break;
 
-      const isActive =
-        sub.status === "active" || sub.status === "trialing";
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          subscriptionTier: "PRO",
+          stripeSubscriptionId: sub.id,
+          stripeCustomerId:
+            typeof sub.customer === "string" ? sub.customer : sub.customer?.id ?? null,
+        },
+      });
+      break;
+    }
+
+    case "customer.subscription.updated": {
+      const sub = event.data.object as Stripe.Subscription;
+      const userId = await resolveUserIdFromSubscription(sub);
+      if (!userId) break;
+
+      const isActive = sub.status === "active" || sub.status === "trialing";
 
       await prisma.user.update({
         where: { id: userId },
         data: {
           subscriptionTier: isActive ? "PRO" : "FREE",
           stripeSubscriptionId: isActive ? sub.id : null,
+          stripeCustomerId:
+            typeof sub.customer === "string" ? sub.customer : sub.customer?.id ?? null,
         },
       });
       break;
@@ -116,12 +163,17 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
 
     case "customer.subscription.deleted": {
       const sub = event.data.object as Stripe.Subscription;
-      const userId = sub.metadata?.userId;
+      const userId = await resolveUserIdFromSubscription(sub);
       if (!userId) break;
 
       await prisma.user.update({
         where: { id: userId },
-        data: { subscriptionTier: "FREE", stripeSubscriptionId: null },
+        data: {
+          subscriptionTier: "FREE",
+          stripeSubscriptionId: null,
+          stripeCustomerId:
+            typeof sub.customer === "string" ? sub.customer : sub.customer?.id ?? null,
+        },
       });
       break;
     }

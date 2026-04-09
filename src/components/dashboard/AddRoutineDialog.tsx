@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,9 +34,10 @@ const FREQUENCY_OPTIONS: { value: Frequency; label: string }[] = [
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  atLimit?: boolean;
 };
 
-export function AddRoutineDialog({ open, onOpenChange }: Props) {
+export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [frequency, setFrequency] = useState<Frequency>("DAILY");
@@ -45,9 +47,23 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
 
   const { mutate: createRoutine, isPending } = useCreateRoutine();
 
+  async function handleUpgrade() {
+    try {
+      const res = await fetch("/api/v1/stripe/checkout", { method: "POST" });
+      const json = await res.json();
+      if (!json.success) {
+        toast.error(json.error ?? "Checkout başlatılamadı.");
+        return;
+      }
+      window.location.href = json.data.url;
+    } catch {
+      toast.error("Checkout başlatılırken bir hata oluştu.");
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (atLimit || !title.trim()) return;
     createRoutine(
       {
         title: title.trim(),
@@ -91,6 +107,12 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 py-1">
+          {atLimit && (
+            <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              Ücretsiz planda maksimum <span className="font-semibold">3 rutin</span> oluşturabilirsin.
+              Sınırsız rutin için PRO&apos;ya geç.
+            </div>
+          )}
           {/* Başlık */}
           <div className="space-y-1.5">
             <Label htmlFor="routine-title">Başlık</Label>
@@ -102,6 +124,7 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
               maxLength={100}
               required
               autoFocus
+              disabled={atLimit}
             />
           </div>
 
@@ -114,6 +137,7 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={500}
+              disabled={atLimit}
             />
           </div>
 
@@ -126,6 +150,7 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               maxLength={50}
+              disabled={atLimit}
             />
           </div>
 
@@ -138,6 +163,7 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
                   key={opt.value}
                   type="button"
                   onClick={() => setFrequency(opt.value)}
+                  disabled={atLimit}
                   className={cn(
                     "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
                     frequency === opt.value
@@ -160,6 +186,7 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
                   key={c.value}
                   type="button"
                   onClick={() => setColor(c.value)}
+                  disabled={atLimit}
                   title={c.label}
                   className={cn(
                     "size-7 rounded-full border-2 transition-transform hover:scale-110",
@@ -182,6 +209,7 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
                     key={name}
                     type="button"
                     onClick={() => setIcon(name)}
+                    disabled={atLimit}
                     title={name}
                     className={cn(
                       "size-9 rounded-lg flex items-center justify-center border transition-all hover:scale-105",
@@ -211,9 +239,15 @@ export function AddRoutineDialog({ open, onOpenChange }: Props) {
             >
               İptal
             </Button>
-            <Button type="submit" disabled={isPending || !title.trim()}>
-              {isPending ? "Oluşturuluyor…" : "Oluştur"}
-            </Button>
+            {atLimit ? (
+              <Button type="button" onClick={handleUpgrade}>
+                PRO&apos;ya Geç
+              </Button>
+            ) : (
+              <Button type="submit" disabled={isPending || !title.trim()}>
+                {isPending ? "Oluşturuluyor…" : "Oluştur"}
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

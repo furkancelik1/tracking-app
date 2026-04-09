@@ -87,7 +87,7 @@ export function RoutineList({ initialRoutines }: Props) {
 
   const auth = useAuth();
   const isPro = auth.status === "authenticated" && auth.isPro;
-  const atLimit = !isPro && serverRoutines.length >= 5;
+  const atLimit = !isPro && serverRoutines.length >= 3;
 
   // ── Handler'lar ────────────────────────────────────────────────────────────
 
@@ -163,7 +163,7 @@ export function RoutineList({ initialRoutines }: Props) {
         <Button
           onClick={() => setDialogOpen(true)}
           disabled={atLimit}
-          title={atLimit ? "FREE planda maksimum 5 rutin oluşturabilirsin" : undefined}
+          title={atLimit ? "FREE planda maksimum 3 rutin oluşturabilirsin" : undefined}
         >
           + Rutin Ekle
         </Button>
@@ -173,7 +173,7 @@ export function RoutineList({ initialRoutines }: Props) {
       {atLimit && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 px-4 py-3 flex items-center justify-between gap-4 text-sm">
           <p className="text-amber-800 dark:text-amber-200">
-            <span className="font-semibold">5/5 rutin</span> — Ücretsiz plan
+            <span className="font-semibold">3/3 rutin</span> — Ücretsiz plan
             limitine ulaştın. Sınırsız rutin için PRO&apos;ya geç.
           </p>
           <Button size="sm" asChild>
@@ -258,7 +258,7 @@ export function RoutineList({ initialRoutines }: Props) {
         </div>
       )}
 
-      <AddRoutineDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <AddRoutineDialog open={dialogOpen} onOpenChange={setDialogOpen} atLimit={atLimit} />
     </div>
   );
 }

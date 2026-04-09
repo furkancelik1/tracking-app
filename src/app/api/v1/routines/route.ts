@@ -6,7 +6,7 @@ import { z } from "zod";
 import type { ApiResponse } from "@/types";
 import type { Routine, RoutineFrequency } from "@prisma/client";
 
-const FREE_ROUTINE_LIMIT = 5;
+const FREE_ROUTINE_LIMIT = 3;
 
 const createRoutineSchema = z.object({
   title: z.string().min(1, "Başlık zorunludur").max(100),

@@ -120,8 +120,6 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      if (url.includes("/dashboard")) return `${baseUrl}/dashboard`;
       return `${baseUrl}/dashboard`;
     },
   },

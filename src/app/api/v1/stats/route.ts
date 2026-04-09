@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const session = await getSession();
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json<ApiResponse<never>>(
         { success: false, error: "Unauthorized", code: "UNAUTHORIZED" },
         { status: 401 }
@@ -16,6 +16,13 @@ export async function GET() {
     }
 
     const userId = session.user.id;
+    if (typeof userId !== "string" || userId.length === 0) {
+      return NextResponse.json<ApiResponse<never>>(
+        { success: false, error: "Geçersiz kullanıcı kimliği", code: "BAD_REQUEST" },
+        { status: 400 }
+      );
+    }
+
     const analytics = await getUserAnalytics(userId, 30);
 
     return NextResponse.json<ApiResponse<typeof analytics>>({

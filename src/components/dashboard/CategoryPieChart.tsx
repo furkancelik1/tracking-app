@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   PieChart,
   Pie,
@@ -15,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export type CategorySlice = {
   category: string;
@@ -38,8 +40,12 @@ const COLORS = [
 ];
 
 export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
-  const hasData = data.length > 0;
-  const total = data.reduce((s, d) => s + d.count, 0);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const safeData = data ?? [];
+  const hasData = safeData.length > 0;
+  const total = safeData.reduce((s, d) => s + (d.count ?? 0), 0);
 
   return (
     <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm h-full">
@@ -53,7 +59,7 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
           </div>
           {hasData && (
             <div className="text-right shrink-0">
-              <p className="text-lg font-semibold tabular-nums">{data.length}</p>
+              <p className="text-lg font-semibold tabular-nums">{safeData.length}</p>
               <p className="text-[11px] text-muted-foreground">Kategori</p>
             </div>
           )}
@@ -64,12 +70,16 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
           <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
             Henüz kategori verisi yok
           </div>
+        ) : !mounted ? (
+          <div className="h-[260px] min-h-0 w-full">
+            <Skeleton className="h-full w-full rounded-md" />
+          </div>
         ) : (
           <div className="h-[260px] min-h-0 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={data}
+                data={safeData}
                 dataKey="count"
                 nameKey="category"
                 cx="50%"
@@ -82,7 +92,7 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
                 }
                 labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
               >
-                {data.map((_, index) => (
+                {safeData.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}

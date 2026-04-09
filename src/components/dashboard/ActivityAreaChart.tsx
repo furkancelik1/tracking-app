@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -16,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export type DailyPoint = {
   date: string;
@@ -29,11 +31,15 @@ type Props = {
 };
 
 export function ActivityAreaChart({ data, rangeDays }: Props) {
-  const total = data.reduce((s, d) => s + d.count, 0);
-  const avg = data.length > 0 ? (total / data.length).toFixed(1) : "0";
-  const best = data.reduce(
-    (b, d) => (d.count > b.count ? d : b),
-    data[0] ?? { label: "-", count: 0 }
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const safeData = data ?? [];
+  const total = safeData.reduce((s, d) => s + (d.count ?? 0), 0);
+  const avg = safeData.length > 0 ? (total / safeData.length).toFixed(1) : "0";
+  const best = safeData.reduce(
+    (b, d) => ((d.count ?? 0) > b.count ? d : b),
+    safeData[0] ?? { label: "-", count: 0 }
   );
 
   // Aralık büyükse her N noktada bir etiket göster
@@ -72,11 +78,14 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
       </CardHeader>
       <CardContent className="pb-6">
         <div className="h-[260px] min-h-0 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-            margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
-          >
+          {!mounted ? (
+            <Skeleton className="h-full w-full rounded-md" />
+          ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={safeData}
+              margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
+            >
             <defs>
               <linearGradient id="actGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop
@@ -146,6 +155,7 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
             />
           </AreaChart>
         </ResponsiveContainer>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -17,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export type DayStat = { name: string; count: number };
@@ -27,10 +29,14 @@ type Props = {
 };
 
 export function WeeklyStatsChart({ data, isPro }: Props) {
-  const totalThisWeek = data.reduce((sum, d) => sum + d.count, 0);
-  const bestDay = data.reduce(
-    (best, d) => (d.count > best.count ? d : best),
-    data[0] ?? { name: "", count: 0 }
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const safeData = data ?? [];
+  const totalThisWeek = safeData.reduce((sum, d) => sum + (d.count ?? 0), 0);
+  const bestDay = safeData.reduce(
+    (best, d) => ((d.count ?? 0) > best.count ? d : best),
+    safeData[0] ?? { name: "", count: 0 }
   );
 
   return (
@@ -69,9 +75,12 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
           )}
         >
           <div className="h-[200px] min-h-0 w-full">
+          {!mounted ? (
+            <Skeleton className="h-full w-full rounded-md" />
+          ) : (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={data}
+              data={safeData}
               margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
             >
               <defs>
@@ -141,6 +150,7 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
               />
             </AreaChart>
           </ResponsiveContainer>
+          )}
           </div>
         </div>
 

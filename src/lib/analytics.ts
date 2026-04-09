@@ -66,7 +66,9 @@ function toIsoDate(date: Date) {
 }
 
 function toShortLabel(date: Date) {
-  return `${String(date.getUTCDate()).padStart(2, "0")} ${TR_MONTHS_SHORT[date.getUTCMonth()]}`;
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const month = TR_MONTHS_SHORT[date.getUTCMonth()] ?? "";
+  return `${day} ${month}`;
 }
 
 function getLastNDaysWindow(days: number) {
@@ -98,18 +100,22 @@ function calculateCurrentStreak(dayMap: Map<string, number>): number {
 // ─── Peak day hesaplama ──────────────────────────────────────────────────────
 
 function calculatePeakDay(logs: { completedAt: Date }[]): PeakDay {
-  const dayCounts = new Array(7).fill(0);
+  if (logs.length === 0) {
+    return { day: "Pazartesi", dayIndex: 1, count: 0 };
+  }
+  const dayCounts = new Array(7).fill(0) as number[];
   for (const log of logs) {
-    dayCounts[log.completedAt.getUTCDay()]++;
+    const idx = log.completedAt.getUTCDay();
+    dayCounts[idx] = (dayCounts[idx] ?? 0) + 1;
   }
   let maxIdx = 0;
   for (let i = 1; i < 7; i++) {
-    if (dayCounts[i] > dayCounts[maxIdx]) maxIdx = i;
+    if ((dayCounts[i] ?? 0) > (dayCounts[maxIdx] ?? 0)) maxIdx = i;
   }
   return {
     day: TR_DAYS[maxIdx] ?? "Pazartesi",
     dayIndex: maxIdx,
-    count: dayCounts[maxIdx],
+    count: dayCounts[maxIdx] ?? 0,
   };
 }
 

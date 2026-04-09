@@ -5,9 +5,12 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === "production",
+  });
 
-  // Korumalı rotalar — oturum yoksa login'e yönlendir
   const protectedPaths = ["/dashboard", "/settings", "/admin"];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
@@ -17,7 +20,6 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Admin guard
   if (pathname.startsWith("/admin") && token) {
     const adminEmails = (process.env.ADMIN_EMAILS ?? "")
       .split(",")

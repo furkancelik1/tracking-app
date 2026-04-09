@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { ICON_MAP } from "@/lib/routine-icons";
@@ -24,18 +33,36 @@ const FREQUENCY_LABELS: Record<RoutineWithMeta["frequency"], string> = {
 type Props = {
   routine: RoutineWithMeta;
   /** RoutineList'ten gelen optimistic-aware callback'ler */
-  onToggle: (id: string, completed: boolean) => void;
+  onToggle: (id: string, completed: boolean, note?: string) => void;
   onDelete: (id: string) => void;
   /** useTransition isPending — tüm kartlar için geçerli değil, sadece bu kart */
   isPending: boolean;
 };
 
 export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+  const [noteText, setNoteText] = useState("");
+
   const todayUTC = new Date();
   todayUTC.setUTCHours(0, 0, 0, 0);
   const isCompleted = routine.logs.some(
     (l) => new Date(l.completedAt) >= todayUTC
   );
+
+  function handleCompleteClick() {
+    if (isCompleted) {
+      // Geri al — direkt çağır, dialog yok
+      onToggle(routine.id, true);
+    } else {
+      setNoteText("");
+      setNoteDialogOpen(true);
+    }
+  }
+
+  function handleConfirm() {
+    setNoteDialogOpen(false);
+    onToggle(routine.id, false, noteText.trim() || undefined);
+  }
 
   const Icon = (ICON_MAP[routine.icon] ?? ICON_MAP["CheckCircle"]) as LucideIcon;
 
@@ -136,7 +163,7 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
               : undefined
           }
           disabled={isPending}
-          onClick={() => onToggle(routine.id, isCompleted)}
+          onClick={handleCompleteClick}
         >
           {isCompleted ? "Geri Al" : "Tamamla"}
         </Button>
@@ -152,6 +179,59 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
           ✕
         </Button>
       </CardFooter>
+
+      <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span
+                className="size-6 rounded flex items-center justify-center text-white text-xs"
+                style={{ backgroundColor: routine.color }}
+              >
+                ✓
+              </span>
+              {routine.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Not ekle{" "}
+              <span className="text-muted-foreground font-normal">(isteğe bağlı)</span>
+            </label>
+            <textarea
+              autoFocus
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleConfirm();
+              }}
+              placeholder="Bugün nasıl hissettirdi? Ne fark ettiniz?"
+              rows={3}
+              maxLength={500}
+              className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            {noteText.length > 0 && (
+              <p className="text-[11px] text-muted-foreground text-right tabular-nums">
+                {noteText.length}/500
+              </p>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <DialogClose asChild>
+              <Button variant="ghost" size="sm">İptal</Button>
+            </DialogClose>
+            <Button
+              size="sm"
+              style={{ backgroundColor: routine.color, color: "#fff" }}
+              onClick={handleConfirm}
+            >
+              Tamamla
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

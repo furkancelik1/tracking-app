@@ -79,7 +79,7 @@ async function requireUser() {
 /**
  * Rutini tamamla: RoutineLog oluştur + streak güncelle (atomik).
  */
-export async function completeRoutineAction(routineId: string): Promise<void> {
+export async function completeRoutineAction(routineId: string, note?: string): Promise<void> {
   const userId = await requireUser();
 
   const routine = await prisma.routine.findFirst({
@@ -101,7 +101,7 @@ export async function completeRoutineAction(routineId: string): Promise<void> {
 
   await prisma.$transaction([
     prisma.routineLog.create({
-      data: { routineId, userId, completedAt: periodStart },
+      data: { routineId, userId, completedAt: periodStart, note: note?.trim() || null },
     }),
     prisma.routine.update({
       where: { id: routineId },

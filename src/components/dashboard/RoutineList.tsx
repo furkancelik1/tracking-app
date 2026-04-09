@@ -20,7 +20,7 @@ import {
 // ─── Optimistic reducer ───────────────────────────────────────────────────────
 
 type OptimisticAction =
-  | { type: "toggle"; id: string; completed: boolean }
+  | { type: "toggle"; id: string; completed: boolean; note?: string }
   | { type: "delete"; id: string };
 
 function optimisticReducer(
@@ -46,7 +46,7 @@ function optimisticReducer(
         // Tamamla: log ekle, streak artır
         return {
           ...r,
-          logs: [{ id: "_opt", completedAt: todayISO, note: null }, ...r.logs],
+          logs: [{ id: "_opt", completedAt: todayISO, note: action.note ?? null }, ...r.logs],
           currentStreak: r.currentStreak + 1,
           _count: { logs: r._count.logs + 1 },
         };
@@ -100,12 +100,12 @@ export function RoutineList({ initialRoutines }: Props) {
    *  3. invalidate → TQ cache temizlenir → refetch başlar
    *  4. Hata → useOptimistic otomatik eski state'e döner + toast
    */
-  function handleToggle(id: string, completed: boolean) {
+  function handleToggle(id: string, completed: boolean, note?: string) {
     setPendingId(id);
     startToggle(async () => {
-      dispatch({ type: "toggle", id, completed });
+      dispatch({ type: "toggle", id, completed, note });
       try {
-        await (completed ? undoRoutineAction(id) : completeRoutineAction(id));
+        await (completed ? undoRoutineAction(id) : completeRoutineAction(id, note));
         toast.success(completed ? "Tamamlama geri alındı." : "Rutin tamamlandı! 🔥");
       } catch (err) {
         // useOptimistic transition bittiğinde otomatik geri alır

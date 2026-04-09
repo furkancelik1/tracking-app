@@ -23,7 +23,10 @@
       "Bash(taskkill:*)",
       "Bash(curl:*)",
       "Bash(ls C:\\\\Users\\\\FURKAN\\\\Desktop\\\\tracking-app\\\\.env*)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

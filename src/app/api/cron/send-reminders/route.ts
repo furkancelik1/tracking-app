@@ -107,25 +107,34 @@ export async function GET(req: NextRequest) {
         )
       );
 
-      for (let j = 0; j < results.length; j++) {
-        const result = results[j];
-        const user = batch[j];
-        if (result.status === "fulfilled") {
-          sent++;
-        } else {
-          failed++;
-          errors.push({
-            userId: user.id,
-            error:
-              result.reason instanceof Error
-                ? result.reason.message
-                : String(result.reason),
-          });
-          console.error(
-            `[cron/reminders] ❌ ${user.email}: ${result.reason}`
-          );
-        }
-      }
+      // ── Batch içindeki sonuçları işleme ───────────────────────────────────────
+for (let j = 0; j < results.length; j++) {
+  const result = results[j];
+  const user = batch[j];
+
+  // 1) "Undefined" kontrolü: TypeScript'e bu değişkenlerin var olduğunu garanti et
+  if (!result || !user) continue;
+
+  if (result.status === "fulfilled") {
+    sent++;
+  } else {
+    // 2) Tip Daraltma (Type Narrowing): 
+    // TypeScript'e bu 'result'ın kesinlikle 'rejected' olduğunu söyle
+    const rejectedResult = result as PromiseRejectedResult;
+    
+    failed++;
+    errors.push({
+      userId: user.id,
+      error:
+        rejectedResult.reason instanceof Error
+          ? rejectedResult.reason.message
+          : String(rejectedResult.reason),
+    });
+    console.error(
+      `[cron/reminders] ❌ ${user.email}: ${rejectedResult.reason}`
+    );
+  }
+}
 
       // Son batch değilse rate limit için kısa bekleme
       if (i + BATCH_SIZE < usersWithPending.length) {

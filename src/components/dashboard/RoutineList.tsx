@@ -1,6 +1,6 @@
 "use client";
 
-import { useOptimistic, useTransition, useMemo, useState } from "react";
+import { useOptimistic, useTransition, useMemo, useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,6 +16,7 @@ import {
   undoRoutineAction,
   deleteRoutineAction,
 } from "@/actions/routine.actions";
+import { fireAllDoneConfetti, hapticSuccess } from "@/lib/celebrations";
 
 // ─── Optimistic reducer ───────────────────────────────────────────────────────
 
@@ -70,6 +71,7 @@ export function RoutineList({ initialRoutines }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(ALL);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const allDoneFiredRef = useRef(false);
 
   // Sunucu verisi (TanStack Query — polling + refetch)
   const { data: serverRoutines = [], isLoading } = useRoutines(initialRoutines);
@@ -79,6 +81,17 @@ export function RoutineList({ initialRoutines }: Props) {
   // ── useOptimistic: serverRoutines baz alınır, dispatch ile anında güncellenir.
   //    Transition bitince serverRoutines'e (sunucu doğrusu) döner.
   const [optimisticRoutines, dispatch] = useOptimistic(serverRoutines, optimisticReducer);
+
+  // Reset allDone flag when server data refreshes (new day / undo)
+  useEffect(() => {
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
+    const todayISO = todayUTC.toISOString();
+    const allDone = serverRoutines.length > 0 && serverRoutines.every((r) =>
+      r.logs.some((l) => l.completedAt >= todayISO)
+    );
+    if (!allDone) allDoneFiredRef.current = false;
+  }, [serverRoutines]);
 
   // ── useTransition: async Server Action'ı sarar (isPending kullanılmıyor —
   //    görsel durum pendingId üzerinden yönetilir)
@@ -104,12 +117,39 @@ export function RoutineList({ initialRoutines }: Props) {
     setPendingId(id);
     startToggle(async () => {
       dispatch({ type: "toggle", id, completed, note });
+
+      // ── All Done detection (optimistic) ────────────────────────────
+      if (!completed) {
+        const todayUTC = new Date();
+        todayUTC.setUTCHours(0, 0, 0, 0);
+        const todayISO = todayUTC.toISOString();
+        const afterToggle = serverRoutines.map((r) => {
+          if (r.id !== id) return r;
+          return { ...r, logs: [{ id: "_opt", completedAt: todayISO, note: null }, ...r.logs] };
+        });
+        const allDone = afterToggle.length > 0 && afterToggle.every((r) =>
+          r.logs.some((l) => l.completedAt >= todayISO)
+        );
+        if (allDone && !allDoneFiredRef.current) {
+          allDoneFiredRef.current = true;
+          hapticSuccess();
+          // Küçük gecikme — tek rutin konfetisi bittikten sonra büyük kutlama
+          setTimeout(() => {
+            fireAllDoneConfetti();
+            toast.success("Harika! Bugünkü tüm rutinlerini tamamladın! 🎉", { duration: 4000 });
+          }, 400);
+        }
+      } else {
+        // Geri al durumunda allDone sıfırla
+        allDoneFiredRef.current = false;
+      }
+
       try {
         await (completed ? undoRoutineAction(id) : completeRoutineAction(id, note));
         toast.success(completed ? "Tamamlama geri alındı." : "Rutin tamamlandı! 🔥");
       } catch (err) {
-        // useOptimistic transition bittiğinde otomatik geri alır
         toast.error(err instanceof Error ? err.message : "İşlem başarısız.");
+        allDoneFiredRef.current = false;
       } finally {
         setPendingId(null);
         invalidate();
@@ -246,13 +286,14 @@ export function RoutineList({ initialRoutines }: Props) {
         )
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((r) => (
+          {filtered.map((r, i) => (
             <RoutineCard
               key={r.id}
               routine={r}
               onToggle={handleToggle}
               onDelete={handleDelete}
               isPending={pendingId === r.id}
+              index={i}
             />
           ))}
         </div>

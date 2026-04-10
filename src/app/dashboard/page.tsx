@@ -2,22 +2,26 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardNav } from "@/components/shared/DashboardNav";
 import { RoutineList } from "@/components/dashboard/RoutineList";
-import { WeeklyStatsChart } from "@/components/dashboard/WeeklyStatsChart";
+import { WeeklyProgressChart } from "@/components/dashboard/WeeklyProgressChart";
 import { CategoryPieChart } from "@/components/dashboard/CategoryPieChart";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { StreakAlert } from "@/components/dashboard/StreakAlert";
+import { DashboardEmptyState } from "@/components/dashboard/DashboardEmptyState";
 import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
 import { TestEmailButton } from "@/components/dashboard/TestEmailButton";
 import { getSubscriptionTier } from "@/lib/stripe";
+import { getDashboardData } from "@/actions/dashboard.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
-import type { DayStat } from "@/components/dashboard/WeeklyStatsChart";
-import { AlertTriangle } from "lucide-react";
+import {
+  CheckCircle2,
+  Flame,
+  TrendingUp,
+  Target,
+  AlertTriangle,
+} from "lucide-react";
 
 export const metadata = { title: "Rutinlerim" };
-
-// Türkçe gün kısaltmaları — Pazar = 0
-const TR_DAYS = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"] as const;
 
 /** Sıfır veri için fallback analytics */
 function emptyAnalytics(): AnalyticsPayload {
@@ -38,22 +42,12 @@ function emptyAnalytics(): AnalyticsPayload {
   };
 }
 
-/** Varsayılan haftalık istatistik dizisi */
-function defaultWeeklyStats(sevenDaysAgo: Date): DayStat[] {
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(sevenDaysAgo);
-    d.setUTCDate(sevenDaysAgo.getUTCDate() + i);
-    return { name: TR_DAYS[d.getUTCDay()] ?? "", count: 0 };
-  });
-}
-
 export default async function DashboardPage() {
   /* ── Auth ──────────────────────────────────────────────────────────────── */
   let session;
   try {
     session = await requireAuth();
   } catch {
-    // requireAuth zaten redirect eder, buraya düşmemeli ama garanti edelim
     return null;
   }
 
@@ -65,31 +59,16 @@ export default async function DashboardPage() {
   );
   const isPro = subscriptionTier === "PRO";
 
-  /* ── Data fetching — tamamı try-catch içinde ──────────────────────────── */
-  let routines: RoutineWithMeta[] = [];
-  let weeklyStats: DayStat[];
-  let analytics: AnalyticsPayload;
-
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
-
-  const thirtyDaysAgo = new Date(todayStart);
-  thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
-
-  const sevenDaysAgo = new Date(todayStart);
-  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 6);
-
-  // Defaults
-  weeklyStats = defaultWeeklyStats(sevenDaysAgo);
-  analytics = emptyAnalytics();
-
+  /* ── Data fetching ────────────────────────────────────────────────────── */
   try {
-    // Analytics'i de try-catch içinde çek
-    const [analyticsResult, raw, recentLogs] = await Promise.all([
-      getUserAnalytics(userId, 30).catch((err) => {
-        console.error("[DashboardPage] getUserAnalytics hatası:", err);
-        return emptyAnalytics();
-      }),
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const thirtyDaysAgo = new Date(todayStart);
+    thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
+
+    const [dashboardData, analytics, raw] = await Promise.all([
+      getDashboardData(),
+      getUserAnalytics(userId, 30).catch(() => emptyAnalytics()),
       prisma.routine
         .findMany({
           where: { userId, isActive: true },
@@ -104,25 +83,10 @@ export default async function DashboardPage() {
           },
           orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
         })
-        .catch((err) => {
-          console.error("[DashboardPage] routine.findMany hatası:", err);
-          return [];
-        }),
-      prisma.routineLog
-        .findMany({
-          where: { userId, completedAt: { gte: sevenDaysAgo } },
-          select: { completedAt: true },
-        })
-        .catch((err) => {
-          console.error("[DashboardPage] routineLog.findMany hatası:", err);
-          return [];
-        }),
+        .catch(() => []),
     ]);
 
-    analytics = analyticsResult;
-
-    // Rutinleri JSON-serializable hale getir
-    routines = (raw ?? []).map((r) => ({
+    const routines: RoutineWithMeta[] = (raw ?? []).map((r) => ({
       id: r.id,
       title: r.title ?? "",
       description: r.description ?? null,
@@ -145,66 +109,79 @@ export default async function DashboardPage() {
       _count: r._count ?? { logs: 0 },
     }));
 
-    // Haftalık istatistikleri gün gün hesapla
-    if (recentLogs.length > 0) {
-      weeklyStats = Array.from({ length: 7 }, (_, i) => {
-        const dayStart = new Date(sevenDaysAgo);
-        dayStart.setUTCDate(sevenDaysAgo.getUTCDate() + i);
+    const { stats, weeklyChart, isEmpty } = dashboardData;
 
-        const dayEnd = new Date(dayStart);
-        dayEnd.setUTCDate(dayStart.getUTCDate() + 1);
-
-        const count = recentLogs.filter(
-          (l) => l.completedAt >= dayStart && l.completedAt < dayEnd
-        ).length;
-
-        return { name: TR_DAYS[dayStart.getUTCDay()] ?? "", count };
-      });
+    // ── Empty state ─────────────────────────────────────────────────────
+    if (isEmpty) {
+      return (
+        <>
+          <DashboardNav />
+          <main className="mx-auto max-w-6xl px-6 py-8">
+            <DashboardEmptyState />
+          </main>
+        </>
+      );
     }
+
+    return (
+      <>
+        <DashboardNav />
+        <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+          <StreakAlert routines={routines} />
+
+          {/* ── 4 Stat Cards ─────────────────────────────────────────── */}
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatsCard
+              title="Bugünün İlerlemesi"
+              value={`${stats.todayProgress.completed}/${stats.todayProgress.total}`}
+              subtitle={`%${stats.todayProgress.percentage} tamamlandı`}
+              icon={<CheckCircle2 className="h-4 w-4" />}
+              trend={stats.trends.todayVsYesterday}
+            />
+            <StatsCard
+              title="Aktif Seri"
+              value={`${stats.activeStreak} gün`}
+              subtitle="Aralıksız tamamlama"
+              icon={<Flame className="h-4 w-4" />}
+            />
+            <StatsCard
+              title="Haftalık Verimlilik"
+              value={`%${stats.weeklyProductivity}`}
+              subtitle="Son 7 gün performansı"
+              icon={<TrendingUp className="h-4 w-4" />}
+              trend={stats.trends.thisWeekVsLastWeek}
+            />
+            <StatsCard
+              title="Bu Hafta Toplam"
+              value={stats.totalCompletions}
+              subtitle="Tamamlanan rutin"
+              icon={<Target className="h-4 w-4" />}
+              trend={stats.trends.thisWeekVsLastWeek}
+            />
+          </section>
+
+          {/* ── Charts ───────────────────────────────────────────────── */}
+          <section className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <WeeklyProgressChart data={weeklyChart} />
+            </div>
+            <div className="lg:col-span-1">
+              <CategoryPieChart data={analytics.categoryDistribution ?? []} />
+            </div>
+          </section>
+
+          <PushNotificationButton />
+          <TestEmailButton />
+          <RoutineList initialRoutines={routines} />
+        </main>
+      </>
+    );
   } catch (error) {
     console.error("[DashboardPage] Beklenmeyen hata:", error);
-    return <DashboardError message="Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin." />;
+    return (
+      <DashboardError message="Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin." />
+    );
   }
-
-  return (
-    <>
-      <DashboardNav />
-      <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
-        <StreakAlert routines={routines} />
-
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <StatsCard
-            title="Toplam Tamamlama"
-            value={analytics.summary.totalCompletions}
-            description="Son 30 gün"
-          />
-          <StatsCard
-            title="En Uzun Seri"
-            value={analytics.summary.longestStreak}
-            description="Tüm aktif rutinler"
-          />
-          <StatsCard
-            title="Aktif Kategori"
-            value={analytics.categoryDistribution?.length ?? 0}
-            description="Veri üreten kategori sayısı"
-          />
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <WeeklyStatsChart data={weeklyStats} isPro={isPro} />
-          </div>
-          <div className="lg:col-span-1">
-            <CategoryPieChart data={analytics.categoryDistribution ?? []} />
-          </div>
-        </section>
-
-        <PushNotificationButton />
-        <TestEmailButton />
-        <RoutineList initialRoutines={routines} />
-      </main>
-    </>
-  );
 }
 
 /* ── Error State bileşeni ─────────────────────────────────────────────────── */

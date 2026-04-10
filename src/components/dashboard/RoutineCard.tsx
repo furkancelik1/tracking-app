@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { ICON_MAP } from "@/lib/routine-icons";
 import { HabitHeatmap } from "@/components/dashboard/HabitHeatmap";
+import { fireConfetti, hapticTap } from "@/lib/celebrations";
 
 const FREQUENCY_LABELS: Record<RoutineWithMeta["frequency"], string> = {
   DAILY: "Günlük",
@@ -38,11 +40,29 @@ type Props = {
   onDelete: (id: string) => void;
   /** useTransition isPending — tüm kartlar için geçerli değil, sadece bu kart */
   isPending: boolean;
+  /** Stagger animasyonu için kart indeksi */
+  index?: number;
 };
 
-export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
+// ── Framer Motion variants ───────────────────────────────────────────────────
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.06,
+      duration: 0.35,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
+  }),
+};
+
+export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 }: Props) {
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
+  const [justCompleted, setJustCompleted] = useState(false);
 
   const todayUTC = new Date();
   todayUTC.setUTCHours(0, 0, 0, 0);
@@ -62,20 +82,50 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
 
   function handleConfirm() {
     setNoteDialogOpen(false);
+    hapticTap();
+    // Optimistic: anında konfeti + animasyon başlat
+    setJustCompleted(true);
+    fireConfetti();
     onToggle(routine.id, false, noteText.trim() || undefined);
+    // Glow efektini kaldır
+    setTimeout(() => setJustCompleted(false), 800);
   }
 
   const Icon = (ICON_MAP[routine.icon] ?? ICON_MAP["CheckCircle"]) as LucideIcon;
 
   return (
-    <Card
-      className={cn(
-        "flex flex-col transition-all duration-200",
-        isCompleted
-          ? "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20"
-          : "hover:shadow-md"
-      )}
+    <motion.div
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      custom={index}
+      whileTap={{ scale: 0.98 }}
     >
+      <motion.div
+        animate={
+          justCompleted
+            ? {
+                scale: [1, 0.95, 1.02, 1],
+                boxShadow: [
+                  "0 0 0 0 rgba(99,102,241,0)",
+                  "0 0 20px 4px rgba(99,102,241,0.3)",
+                  "0 0 30px 6px rgba(168,85,247,0.2)",
+                  "0 0 0 0 rgba(99,102,241,0)",
+                ],
+              }
+            : { scale: 1, boxShadow: "0 0 0 0 rgba(99,102,241,0)" }
+        }
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="rounded-xl"
+      >
+        <Card
+          className={cn(
+            "flex flex-col transition-all duration-200",
+            isCompleted
+              ? "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20"
+              : "hover:shadow-md"
+          )}
+        >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -237,5 +287,7 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending }: Props) {
         </DialogContent>
       </Dialog>
     </Card>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -74,10 +74,8 @@ export async function sendReminderEmailAction() {
   });
 
   if (!user?.email) throw new Error("Kullanıcı e-postası bulunamadı.");
-  // Geçici debug: gönderim akışını test etmek için abonelik kontrolünü bypass et.
-  // if (user.subscriptionTier !== "PRO") throw new Error("PRO planı gerekli.");
-  // Geçici debug: gönderim akışını test etmek için bildirim tercihi kontrolünü bypass et.
-  // if (!user.emailNotificationsEnabled) throw new Error("E-posta bildirimleri kapalı.");
+  if (user.subscriptionTier !== "PRO") throw new Error("PRO planı gerekli.");
+  if (!user.emailNotificationsEnabled) throw new Error("E-posta bildirimleri kapalı.");
 
   const pending = await getPendingRoutines(userId);
 

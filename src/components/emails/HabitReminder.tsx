@@ -16,8 +16,6 @@ export interface HabitReminderProps {
 }
 
 // ─── Bileşen ─────────────────────────────────────────────────────────────────
-// Resend'in react: prop'una geçirilen standart JSX bileşeni.
-// @react-email/components paketi gerekmez — Resend dahili render eder.
 
 export function HabitReminder({
   userName,
@@ -68,7 +66,7 @@ export function HabitReminder({
                         <p style={styles.greeting}>Hey {firstName}, 👋</p>
                         <p style={styles.lead}>
                           Bugün tamamlaman gereken{" "}
-                          <strong style={{ color: "#6366f1" }}>
+                          <strong style={{ color: "#818cf8" }}>
                             {count} {count === 1 ? "rutin" : "rutin"}
                           </strong>{" "}
                           var. Her birini tamamladığında serilerin güçlenmeye devam
@@ -95,7 +93,7 @@ export function HabitReminder({
                                 ...styles.listItem,
                                 borderBottom:
                                   i < pendingRoutines.length - 1
-                                    ? "1px solid #f3f4f6"
+                                    ? "1px solid #1e1e2e"
                                     : "none",
                               }}
                             >
@@ -163,35 +161,36 @@ export function HabitReminder({
   );
 }
 
-// ─── Stiller ─────────────────────────────────────────────────────────────────
+// ─── Deep Dark Stiller ───────────────────────────────────────────────────────
 
 const styles: Record<string, React.CSSProperties> = {
   body: {
     margin: 0,
     padding: 0,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#09090b",
     fontFamily:
       "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif",
   },
   wrapper: {
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#09090b",
     padding: "48px 16px",
   },
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#111113",
     borderRadius: 16,
     overflow: "hidden",
-    boxShadow: "0 4px 16px rgba(0,0,0,.07)",
+    border: "1px solid #1e1e2e",
+    boxShadow: "0 4px 24px rgba(0,0,0,.4)",
   },
   // Header
   header: {
-    background: "linear-gradient(135deg,#6366f1 0%,#8b5cf6 60%,#a78bfa 100%)",
+    background: "linear-gradient(135deg,#4f46e5 0%,#7c3aed 60%,#6d28d9 100%)",
     padding: "40px 48px 36px",
     textAlign: "center" as const,
   },
   badge: {
     display: "inline-block",
-    backgroundColor: "rgba(255,255,255,.18)",
+    backgroundColor: "rgba(255,255,255,.12)",
     color: "#ffffff",
     fontSize: 12,
     fontWeight: 600,
@@ -209,7 +208,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: "0 0 8px",
   },
   headerSub: {
-    color: "rgba(255,255,255,.8)",
+    color: "rgba(255,255,255,.7)",
     fontSize: 15,
     margin: 0,
   },
@@ -221,12 +220,12 @@ const styles: Record<string, React.CSSProperties> = {
     margin: "0 0 8px",
     fontSize: 20,
     fontWeight: 600,
-    color: "#111827",
+    color: "#f4f4f5",
   },
   lead: {
     margin: "0 0 24px",
     fontSize: 15,
-    color: "#6b7280",
+    color: "#a1a1aa",
     lineHeight: 1.65,
   },
   // Alert
@@ -234,18 +233,18 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex" as const,
     alignItems: "flex-start" as const,
     gap: 10,
-    backgroundColor: "#fef3c7",
-    border: "1px solid #fde68a",
+    backgroundColor: "rgba(245,158,11,.1)",
+    border: "1px solid rgba(245,158,11,.25)",
     borderRadius: 10,
     padding: "12px 16px",
     marginBottom: 20,
   },
   alertIcon: { fontSize: 16, lineHeight: 1.4, flexShrink: 0 },
-  alertText: { fontSize: 13, color: "#92400e", lineHeight: 1.5 },
+  alertText: { fontSize: 13, color: "#fbbf24", lineHeight: 1.5 },
   // List
   listBox: {
-    backgroundColor: "#f9fafb",
-    border: "1px solid #e5e7eb",
+    backgroundColor: "#0a0a0c",
+    border: "1px solid #1e1e2e",
     borderRadius: 12,
     overflow: "hidden",
     marginBottom: 28,
@@ -265,7 +264,7 @@ const styles: Record<string, React.CSSProperties> = {
   listTitle: {
     flex: 1,
     fontSize: 14,
-    color: "#374151",
+    color: "#d4d4d8",
     fontWeight: 500,
   },
   streak: {
@@ -291,17 +290,17 @@ const styles: Record<string, React.CSSProperties> = {
   // Footer
   footer: {
     padding: "20px 48px",
-    borderTop: "1px solid #e5e7eb",
+    borderTop: "1px solid #1e1e2e",
     textAlign: "center" as const,
   },
   footerText: {
     margin: "0 0 2px",
     fontSize: 12,
-    color: "#9ca3af",
+    color: "#52525b",
     lineHeight: 1.5,
   },
   footerLink: {
-    color: "#6366f1",
+    color: "#818cf8",
     textDecoration: "none",
   },
 };

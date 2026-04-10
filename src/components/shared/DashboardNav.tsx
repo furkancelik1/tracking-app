@@ -19,6 +19,7 @@ import {
 
 const NAV_ITEMS: { href: Route; label: string }[] = [
   { href: "/dashboard" as Route, label: "Rutinlerim" },
+  { href: "/leaderboard" as Route, label: "Liderlik" },
   { href: "/settings" as Route, label: "Ayarlar" },
 ];
 

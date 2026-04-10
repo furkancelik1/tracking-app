@@ -16,7 +16,10 @@ import {
   undoRoutineAction,
   deleteRoutineAction,
 } from "@/actions/routine.actions";
-import { fireAllDoneConfetti, hapticSuccess } from "@/lib/celebrations";
+import { fireAllDoneConfetti, fireLevelUpConfetti, hapticSuccess } from "@/lib/celebrations";
+import { calculateLevel, didLevelUp } from "@/lib/level";
+import { ShareCardModal } from "@/components/dashboard/ShareCardModal";
+import type { ShareCardProps } from "@/components/dashboard/ShareCard";
 
 // ─── Optimistic reducer ───────────────────────────────────────────────────────
 
@@ -72,6 +75,10 @@ export function RoutineList({ initialRoutines }: Props) {
   const [activeCategory, setActiveCategory] = useState(ALL);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const allDoneFiredRef = useRef(false);
+  const [shareModal, setShareModal] = useState<{ open: boolean; props: ShareCardProps | null }>({
+    open: false,
+    props: null,
+  });
 
   // Sunucu verisi (TanStack Query — polling + refetch)
   const { data: serverRoutines = [], isLoading } = useRoutines(initialRoutines);
@@ -145,8 +152,50 @@ export function RoutineList({ initialRoutines }: Props) {
       }
 
       try {
-        await (completed ? undoRoutineAction(id) : completeRoutineAction(id, note));
-        toast.success(completed ? "Tamamlama geri alındı." : "Rutin tamamlandı! 🔥");
+        if (completed) {
+          await undoRoutineAction(id);
+          toast.success("Tamamlama geri alındı.");
+        } else {
+          const result = await completeRoutineAction(id, note);
+          toast.success("Rutin tamamlandı! 🔥");
+
+          // ── Level-up algıla ────────────────────────────────────────
+          if (result && didLevelUp(result.totalXp - result.xpGain, result.totalXp)) {
+            const { level, rank } = calculateLevel(result.totalXp);
+            setTimeout(() => {
+              fireLevelUpConfetti();
+              hapticSuccess();
+              toast(
+                `🎉 Tebrikler! Seviye Atladın: Level ${level} — ${rank}`,
+                {
+                  duration: 6000,
+                  action: {
+                    label: "Paylaş",
+                    onClick: () => {
+                      setShareModal({
+                        open: true,
+                        props: {
+                          variant: "level-up",
+                          userName: auth.status === "authenticated" ? auth.user.name : null,
+                          userImage: auth.status === "authenticated" ? auth.user.image : null,
+                          xp: result.totalXp,
+                          currentStreak: serverRoutines.reduce(
+                            (max, r) => Math.max(max, r.currentStreak),
+                            0
+                          ),
+                          totalCompletions: serverRoutines.reduce(
+                            (sum, r) => sum + r._count.logs,
+                            0
+                          ),
+                        },
+                      });
+                    },
+                  },
+                }
+              );
+            }, 600);
+          }
+        }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "İşlem başarısız.");
         allDoneFiredRef.current = false;
@@ -300,6 +349,15 @@ export function RoutineList({ initialRoutines }: Props) {
       )}
 
       <AddRoutineDialog open={dialogOpen} onOpenChange={setDialogOpen} atLimit={atLimit} />
+
+      {/* Share Card Modal */}
+      {shareModal.props && (
+        <ShareCardModal
+          open={shareModal.open}
+          onClose={() => setShareModal({ open: false, props: null })}
+          cardProps={shareModal.props}
+        />
+      )}
     </div>
   );
 }

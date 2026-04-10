@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
 // ─── Tema renkleri ───────────────────────────────────────────────────────────
 
 const THEME_COLORS = ["#6366f1", "#818cf8", "#a855f7", "#c084fc", "#e879f9"];
+const GOLD_COLORS = ["#FFD700", "#FFA500", "#FF8C00", "#FFE066", "#a855f7"];
 
 // ─── Hafif patlama — tek rutin tamamlandığında ──────────────────────────────
 
@@ -72,4 +73,44 @@ export function hapticSuccess() {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) {
     navigator.vibrate([10, 30, 10]);
   }
+}
+
+// ─── Level Up kutlaması — büyük altın/mor patlama ───────────────────────────
+
+export function fireLevelUpConfetti() {
+  const defaults = {
+    colors: GOLD_COLORS,
+    ticks: 300,
+    gravity: 0.6,
+    scalar: 1.3,
+    disableForReducedMotion: true,
+  };
+
+  // Yıldız patlaması — ortadan
+  confetti({
+    ...defaults,
+    particleCount: 120,
+    spread: 120,
+    origin: { y: 0.45 },
+    startVelocity: 40,
+    shapes: ["star", "circle"],
+  });
+
+  // Sol ve sağ — kademeli
+  setTimeout(() => {
+    confetti({
+      ...defaults,
+      particleCount: 60,
+      angle: 60,
+      spread: 80,
+      origin: { x: 0.1, y: 0.5 },
+    });
+    confetti({
+      ...defaults,
+      particleCount: 60,
+      angle: 120,
+      spread: 80,
+      origin: { x: 0.9, y: 0.5 },
+    });
+  }, 200);
 }

@@ -5,6 +5,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { CategoryPieChart } from "@/components/dashboard/CategoryPieChart";
 import { YearlyActivityHeatmap } from "@/components/dashboard/YearlyActivityHeatmap";
 import { ActivityAreaChart } from "@/components/dashboard/ActivityAreaChart";
+import { StatsShareButton } from "@/components/dashboard/StatsShareButton";
 import { prisma } from "@/lib/prisma";
 import {
   CheckCircle2,
@@ -39,6 +40,12 @@ export default async function StatsPage({
 
   const analytics = await getUserAnalytics(userId, days);
 
+  // Kullanıcı XP + ad bilgisi (share card için)
+  const userInfo = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { xp: true, name: true, image: true },
+  });
+
   // Yıllık heatmap verisi (her zaman 365 gün)
   const yearlyAnalytics =
     days === 365 ? analytics : await getUserAnalytics(userId, 365);
@@ -51,11 +58,24 @@ export default async function StatsPage({
   return (
     <div className="space-y-8 px-4 py-8 sm:px-6">
       {/* ── Header ────────────────────────────────────────────────────────── */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">İstatistiklerim</h1>
-        <p className="text-muted-foreground">
-          Alışkanlık verilerini analiz et ve ilerlemeni görselleştir.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">İstatistiklerim</h1>
+          <p className="text-muted-foreground">
+            Alışkanlık verilerini analiz et ve ilerlemeni görselleştir.
+          </p>
+        </div>
+        <StatsShareButton
+          cardProps={{
+            variant: "weekly-summary",
+            userName: userInfo?.name ?? null,
+            userImage: userInfo?.image ?? null,
+            xp: userInfo?.xp ?? 0,
+            weeklyRate: analytics.summary.monthlySuccessRate,
+            currentStreak: analytics.summary.currentStreak,
+            totalCompletions: analytics.summary.totalCompletions,
+          }}
+        />
       </div>
 
       {/* ── Summary Cards (4 kart) ────────────────────────────────────────── */}

@@ -12,6 +12,7 @@ import { TestEmailButton } from "@/components/dashboard/TestEmailButton";
 import { getSubscriptionTier } from "@/lib/stripe";
 import { getDashboardData } from "@/actions/dashboard.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
+import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import {
   CheckCircle2,
@@ -66,7 +67,7 @@ export default async function DashboardPage() {
     const thirtyDaysAgo = new Date(todayStart);
     thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
 
-    const [dashboardData, analytics, raw] = await Promise.all([
+    const [dashboardData, analytics, raw, userXpData] = await Promise.all([
       getDashboardData(),
       getUserAnalytics(userId, 30).catch(() => emptyAnalytics()),
       prisma.routine
@@ -84,7 +85,12 @@ export default async function DashboardPage() {
           orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
         })
         .catch(() => []),
+      prisma.user
+        .findUnique({ where: { id: userId }, select: { xp: true } })
+        .catch(() => null),
     ]);
+
+    const userXp = userXpData?.xp ?? 0;
 
     const routines: RoutineWithMeta[] = (raw ?? []).map((r) => ({
       id: r.id,
@@ -127,6 +133,7 @@ export default async function DashboardPage() {
       <>
         <DashboardNav />
         <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+          <LevelProgressBar xp={userXp} />
           <StreakAlert routines={routines} />
 
           {/* ── 4 Stat Cards ─────────────────────────────────────────── */}

@@ -67,6 +67,13 @@ function calcNewStreak(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// XP Sabitleri
+// ─────────────────────────────────────────────────────────────────────────────
+
+const XP_PER_COMPLETION = 10;
+const XP_ALL_DONE_BONUS = 50;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Server Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -78,8 +85,12 @@ async function requireUser() {
 
 /**
  * Rutini tamamla: RoutineLog oluştur + streak güncelle (atomik).
+ * @returns xpGain ve toplam XP (level-up algılaması için)
  */
-export async function completeRoutineAction(routineId: string, note?: string): Promise<void> {
+export async function completeRoutineAction(
+  routineId: string,
+  note?: string
+): Promise<{ xpGain: number; totalXp: number }> {
   const userId = await requireUser();
 
   try {
@@ -100,6 +111,20 @@ export async function completeRoutineAction(routineId: string, note?: string): P
     const newStreak = calcNewStreak(routine.frequency, routine.currentStreak, routine.lastCompletedAt);
     const newLongest = Math.max(newStreak, routine.longestStreak);
 
+    // ── XP hesaplaması ────────────────────────────────────────────────────
+    let xpGain = XP_PER_COMPLETION;
+
+    // All Done bonus: bu tamamlama sonrası bugünkü tüm aktif rutinler tamam mı?
+    const todayStart = getPeriodStart("DAILY");
+    const [activeRoutines, todayLogs] = await Promise.all([
+      prisma.routine.count({ where: { userId, isActive: true } }),
+      prisma.routineLog.count({ where: { userId, completedAt: { gte: todayStart } } }),
+    ]);
+    // todayLogs henüz bu tamamlamayı içermiyor, +1 ekleyerek kontrol et
+    if (todayLogs + 1 >= activeRoutines && activeRoutines > 1) {
+      xpGain += XP_ALL_DONE_BONUS;
+    }
+
     await prisma.$transaction([
       prisma.routineLog.create({
         data: { routineId, userId, completedAt: periodStart, note: note?.trim() || null },
@@ -108,9 +133,20 @@ export async function completeRoutineAction(routineId: string, note?: string): P
         where: { id: routineId },
         data: { currentStreak: newStreak, longestStreak: newLongest, lastCompletedAt: periodStart },
       }),
+      prisma.user.update({
+        where: { id: userId },
+        data: { xp: { increment: xpGain } },
+      }),
     ]);
 
+    // Güncel XP'yi al (level-up algılaması için)
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { xp: true },
+    });
+
     revalidatePath("/dashboard");
+    return { xpGain, totalXp: updatedUser?.xp ?? 0 };
   } catch (error) {
     console.error("[completeRoutineAction] Hata:", error);
     throw error;
@@ -152,7 +188,18 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
         where: { id: routineId },
         data: { currentStreak: restoredStreak, lastCompletedAt: prevLog ? prevPeriodStart : null },
       }),
+      // XP geri al (minimum 0)
+      prisma.user.update({
+        where: { id: userId },
+        data: { xp: { decrement: XP_PER_COMPLETION } },
+      }),
     ]);
+
+    // XP negatife düşmesini engelle
+    await prisma.user.updateMany({
+      where: { id: userId, xp: { lt: 0 } },
+      data: { xp: 0 },
+    });
 
     revalidatePath("/dashboard");
   } catch (error) {

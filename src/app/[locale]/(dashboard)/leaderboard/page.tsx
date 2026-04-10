@@ -1,10 +1,22 @@
 import { getLeaderboard } from "@/actions/leaderboard.actions";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
 import { Trophy } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
-export const metadata = { title: "Liderlik Tablosu" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "leaderboard.metadata" });
+  return { title: t("title") };
+}
 
-export default async function LeaderboardPage() {
+export default async function LeaderboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("leaderboard");
   const data = await getLeaderboard();
 
   return (
@@ -14,9 +26,9 @@ export default async function LeaderboardPage() {
           <Trophy className="h-5 w-5 text-indigo-400" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Liderlik Tablosu</h1>
+          <h1 className="text-xl font-bold">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Rutinlerini tamamla, XP kazan, zirveye çık!
+            {t("subtitle")}
           </p>
         </div>
       </div>

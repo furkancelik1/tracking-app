@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,17 +16,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 
-const NAV_ITEMS: { href: Route; label: string }[] = [
-  { href: "/dashboard" as Route, label: "Rutinlerim" },
-  { href: "/leaderboard" as Route, label: "Liderlik" },
-  { href: "/settings" as Route, label: "Ayarlar" },
-];
+const NAV_KEYS = [
+  { href: "/dashboard" as Route, key: "routines" },
+  { href: "/leaderboard" as Route, key: "leaderboard" },
+  { href: "/settings" as Route, key: "settings" },
+] as const;
 
 export function DashboardNav() {
   const pathname = usePathname();
   const auth = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
+  const t = useTranslations("nav");
 
   if (auth.status !== "authenticated") return null;
 
@@ -45,12 +47,12 @@ export function DashboardNav() {
         {/* Logo */}
         <Link href="/dashboard" className="font-semibold text-sm flex items-center gap-2">
           <span className="size-5 rounded-full bg-primary inline-block" />
-          Rutin Takip
+          {t("logo")}
         </Link>
 
         {/* Nav links */}
         <nav className="flex items-center gap-1">
-          {NAV_ITEMS.map((item) => (
+          {NAV_KEYS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -61,13 +63,14 @@ export function DashboardNav() {
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
               )}
             >
-              {item.label}
+              {t(item.key)}
             </Link>
           ))}
         </nav>
 
         {/* User menu */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative size-8 rounded-full p-0">
@@ -89,18 +92,18 @@ export function DashboardNav() {
                 {resolvedTheme === "dark" ? (
                   <>
                     <Sun className="mr-2 h-4 w-4" />
-                    Açık Moda Geç
+                    {t("lightMode")}
                   </>
                 ) : (
                   <>
                     <Moon className="mr-2 h-4 w-4" />
-                    Karanlık Moda Geç
+                    {t("darkMode")}
                   </>
                 )}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => void auth.signOut()}>
-                Çıkış Yap
+                {t("signOut")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import type { LeaderboardEntry, LeaderboardPayload } from "@/actions/leaderboard.actions";
 import { Trophy, Medal, Flame, Crown } from "lucide-react";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
+import { useTranslations } from "next-intl";
 
 // ─── Podium renkleri ─────────────────────────────────────────────────────────
 
@@ -34,6 +35,7 @@ function formatXp(xp: number): string {
 // ─── Podium Bileşeni (Top 3) ────────────────────────────────────────────────
 
 function Podium({ entries }: { entries: LeaderboardEntry[] }) {
+  const t = useTranslations("common");
   // Sıralama: 2. | 1. | 3. (görsel podyum düzeni)
   const order = [entries[1], entries[0], entries[2]].filter(Boolean) as LeaderboardEntry[];
   const heights = ["h-28", "h-36", "h-24"];
@@ -76,9 +78,9 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
               </span>
             </div>
             <p className="text-sm font-semibold truncate max-w-[80px] sm:max-w-[120px] text-center">
-              {entry.name ?? "Anonim"}
+              {entry.name ?? t("anonymous")}
               {entry.isCurrentUser && (
-                <span className="text-xs text-indigo-400 ml-1">(sen)</span>
+                <span className="text-xs text-indigo-400 ml-1">{t("you")}</span>
               )}
             </p>
             <Badge
@@ -103,6 +105,7 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
 // ─── Sıralama Tablosu (4–10) ────────────────────────────────────────────────
 
 function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
+  const t = useTranslations("common");
   if (entries.length === 0) return null;
 
   return (
@@ -126,9 +129,9 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">
-              {entry.name ?? "Anonim"}
+              {entry.name ?? t("anonymous")}
               {entry.isCurrentUser && (
-                <span className="text-xs text-indigo-400 ml-1">(sen)</span>
+                <span className="text-xs text-indigo-400 ml-1">{t("you")}</span>
               )}
             </p>
           </div>
@@ -150,6 +153,8 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
 // ─── Kişisel Panel (altta sabit) ────────────────────────────────────────────
 
 function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUsers: number }) {
+  const t = useTranslations("common");
+  const tLb = useTranslations("leaderboard");
   return (
     <Card className="border-indigo-500/30 bg-indigo-500/5 mt-6">
       <CardContent className="flex items-center gap-4 py-4">
@@ -161,9 +166,9 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
           <AvatarFallback>{getInitials(entry.name)}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate">{entry.name ?? "Anonim"}</p>
+          <p className="text-sm font-semibold truncate">{entry.name ?? t("anonymous")}</p>
           <p className="text-xs text-muted-foreground">
-            {totalUsers} kullanıcı arasında #{entry.rank}
+            {tLb("usersAmong", { rank: entry.rank, total: totalUsers })}
           </p>
         </div>
         <div className="text-right shrink-0">
@@ -172,7 +177,7 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
           </p>
           {entry.currentStreak > 0 && (
             <span className="flex items-center justify-end gap-0.5 text-xs text-orange-400">
-              <Flame className="size-3" /> {entry.currentStreak} gün seri
+              <Flame className="size-3" /> {t("dayStreak", { count: entry.currentStreak })}
             </span>
           )}
         </div>
@@ -184,14 +189,15 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
 // ─── Empty State ─────────────────────────────────────────────────────────────
 
 function LeaderboardEmpty() {
+  const t = useTranslations("leaderboard");
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="h-16 w-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-5">
         <Trophy className="h-8 w-8 text-indigo-400" />
       </div>
-      <h2 className="text-lg font-semibold">Henüz sıralama yok</h2>
+      <h2 className="text-lg font-semibold">{t("emptyTitle")}</h2>
       <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-        Rutinlerini tamamlayarak XP kazan ve liderlik tablosuna adını yazdır!
+        {t("emptyDescription")}
       </p>
     </div>
   );

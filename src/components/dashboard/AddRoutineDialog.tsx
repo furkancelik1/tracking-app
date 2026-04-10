@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import { useCreateRoutine } from "@/hooks/useRoutines";
 import {
   ICON_MAP,
@@ -26,11 +27,7 @@ import {
 
 type Frequency = "DAILY" | "WEEKLY" | "MONTHLY";
 
-const FREQUENCY_OPTIONS: { value: Frequency; label: string }[] = [
-  { value: "DAILY", label: "Günlük" },
-  { value: "WEEKLY", label: "Haftalık" },
-  { value: "MONTHLY", label: "Aylık" },
-];
+const FREQUENCY_VALUES: Frequency[] = ["DAILY", "WEEKLY", "MONTHLY"];
 
 type Props = {
   open: boolean;
@@ -39,6 +36,8 @@ type Props = {
 };
 
 export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props) {
+  const t = useTranslations("dashboard.addRoutine");
+  const tc = useTranslations("common");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [frequency, setFrequency] = useState<Frequency>("DAILY");
@@ -103,26 +102,25 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
                 return Icon ? <Icon size={16} /> : null;
               })()}
             </span>
-            Yeni Rutin
+            {t("title")}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Yeni bir rutin oluşturmak için formu doldurun.
+            {t("description")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 py-1">
           {atLimit && (
             <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              Ücretsiz planda maksimum <span className="font-semibold">3 rutin</span> oluşturabilirsin.
-              Sınırsız rutin için PRO&apos;ya geç.
+              {t("limitDescription", { max: 3 })}
             </div>
           )}
-          {/* Başlık */}
+          {/* Title */}
           <div className="space-y-1.5">
-            <Label htmlFor="routine-title">Başlık</Label>
+            <Label htmlFor="routine-title">{t("titleLabel")}</Label>
             <Input
               id="routine-title"
-              placeholder="Örn: Sabah meditasyonu"
+              placeholder={t("titlePlaceholder")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={100}
@@ -132,12 +130,12 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
             />
           </div>
 
-          {/* Açıklama */}
+          {/* Description */}
           <div className="space-y-1.5">
-            <Label htmlFor="routine-desc">Açıklama (opsiyonel)</Label>
+            <Label htmlFor="routine-desc">{t("descriptionLabel")}</Label>
             <Input
               id="routine-desc"
-              placeholder="Kısa bir not..."
+              placeholder={t("descriptionPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={500}
@@ -145,12 +143,12 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
             />
           </div>
 
-          {/* Kategori */}
+          {/* Category */}
           <div className="space-y-1.5">
-            <Label htmlFor="routine-category">Kategori</Label>
+            <Label htmlFor="routine-category">{t("categoryLabel")}</Label>
             <Input
               id="routine-category"
-              placeholder="Örn: Sağlık, Spor, Kişisel Gelişim"
+              placeholder={t("categoryPlaceholder")}
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               maxLength={50}
@@ -158,32 +156,32 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
             />
           </div>
 
-          {/* Sıklık */}
+          {/* Frequency */}
           <div className="space-y-1.5">
-            <Label>Sıklık</Label>
+            <Label>{t("frequencyLabel")}</Label>
             <div className="flex gap-2">
-              {FREQUENCY_OPTIONS.map((opt) => (
+              {FREQUENCY_VALUES.map((val) => (
                 <button
-                  key={opt.value}
+                  key={val}
                   type="button"
-                  onClick={() => setFrequency(opt.value)}
+                  onClick={() => setFrequency(val)}
                   disabled={atLimit}
                   className={cn(
                     "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
-                    frequency === opt.value
+                    frequency === val
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-input bg-background hover:bg-accent"
                   )}
                 >
-                  {opt.label}
+                  {t(val === "DAILY" ? "daily" : val === "WEEKLY" ? "weekly" : "monthly")}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Renk seçici */}
+          {/* Color */}
           <div className="space-y-2">
-            <Label>Renk</Label>
+            <Label>{t("colorLabel")}</Label>
             <div className="flex gap-2 flex-wrap">
               {COLOR_OPTIONS.map((c) => (
                 <button
@@ -202,9 +200,9 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
             </div>
           </div>
 
-          {/* İkon seçici */}
+          {/* Icon */}
           <div className="space-y-2">
-            <Label>İkon</Label>
+            <Label>{t("iconLabel")}</Label>
             <div className="grid grid-cols-8 gap-1.5">
               {ICON_OPTIONS.map((name) => {
                   const Icon = ICON_MAP[name] as LucideIcon;
@@ -241,15 +239,15 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              İptal
+              {tc("cancel")}
             </Button>
             {atLimit ? (
               <Button type="button" onClick={handleUpgrade}>
-                PRO&apos;ya Geç
+                {t("limitUpgrade")}
               </Button>
             ) : (
               <Button type="submit" disabled={isPending || !title.trim()}>
-                {isPending ? "Oluşturuluyor…" : "Oluştur"}
+                {isPending ? t("creating") : t("create")}
               </Button>
             )}
           </DialogFooter>

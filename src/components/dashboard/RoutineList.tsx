@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslations } from "next-intl";
 import { useRoutines, useRoutineQueryClient } from "@/hooks/useRoutines";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { RoutineCard } from "@/components/dashboard/RoutineCard";
@@ -68,9 +69,11 @@ function optimisticReducer(
 
 type Props = { initialRoutines: RoutineWithMeta[] };
 
-const ALL = "Tümü";
+const ALL = "__all__";
 
 export function RoutineList({ initialRoutines }: Props) {
+  const t = useTranslations("dashboard.routineList");
+  const tc = useTranslations("common");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(ALL);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -143,7 +146,7 @@ export function RoutineList({ initialRoutines }: Props) {
           // Küçük gecikme — tek rutin konfetisi bittikten sonra büyük kutlama
           setTimeout(() => {
             fireAllDoneConfetti();
-            toast.success("Harika! Bugünkü tüm rutinlerini tamamladın! 🎉", { duration: 4000 });
+            toast.success(t("allDone"), { duration: 4000 });
           }, 400);
         }
       } else {
@@ -154,10 +157,10 @@ export function RoutineList({ initialRoutines }: Props) {
       try {
         if (completed) {
           await undoRoutineAction(id);
-          toast.success("Tamamlama geri alındı.");
+          toast.success(t("undone"));
         } else {
           const result = await completeRoutineAction(id, note);
-          toast.success("Rutin tamamlandı! 🔥");
+          toast.success(t("completed"));
 
           // ── Level-up algıla ────────────────────────────────────────
           if (result && didLevelUp(result.totalXp - result.xpGain, result.totalXp)) {
@@ -166,11 +169,11 @@ export function RoutineList({ initialRoutines }: Props) {
               fireLevelUpConfetti();
               hapticSuccess();
               toast(
-                `🎉 Tebrikler! Seviye Atladın: Level ${level} — ${rank}`,
+                t("levelUp", { level, rank }),
                 {
                   duration: 6000,
                   action: {
-                    label: "Paylaş",
+                    label: t("levelUpShare"),
                     onClick: () => {
                       setShareModal({
                         open: true,
@@ -197,7 +200,7 @@ export function RoutineList({ initialRoutines }: Props) {
           }
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "İşlem başarısız.");
+        toast.error(err instanceof Error ? err.message : t("actionFailed"));
         allDoneFiredRef.current = false;
       } finally {
         setPendingId(null);
@@ -212,9 +215,9 @@ export function RoutineList({ initialRoutines }: Props) {
       dispatch({ type: "delete", id });
       try {
         await deleteRoutineAction(id);
-        toast.success("Rutin silindi.");
+        toast.success(t("deleted"));
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Silinemedi.");
+        toast.error(err instanceof Error ? err.message : t("deleteFailed"));
       } finally {
         setPendingId(null);
         invalidate();
@@ -237,6 +240,9 @@ export function RoutineList({ initialRoutines }: Props) {
     [optimisticRoutines, activeCategory]
   );
 
+  // Display label for ALL category
+  const getCategoryLabel = (cat: string) => cat === ALL ? t("allCategories") : cat;
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -244,17 +250,17 @@ export function RoutineList({ initialRoutines }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Rutinlerim</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Günlük alışkanlıklarını takip et
+            {t("subtitle")}
           </p>
         </div>
         <Button
           onClick={() => setDialogOpen(true)}
           disabled={atLimit}
-          title={atLimit ? "FREE planda maksimum 3 rutin oluşturabilirsin" : undefined}
+          title={atLimit ? t("limitWarning", { count: 3, max: 3 }) : undefined}
         >
-          + Rutin Ekle
+          {t("addRoutine")}
         </Button>
       </div>
 
@@ -262,11 +268,10 @@ export function RoutineList({ initialRoutines }: Props) {
       {atLimit && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 px-4 py-3 flex items-center justify-between gap-4 text-sm">
           <p className="text-amber-800 dark:text-amber-200">
-            <span className="font-semibold">3/3 rutin</span> — Ücretsiz plan
-            limitine ulaştın. Sınırsız rutin için PRO&apos;ya geç.
+            <span className="font-semibold">3/3</span> — {t("limitWarning", { count: 3, max: 3 })}
           </p>
           <Button size="sm" asChild>
-            <a href="/settings">PRO&apos;ya Geç</a>
+            <a href="/settings">{t("upgradeCta")}</a>
           </Button>
         </div>
       )}
@@ -295,7 +300,7 @@ export function RoutineList({ initialRoutines }: Props) {
                     : "bg-background border-input text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
-                {cat}
+                {getCategoryLabel(cat)}
                 <span
                   className={cn(
                     "ml-1.5 tabular-nums",
@@ -324,12 +329,12 @@ export function RoutineList({ initialRoutines }: Props) {
           <EmptyState onAdd={() => setDialogOpen(true)} />
         ) : (
           <div className="text-center py-12 text-sm text-muted-foreground">
-            <p>Bu kategoride rutin yok.</p>
+            <p>{t("noRoutinesInCategory")}</p>
             <button
               onClick={() => setActiveCategory(ALL)}
               className="mt-2 text-primary hover:underline"
             >
-              Tümünü göster
+              {t("showAll")}
             </button>
           </div>
         )
@@ -363,18 +368,19 @@ export function RoutineList({ initialRoutines }: Props) {
 }
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
+  const t = useTranslations("dashboard.routineList");
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center gap-4">
       <div className="size-12 rounded-full bg-muted flex items-center justify-center text-2xl">
         ✓
       </div>
       <div>
-        <p className="font-medium">Henüz rutin yok</p>
+        <p className="font-medium">{t("emptyTitle")}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          İlk rutinini ekleyerek alışkanlık takibine başla.
+          {t("emptyDescription")}
         </p>
       </div>
-      <Button onClick={onAdd}>İlk Rutini Ekle</Button>
+      <Button onClick={onAdd}>{t("emptyAdd")}</Button>
     </div>
   );
 }

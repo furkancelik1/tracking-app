@@ -21,21 +21,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
-export const metadata = {
-  title: "İstatistiklerim",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "stats.metadata" });
+  return { title: t("title") };
+}
 
 export default async function StatsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ range?: string }>;
 }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("stats");
   const session = await requireAuth();
   const userId = session.user.id as string;
 
-  const params = await searchParams;
-  const rangeParam = (params.range || "30d") as "7d" | "30d" | "all";
+  const searchParamsResolved = await searchParams;
+  const rangeParam = (searchParamsResolved.range || "30d") as "7d" | "30d" | "all";
   const days = rangeParam === "7d" ? 7 : rangeParam === "30d" ? 30 : 365;
 
   const analytics = await getUserAnalytics(userId, days);
@@ -60,9 +68,9 @@ export default async function StatsPage({
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">İstatistiklerim</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">
-            Alışkanlık verilerini analiz et ve ilerlemeni görselleştir.
+            {t("subtitle")}
           </p>
         </div>
         <StatsShareButton
@@ -81,27 +89,27 @@ export default async function StatsPage({
       {/* ── Summary Cards (4 kart) ────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="Toplam Tamamlama"
-          value={analytics.summary.totalCompletions.toLocaleString("tr-TR")}
-          subtitle={`Son ${days} gün`}
+          title={t("totalCompletions")}
+          value={analytics.summary.totalCompletions.toLocaleString()}
+          subtitle={t("lastDays", { days })}
           icon={<CheckCircle2 className="h-4 w-4" />}
         />
         <StatsCard
-          title="Mevcut Seri"
-          value={`${analytics.summary.currentStreak} gün`}
-          subtitle={`En uzun: ${analytics.summary.longestStreak} gün`}
+          title={t("currentStreak")}
+          value={t("days", { count: analytics.summary.currentStreak })}
+          subtitle={t("longestStreak", { count: analytics.summary.longestStreak })}
           icon={<Flame className="h-4 w-4" />}
         />
         <StatsCard
-          title="Aylık Başarı Oranı"
+          title={t("monthlySuccess")}
           value={`%${analytics.summary.monthlySuccessRate}`}
-          subtitle="Son 30 günde aktif gün oranı"
+          subtitle={t("monthlySuccessSubtitle")}
           icon={<TrendingUp className="h-4 w-4" />}
         />
         <StatsCard
-          title="Aktif Rutinler"
+          title={t("activeRoutines")}
           value={analytics.summary.activeRoutines.toString()}
-          subtitle={`Ort. ${analytics.summary.averagePerDay}/gün`}
+          subtitle={t("avgPerDay", { count: analytics.summary.averagePerDay })}
           icon={<Activity className="h-4 w-4" />}
         />
       </div>
@@ -135,7 +143,7 @@ export default async function StatsPage({
           <CardHeader className="pb-2 flex flex-row items-center gap-2 space-y-0">
             <Target className="h-4 w-4 text-primary" />
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Tamamlanma Oranı
+              {t("completionRate")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -143,7 +151,7 @@ export default async function StatsPage({
               %{analytics.summary.completionRate}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Son {days} günde en az 1 tamamlama yapılan gün oranı
+              {t("completionRateSubtitle", { days })}
             </p>
           </CardContent>
         </Card>
@@ -153,7 +161,7 @@ export default async function StatsPage({
           <CardHeader className="pb-2 flex flex-row items-center gap-2 space-y-0">
             <CalendarDays className="h-4 w-4 text-primary" />
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Zirve Günü
+              {t("peakDay")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -161,7 +169,7 @@ export default async function StatsPage({
               {analytics.summary.peakDay.day}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {analytics.summary.peakDay.count} tamamlama ile en aktif gün
+              {t("peakDaySubtitle", { count: analytics.summary.peakDay.count })}
             </p>
           </CardContent>
         </Card>
@@ -171,7 +179,7 @@ export default async function StatsPage({
           <CardHeader className="pb-2 flex flex-row items-center gap-2 space-y-0">
             <Activity className="h-4 w-4 text-primary" />
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Günlük Ortalama
+              {t("dailyAverage")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -179,7 +187,7 @@ export default async function StatsPage({
               {analytics.summary.averagePerDay}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Günde ortalama tamamlanan rutin sayısı
+              {t("dailyAverageSubtitle")}
             </p>
           </CardContent>
         </Card>

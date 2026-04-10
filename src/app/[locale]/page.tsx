@@ -1,20 +1,62 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getSession } from "@/lib/auth";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { CheckoutButton } from "@/components/landing/CheckoutButton";
 import { STRIPE_PLANS } from "@/lib/stripe";
-
-export const metadata = {
-  title: "Routine Tracker — Rutinlerini Takip Et, Hayatını Değiştir",
-  description:
-    "Günlük alışkanlıklarını kolayca takip et. Streak sistemi ve haftalık istatistiklerle motivasyonunu canlı tut.",
-};
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 
 export const dynamic = "force-dynamic";
 
-export default async function LandingPage() {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "landing.metadata" });
+  return { title: t("title"), description: t("description") };
+}
+
+export default async function LandingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const session = await getSession();
   const isLoggedIn = !!session?.user;
+  const t = await getTranslations("landing");
+  const tc = await getTranslations("common");
+
+  const freeFeatures = t.raw("pricing.freeFeatures") as string[];
+  const proFeatures = t.raw("pricing.proFeatures") as string[];
+  const testimonials = t.raw("testimonials.items") as Array<{
+    quote: string;
+    name: string;
+  }>;
+
+  const FEATURES = [
+    {
+      icon: "✅",
+      title: t("features.smartTracking.title"),
+      description: t("features.smartTracking.description"),
+      badge: undefined as string | undefined,
+    },
+    {
+      icon: "🔥",
+      title: t("features.streaks.title"),
+      description: t("features.streaks.description"),
+      badge: undefined as string | undefined,
+    },
+    {
+      icon: "📊",
+      title: t("features.analytics.title"),
+      description: t("features.analytics.description"),
+      badge: t("features.analytics.badge"),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -23,7 +65,7 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-sm">
             <span className="size-5 rounded-full bg-primary inline-block" />
-            Routine Tracker
+            {tc("appName")}
           </Link>
 
           <nav className="hidden sm:flex items-center gap-1">
@@ -31,25 +73,26 @@ export default async function LandingPage() {
               href="#features"
               className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors"
             >
-              Özellikler
+              {t("header.features")}
             </a>
             <a
               href="#pricing"
               className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors"
             >
-              Fiyatlandırma
+              {t("header.pricing")}
             </a>
           </nav>
 
           {isLoggedIn ? (
             <Button asChild size="sm">
-              <Link href="/dashboard">Panele Git</Link>
+              <Link href="/dashboard">{t("header.goToDashboard")}</Link>
             </Button>
           ) : (
             <Button asChild size="sm" variant="outline">
-              <Link href="/login">Giriş Yap</Link>
+              <Link href="/login">{t("header.signIn")}</Link>
             </Button>
           )}
+          <LanguageSwitcher />
         </div>
       </header>
 
@@ -67,32 +110,31 @@ export default async function LandingPage() {
 
           <div className="relative mx-auto max-w-4xl px-6 py-28 text-center flex flex-col items-center gap-6">
             <span className="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1 text-xs font-medium text-muted-foreground shadow-sm">
-              🔥 Streak sistemi ile motivasyonunu koru
+              {t("hero.badge")}
             </span>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1]">
-              Rutinlerini Takip Et,{" "}
-              <span className="text-primary">Hayatını Değiştir</span>
+              {t("hero.titleStart")}{" "}
+              <span className="text-primary">{t("hero.titleHighlight")}</span>
             </h1>
 
             <p className="max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Günlük alışkanlıklarını dakikalar içinde kur. Aralıksız seri sistemi
-              ve haftalık grafiklerle ilerleni gör, motivasyonunu hiç kaybetme.
+              {t("hero.description")}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mt-2">
               <Button asChild size="lg" className="px-8">
                 <Link href={isLoggedIn ? "/dashboard" : "/login"}>
-                  Ücretsiz Başla
+                  {t("hero.ctaPrimary")}
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <a href="#features">Nasıl Çalışır?</a>
+                <a href="#features">{t("hero.ctaSecondary")}</a>
               </Button>
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Kredi kartı gerekmez · Ücretsiz planda 5 rutin
+              {t("hero.ctaNote")}
             </p>
           </div>
         </section>
@@ -102,11 +144,10 @@ export default async function LandingPage() {
           <div className="mx-auto max-w-6xl px-6">
             <div className="text-center mb-14">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                İhtiyacın olan her şey, tek yerde
+                {t("features.title")}
               </h2>
               <p className="mt-3 text-muted-foreground text-sm sm:text-base max-w-xl mx-auto">
-                Karmaşık uygulamalara gerek yok. Sade, hızlı ve etkili bir rutin
-                takip deneyimi.
+                {t("features.subtitle")}
               </p>
             </div>
 
@@ -136,19 +177,19 @@ export default async function LandingPage() {
         <section className="py-14 border-t bg-muted/40">
           <div className="mx-auto max-w-4xl px-6 text-center space-y-8">
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-              Kullanıcılar ne diyor?
+              {t("testimonials.label")}
             </p>
             <div className="grid gap-4 sm:grid-cols-3">
-              {TESTIMONIALS.map((t) => (
+              {testimonials.map((item) => (
                 <blockquote
-                  key={t.name}
+                  key={item.name}
                   className="rounded-xl border bg-card p-5 text-left space-y-3"
                 >
                   <p className="text-sm text-foreground leading-relaxed">
-                    &ldquo;{t.quote}&rdquo;
+                    &ldquo;{item.quote}&rdquo;
                   </p>
                   <footer className="text-xs text-muted-foreground font-medium">
-                    — {t.name}
+                    — {item.name}
                   </footer>
                 </blockquote>
               ))}
@@ -161,10 +202,10 @@ export default async function LandingPage() {
           <div className="mx-auto max-w-4xl px-6">
             <div className="text-center mb-14">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Sade ve şeffaf fiyatlandırma
+                {t("pricing.title")}
               </h2>
               <p className="mt-3 text-muted-foreground text-sm sm:text-base">
-                İstediğin zaman yükselt, istediğin zaman iptal et.
+                {t("pricing.subtitle")}
               </p>
             </div>
 
@@ -172,13 +213,13 @@ export default async function LandingPage() {
               {/* Free */}
               <div className="rounded-xl border bg-card p-8 flex flex-col gap-6">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Ücretsiz</p>
-                  <p className="mt-1 text-4xl font-bold">$0</p>
-                  <p className="text-sm text-muted-foreground mt-1">Sonsuza kadar ücretsiz</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t("pricing.free.name")}</p>
+                  <p className="mt-1 text-4xl font-bold">{t("pricing.free.price")}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t("pricing.free.interval")}</p>
                 </div>
 
                 <ul className="space-y-2.5 flex-1">
-                  {FREE_FEATURES.map((f) => (
+                  {freeFeatures.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm">
                       <span className="text-green-500 shrink-0">✓</span>
                       {f}
@@ -188,7 +229,7 @@ export default async function LandingPage() {
 
                 <Button asChild variant="outline" size="lg" className="w-full">
                   <Link href={isLoggedIn ? "/dashboard" : "/login"}>
-                    Ücretsiz Başla
+                    {t("pricing.free.cta")}
                   </Link>
                 </Button>
               </div>
@@ -196,7 +237,7 @@ export default async function LandingPage() {
               {/* Pro */}
               <div className="rounded-xl border-2 border-primary bg-card p-8 flex flex-col gap-6 relative shadow-lg">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary text-primary-foreground text-xs font-semibold px-3 py-1">
-                  En Popüler
+                  {t("pricing.pro.popular")}
                 </span>
 
                 <div>
@@ -210,12 +251,12 @@ export default async function LandingPage() {
                     </span>
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    İstediğin zaman iptal et
+                    {t("pricing.pro.cancelAnytime")}
                   </p>
                 </div>
 
                 <ul className="space-y-2.5 flex-1">
-                  {PRO_FEATURES.map((f) => (
+                  {proFeatures.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm">
                       <span className="text-green-500 shrink-0">✓</span>
                       {f}
@@ -233,15 +274,14 @@ export default async function LandingPage() {
         <section className="py-20 border-t bg-primary text-primary-foreground">
           <div className="mx-auto max-w-2xl px-6 text-center space-y-6">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Bugün ilk rutinini oluştur
+              {t("cta.title")}
             </h2>
             <p className="text-primary-foreground/70 text-sm sm:text-base">
-              Binlerce kullanıcı rutinlerini takip etmek için Routine Tracker&apos;ı
-              kullanıyor. Sıra sende.
+              {t("cta.description")}
             </p>
             <Button asChild size="lg" variant="secondary" className="px-8">
               <Link href={isLoggedIn ? "/dashboard" : "/login"}>
-                Hemen Başla — Ücretsiz
+                {t("cta.button")}
               </Link>
             </Button>
           </div>
@@ -253,15 +293,15 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2 font-medium text-foreground">
             <span className="size-4 rounded-full bg-primary inline-block" />
-            Routine Tracker
+            {tc("appName")}
           </div>
-          <p>© {new Date().getFullYear()} Routine Tracker. Tüm hakları saklıdır.</p>
+          <p>{tc("footer", { year: new Date().getFullYear() })}</p>
           <div className="flex gap-4">
             <Link href="/login" className="hover:text-foreground transition-colors">
-              Giriş Yap
+              {t("footer.signIn")}
             </Link>
             <a href="#pricing" className="hover:text-foreground transition-colors">
-              Fiyatlandırma
+              {t("footer.pricing")}
             </a>
           </div>
         </div>
@@ -270,63 +310,3 @@ export default async function LandingPage() {
   );
 }
 
-// ─── Statik veri ─────────────────────────────────────────────────────────────
-
-const FEATURES = [
-  {
-    icon: "✅",
-    title: "Akıllı Takip",
-    description:
-      "Günlük, haftalık ve aylık rutinlerini saniyeler içinde oluştur. Checkbox ile tamamla, ilerleni anında gör.",
-    badge: undefined,
-  },
-  {
-    icon: "🔥",
-    title: "Alevli Seriler",
-    description:
-      "Her gün rutinini tamamla, streak'ini büyüt. Serilerin görsel olarak takip edilir, kopmasın diye seni uyarır.",
-    badge: undefined,
-  },
-  {
-    icon: "📊",
-    title: "Gelişmiş Analitik",
-    description:
-      "Son 7 günün performansını interaktif grafiklerle incele. Hangi günler daha verimli olduğunu keşfet.",
-    badge: "Pro Özelliği",
-  },
-] as const;
-
-const FREE_FEATURES = [
-  "Maksimum 5 rutin",
-  "Günlük / Haftalık / Aylık sıklık",
-  "Streak takibi",
-  "Bugünkü ilerleme çubuğu",
-  "Tüm cihazlarda erişim",
-];
-
-const PRO_FEATURES = [
-  "Sınırsız rutin",
-  "Günlük / Haftalık / Aylık sıklık",
-  "Streak takibi",
-  "Haftalık istatistik grafikleri",
-  "Öncelikli destek",
-  "Tüm gelecek özellikler",
-];
-
-const TESTIMONIALS = [
-  {
-    quote:
-      "Streak sistemini görünce ilk hafta hiçbir rutinimi atlamamak için motivasyonum ikiye katlandı.",
-    name: "Elif K.",
-  },
-  {
-    quote:
-      "Bu kadar sade bir arayüzde bu kadar güçlü bir takip sistemi beklenmiyordu. Günlük kullanıyorum.",
-    name: "Mert A.",
-  },
-  {
-    quote:
-      "Pro'ya geçince haftalık grafikleri görünce hangi günler daha üretken olduğumu fark ettim.",
-    name: "Selin T.",
-  },
-];

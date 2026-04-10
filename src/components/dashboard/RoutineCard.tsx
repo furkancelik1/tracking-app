@@ -22,16 +22,11 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { ICON_MAP } from "@/lib/routine-icons";
 import { HabitHeatmap } from "@/components/dashboard/HabitHeatmap";
 import { fireConfetti, hapticTap } from "@/lib/celebrations";
-
-const FREQUENCY_LABELS: Record<RoutineWithMeta["frequency"], string> = {
-  DAILY: "Günlük",
-  WEEKLY: "Haftalık",
-  MONTHLY: "Aylık",
-};
 
 type Props = {
   routine: RoutineWithMeta;
@@ -60,6 +55,7 @@ const cardVariants = {
 };
 
 export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 }: Props) {
+  const t = useTranslations("dashboard.routineCard");
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [justCompleted, setJustCompleted] = useState(false);
@@ -156,7 +152,7 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 
                 : "bg-secondary text-secondary-foreground"
             )}
           >
-            {isCompleted ? "Tamamlandı" : FREQUENCY_LABELS[routine.frequency]}
+            {isCompleted ? t("completed") : t(routine.frequency === "DAILY" ? "daily" : routine.frequency === "WEEKLY" ? "weekly" : "monthly")}
           </Badge>
         </div>
 
@@ -185,19 +181,17 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 
             )}
           >
             🔥{" "}
-            {routine.currentStreak > 0 ? `${routine.currentStreak} gün` : "—"}
+            {routine.currentStreak > 0 ? t("streak", { count: routine.currentStreak }) : t("noStreak")}
           </span>
           {routine.longestStreak > 0 && (
             <span className="text-xs text-muted-foreground">
-              En uzun: {routine.longestStreak}g
+              {t("longestStreak", { count: routine.longestStreak })}
             </span>
           )}
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Toplam{" "}
-          <span className="font-semibold text-foreground">{routine._count.logs}</span>{" "}
-          kez tamamlandı
+          {t("totalCompleted", { count: routine._count.logs })}
         </p>
 
         <HabitHeatmap logs={routine.logs} color={routine.color} />
@@ -216,7 +210,7 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 
           disabled={isPending}
           onClick={handleCompleteClick}
         >
-          {isCompleted ? "Geri Al" : "Tamamla"}
+          {isCompleted ? t("completed") : t("confirmComplete").replace(" ✓", "")}
         </Button>
 
         <Button
@@ -250,8 +244,7 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
-              Not ekle{" "}
-              <span className="text-muted-foreground font-normal">(isteğe bağlı)</span>
+              {t("notePlaceholder")}
             </label>
             <textarea
               autoFocus
@@ -260,7 +253,7 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleConfirm();
               }}
-              placeholder="Bugün nasıl hissettirdi? Ne fark ettiniz?"
+              placeholder={t("notePlaceholder")}
               rows={3}
               maxLength={500}
               className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -274,14 +267,14 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 
 
           <DialogFooter className="gap-2 sm:gap-0">
             <DialogClose asChild>
-              <Button variant="ghost" size="sm">İptal</Button>
+              <Button variant="ghost" size="sm">{t("cancelComplete")}</Button>
             </DialogClose>
             <Button
               size="sm"
               style={{ backgroundColor: routine.color, color: "#fff" }}
               onClick={handleConfirm}
             >
-              Tamamla
+              {t("confirmComplete")}
             </Button>
           </DialogFooter>
         </DialogContent>

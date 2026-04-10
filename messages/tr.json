@@ -1,0 +1,372 @@
+{
+  "common": {
+    "appName": "Rutin Takipçisi",
+    "loading": "Yükleniyor…",
+    "error": "Bir hata oluştu",
+    "retry": "Tekrar Dene",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "or": "veya",
+    "pro": "PRO",
+    "free": "ÜCRETSİZ",
+    "xpUnit": "XP",
+    "dayStreak": "{count} gün seri",
+    "level": "Seviye {level}",
+    "anonymous": "Anonim",
+    "you": "(sen)",
+    "footer": "© {year} Rutin Takipçisi. Tüm hakları saklıdır.",
+    "site": "furkancelik.online"
+  },
+
+  "nav": {
+    "routines": "Rutinlerim",
+    "leaderboard": "Liderlik",
+    "settings": "Ayarlar",
+    "logo": "Rutin Takip",
+    "lightMode": "Açık Moda Geç",
+    "darkMode": "Karanlık Moda Geç",
+    "signOut": "Çıkış Yap"
+  },
+
+  "landing": {
+    "metadata": {
+      "title": "Rutin Takipçisi — Alışkanlıklarını Geliştir, Hayatını Dönüştür",
+      "description": "Günlük alışkanlıklarını kolayca takip et. Seriler, haftalık istatistikler ve analizlerle motivasyonunu koru."
+    },
+    "header": {
+      "features": "Özellikler",
+      "pricing": "Fiyatlandırma",
+      "goToDashboard": "Dashboard'a Git",
+      "signIn": "Giriş Yap"
+    },
+    "hero": {
+      "badge": "🔥 Seri sistemiyle motivasyonunu koru",
+      "titleStart": "Rutinlerini Takip Et,",
+      "titleHighlight": "Hayatını Değiştir",
+      "description": "Günlük alışkanlıklarını dakikalar içinde kur. Seriler ve haftalık grafiklerle ilerlemeni gör — motivasyonunu asla kaybetme.",
+      "ctaPrimary": "Ücretsiz Başla",
+      "ctaSecondary": "Nasıl Çalışır?",
+      "ctaNote": "Kredi kartı gerekmez · Ücretsiz planda 5 rutin"
+    },
+    "features": {
+      "title": "İhtiyacın olan her şey, tek yerde",
+      "subtitle": "Karmaşık uygulamalara gerek yok. Temiz, hızlı ve etkili bir rutin takip deneyimi.",
+      "smartTracking": {
+        "title": "Akıllı Takip",
+        "description": "Günlük, haftalık ve aylık rutinlerini saniyeler içinde oluştur. Checkbox ile tamamla, ilerlemeni anında gör."
+      },
+      "streaks": {
+        "title": "Alev Alev Seriler",
+        "description": "Her gün rutinini tamamla ve serini büyüt. Seriler görsel olarak takip edilir ve kırılmadan önce uyarılırsın."
+      },
+      "analytics": {
+        "title": "Gelişmiş Analitik",
+        "description": "Son 7 günlük performansını interaktif grafiklerle incele. Hangi günlerde daha üretken olduğunu keşfet.",
+        "badge": "Pro Özellik"
+      }
+    },
+    "testimonials": {
+      "label": "Kullanıcılar ne diyor?",
+      "items": [
+        {
+          "quote": "Seri sistemini görünce ilk haftada motivasyonum ikiye katlandı, bir gün bile atlamak istemiyorum.",
+          "name": "Elif K."
+        },
+        {
+          "quote": "Bu kadar temiz bir arayüzde bu kadar güçlü bir takip sistemi beklemiyordum. Her gün kullanıyorum.",
+          "name": "Mert A."
+        },
+        {
+          "quote": "Pro'ya geçtikten sonra haftalık grafikler hangi günlerde gerçekten daha üretken olduğumu gösterdi.",
+          "name": "Selin T."
+        }
+      ]
+    },
+    "pricing": {
+      "title": "Basit ve şeffaf fiyatlandırma",
+      "subtitle": "İstediğin zaman yükselt, istediğin zaman iptal et.",
+      "free": {
+        "name": "Ücretsiz",
+        "price": "₺0",
+        "interval": "Sonsuza kadar ücretsiz",
+        "cta": "Ücretsiz Başla"
+      },
+      "pro": {
+        "popular": "En Popüler",
+        "cancelAnytime": "İstediğin zaman iptal et",
+        "cta": "Pro'ya Başla"
+      },
+      "freeFeatures": [
+        "5 rutine kadar",
+        "Günlük / Haftalık / Aylık sıklık",
+        "Seri takibi",
+        "Günlük ilerleme çubuğu",
+        "Tüm cihazlardan erişim"
+      ],
+      "proFeatures": [
+        "Sınırsız rutin",
+        "Günlük / Haftalık / Aylık sıklık",
+        "Seri takibi",
+        "Haftalık istatistik grafikleri",
+        "Öncelikli destek",
+        "Tüm gelecek özellikler"
+      ]
+    },
+    "cta": {
+      "title": "İlk rutinini bugün oluştur",
+      "description": "Binlerce kullanıcı alışkanlıklarını takip etmek için Rutin Takipçisi'ni kullanıyor. Sıra sende.",
+      "button": "Hemen Başla — Ücretsiz"
+    },
+    "footer": {
+      "signIn": "Giriş Yap",
+      "pricing": "Fiyatlandırma"
+    }
+  },
+
+  "auth": {
+    "layout": {
+      "quote": "Daha iyi rutinler oluştur. Her adımını takip et. Tutarlı kal.",
+      "quoteAuthor": "— Verimlilik yeniden tanımlandı"
+    },
+    "login": {
+      "title": "Tekrar hoş geldin",
+      "subtitle": "Devam etmek için hesabına giriş yap",
+      "google": "Google ile devam et",
+      "emailLabel": "E-posta adresi",
+      "emailPlaceholder": "sen@ornek.com",
+      "emailSubmit": "E-posta ile devam et",
+      "emailSending": "Gönderiliyor…",
+      "terms": "Devam ederek",
+      "termsLink": "Kullanım Şartları",
+      "and": "ve",
+      "privacyLink": "Gizlilik Politikası'nı",
+      "emailSent": {
+        "title": "E-postanı kontrol et",
+        "description": "<b>{email}</b> adresine giriş bağlantısı gönderdik. Giriş yapmak için bağlantıya tıkla.",
+        "back": "Farklı bir e-posta kullan"
+      },
+      "errors": {
+        "invalidEmail": "Lütfen geçerli bir e-posta adresi girin.",
+        "OAuthSignin": "Google ile giriş başlatılamadı. Lütfen tekrar deneyin.",
+        "OAuthCallback": "Google ile giriş başarısız oldu. Lütfen tekrar deneyin.",
+        "OAuthAccountNotLinked": "Bu e-posta farklı bir yöntemle kayıtlı.",
+        "EmailSignin": "Giriş bağlantısı gönderilemedi. Lütfen tekrar deneyin.",
+        "EmailCreateAccount": "Hesabınız oluşturulamadı. Lütfen tekrar deneyin.",
+        "SessionRequired": "Devam etmek için giriş yapmanız gerekiyor.",
+        "Default": "Bir hata oluştu. Lütfen tekrar deneyin."
+      }
+    },
+    "register": {
+      "title": "Hesap oluştur",
+      "description": "İlk girişinizde yeni hesabınız otomatik olarak oluşturulur.",
+      "backToLogin": "Giriş yapmaya devam et"
+    }
+  },
+
+  "dashboard": {
+    "metadata": { "title": "Rutinlerim" },
+    "errorTitle": "Bir hata oluştu",
+    "errorMessage": "Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.",
+    "sessionError": "Oturum bilgisi alınamadı.",
+    "emptyState": {
+      "title": "Henüz rutin eklemedin",
+      "description": "İlk rutinini ekleyerek takibe başla. Günlük, haftalık veya aylık rutinler oluşturabilirsin.",
+      "cta": "İlk Rutinini Ekle"
+    },
+    "stats": {
+      "todayProgress": "Bugünkü İlerleme",
+      "completed": "{completed}/{total}",
+      "completedPct": "%{percentage} tamamlandı",
+      "activeStreak": "Aktif Seri",
+      "streakSubtitle": "Üst üste tamamlama sayısı",
+      "weeklyEfficiency": "Haftalık Verimlilik",
+      "weeklySubtitle": "Son 7 günlük performans",
+      "weeklyTotal": "Bu Hafta Toplam",
+      "weeklyTotalSubtitle": "Tamamlanan rutin sayısı",
+      "days": "{count} gün"
+    },
+    "streakAlert": {
+      "title": "Kritik Durum — {count} rutinin serisi tehlikede!",
+      "titleSingle": "Kritik Durum — {count} rutinin serisi tehlikede!"
+    },
+    "progressBar": {
+      "label": "Bugünkü ilerleme",
+      "completed": "{completed}/{total} tamamlandı"
+    },
+    "routineList": {
+      "title": "Rutinlerim",
+      "subtitle": "Günlük alışkanlıklarını takip et",
+      "addRoutine": "+ Rutin Ekle",
+      "limitWarning": "{count}/{max} rutin — Ücretsiz plan limitine ulaştınız. Sınırsız rutin için PRO'ya yükseltin.",
+      "upgradeCta": "PRO'ya Yükselt",
+      "allCategories": "Tümü",
+      "noRoutinesInCategory": "Bu kategoride rutin yok.",
+      "showAll": "Tümünü göster",
+      "emptyTitle": "Henüz rutin eklemedin",
+      "emptyDescription": "İlk rutinini ekleyerek takibe başla.",
+      "emptyAdd": "İlk Rutinini Ekle",
+      "completed": "Rutin tamamlandı! 🔥",
+      "undone": "Tamamlama geri alındı.",
+      "deleted": "Rutin silindi.",
+      "deleteFailed": "Silinemedi.",
+      "actionFailed": "İşlem başarısız.",
+      "allDone": "Harika! Bugünkü tüm rutinlerini tamamladın! 🎉",
+      "levelUp": "🎉 Tebrikler! Seviye Atladın: Seviye {level} — {rank}",
+      "levelUpShare": "Paylaş"
+    },
+    "routineCard": {
+      "daily": "Günlük",
+      "weekly": "Haftalık",
+      "monthly": "Aylık",
+      "completed": "Tamamlandı",
+      "streak": "{count} gün",
+      "noStreak": "—",
+      "longestStreak": "En uzun: {count}g",
+      "totalCompleted": "Toplam {count} kez tamamlandı",
+      "completeTitle": "Rutini Tamamla",
+      "completeDescription": "Tamamlaman hakkında isteğe bağlı bir not ekle.",
+      "notePlaceholder": "Bugünkü not (isteğe bağlı)…",
+      "confirmComplete": "Tamamla ✓",
+      "cancelComplete": "İptal",
+      "deleteTitle": "Rutini Sil",
+      "deleteDescription": "Emin misin? Bu işlem geri alınamaz.",
+      "confirmDelete": "Sil",
+      "cancelDelete": "İptal"
+    },
+    "addRoutine": {
+      "title": "Yeni Rutin",
+      "description": "Takip etmek için yeni bir alışkanlık oluştur.",
+      "titleLabel": "Rutin Adı",
+      "titlePlaceholder": "Örn: Sabah Egzersizi",
+      "descriptionLabel": "Açıklama (isteğe bağlı)",
+      "descriptionPlaceholder": "Rutinin hakkında kısa bir açıklama…",
+      "frequencyLabel": "Sıklık",
+      "daily": "Günlük",
+      "weekly": "Haftalık",
+      "monthly": "Aylık",
+      "categoryLabel": "Kategori",
+      "categoryPlaceholder": "Örn: Sağlık",
+      "colorLabel": "Renk",
+      "iconLabel": "İkon",
+      "create": "Rutin Oluştur",
+      "creating": "Oluşturuluyor…",
+      "success": "Rutin oluşturuldu!",
+      "error": "Rutin oluşturulamadı.",
+      "limitTitle": "Rutin Limitine Ulaşıldı",
+      "limitDescription": "Ücretsiz plan en fazla {max} rutine izin verir. Sınırsız rutin için PRO'ya yükseltin.",
+      "limitUpgrade": "PRO'ya Yükselt",
+      "limitClose": "Kapat"
+    }
+  },
+
+  "leaderboard": {
+    "metadata": { "title": "Liderlik Tablosu" },
+    "title": "Liderlik Tablosu",
+    "subtitle": "Rutinlerini tamamla, XP kazan, zirveye çık!",
+    "emptyTitle": "Henüz sıralama yok",
+    "emptyDescription": "Rutinlerini tamamlayarak XP kazan ve liderlik tablosuna gir!",
+    "usersAmong": "{total} kullanıcı arasında #{rank}"
+  },
+
+  "settings": {
+    "metadata": { "title": "Ayarlar" },
+    "title": "Ayarlar",
+    "subtitle": "Hesap ve bildirim tercihlerini yönet.",
+    "profile": {
+      "title": "Profil",
+      "name": "İsim:",
+      "email": "E-posta:"
+    },
+    "notifications": {
+      "title": "Bildirimler",
+      "emailToggle": "Günlük E-posta Hatırlatıcısı",
+      "enabledDescription": "Tamamlanmamış rutinlerin için günlük hatırlatma al.",
+      "disabledDescription": "Bu özellik yalnızca PRO kullanıcıları için kullanılabilir.",
+      "enabled": "E-posta bildirimleri açıldı.",
+      "disabled": "E-posta bildirimleri kapatıldı."
+    },
+    "subscription": {
+      "proPlan": "Pro Plan",
+      "proDescription": "Tam erişim — sınırsız rutin",
+      "freePlan": "Ücretsiz Plan",
+      "freeDescription": "5 rutine kadar",
+      "upgrade": "Pro'ya Yükselt",
+      "manageBilling": "Faturalandırmayı Yönet"
+    }
+  },
+
+  "stats": {
+    "metadata": { "title": "İstatistiklerim" },
+    "title": "İstatistiklerim",
+    "subtitle": "Alışkanlık verilerini analiz et ve ilerlemeni görselleştir.",
+    "totalCompletions": "Toplam Tamamlama",
+    "currentStreak": "Mevcut Seri",
+    "longestStreak": "En uzun: {count} gün",
+    "monthlySuccess": "Aylık Başarı Oranı",
+    "monthlySuccessSubtitle": "Son 30 günde aktif gün oranı",
+    "activeRoutines": "Aktif Rutin",
+    "avgPerDay": "Ort. {count}/gün",
+    "completionRate": "Tamamlama Oranı",
+    "completionRateSubtitle": "Son {days} günde en az 1 tamamlama yapılan gün oranı",
+    "peakDay": "Zirve Günü",
+    "peakDaySubtitle": "{count} tamamlama ile en aktif gün",
+    "dailyAverage": "Günlük Ortalama",
+    "dailyAverageSubtitle": "Günde ortalama tamamlanan rutin sayısı",
+    "lastDays": "Son {days} gün",
+    "shareWeekly": "Haftalık Özeti Paylaş",
+    "days": "{count} gün"
+  },
+
+  "levels": {
+    "progressRemaining": "{count} XP kaldı",
+    "levelLabel": "Seviye {level}",
+    "ranks": {
+      "Çırak": "Çırak",
+      "Disiplinli": "Disiplinli",
+      "Rutin Canavarı": "Rutin Canavarı",
+      "Üstat": "Üstat",
+      "Efsane": "Efsane"
+    }
+  },
+
+  "share": {
+    "download": "Görüntüyü İndir",
+    "close": "Kapat",
+    "preparing": "Hazırlanıyor…",
+    "downloaded": "Görüntü indirildi! 📸",
+    "downloadError": "Görüntü oluşturulamadı, lütfen tekrar dene.",
+    "levelUp": {
+      "label": "Seviye Atladı!",
+      "totalXp": "Toplam {xp} XP kazandı",
+      "progress": "İlerleme"
+    },
+    "weeklySummary": {
+      "label": "Haftalık Özet",
+      "discipline": "Disiplin",
+      "totalXp": "Toplam {xp} XP"
+    },
+    "statLabels": {
+      "dayStreak": "Gün Seri",
+      "completions": "Tamamlama"
+    },
+    "footerBrand": "Alışkanlık Takip",
+    "streakDays": "{count} gün",
+    "filenameLevelUp": "seviye-atladi",
+    "filenameWeeklySummary": "haftalik-ozet"
+  },
+
+  "email": {
+    "reminder": {
+      "badge": "🔥 Hatırlatma",
+      "headerTitle": "Serini kırma!",
+      "headerSub": "Bugün {count} rutin seni bekliyor",
+      "greeting": "Hey {name}, 👋",
+      "lead": "Bugün <strong>{count}</strong> tamamlanmamış rutinin var. Her tamamlama serilerini güçlendirir.",
+      "alertRisk": "<strong>{count} rutin</strong> serisi tehlikede! Bugün tamamlamazsan sıfırlanacak.",
+      "cta": "Dashboard'u Aç",
+      "footer": "Bu e-postayı, e-posta bildirimleri açık olduğu için alıyorsunuz.",
+      "unsubscribe": "Bildirim ayarlarını yönet"
+    }
+  }
+}

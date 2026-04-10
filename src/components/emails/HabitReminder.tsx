@@ -8,31 +8,44 @@ export interface PendingRoutine {
   color: string;
 }
 
+export interface EmailTexts {
+  badge: string;
+  headerTitle: string;
+  headerSub: string;
+  greeting: string;
+  lead: string;
+  alertRisk: string;
+  cta: string;
+  footerText: string;
+  unsubscribe: string;
+  dayUnit: string;
+  copyright: string;
+}
+
 export interface HabitReminderProps {
-  userName: string;
   pendingRoutines: PendingRoutine[];
   dashboardUrl: string;
   settingsUrl: string;
+  texts: EmailTexts;
 }
 
 // ─── Bileşen ─────────────────────────────────────────────────────────────────
 
 export function HabitReminder({
-  userName,
   pendingRoutines,
   dashboardUrl,
   settingsUrl,
+  texts,
 }: HabitReminderProps) {
-  const firstName = userName.split(" ")[0] || userName;
   const count = pendingRoutines.length;
   const atRisk = pendingRoutines.filter((r) => r.currentStreak >= 3);
 
   return (
-    <html lang="tr">
+    <html>
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Rutin Hatırlatıcı</title>
+        <title>{texts.headerTitle}</title>
       </head>
       <body style={styles.body}>
         {/* Wrapper */}
@@ -51,40 +64,35 @@ export function HabitReminder({
                     {/* ── Header ── */}
                     <tr>
                       <td style={styles.header}>
-                        <div style={styles.badge}>🔥 Hatırlatıcı</div>
-                        <div style={styles.headerTitle}>Serini bozma!</div>
+                        <div style={styles.badge}>{texts.badge}</div>
+                        <div style={styles.headerTitle}>{texts.headerTitle}</div>
                         <div style={styles.headerSub}>
-                          Bugün {count} rutin seni bekliyor
+                          {texts.headerSub}
                         </div>
                       </td>
                     </tr>
 
-                    {/* ── Gövde ── */}
+                    {/* ── Body ── */}
                     <tr>
                       <td style={styles.body2}>
-                        {/* Selamlama */}
-                        <p style={styles.greeting}>Hey {firstName}, 👋</p>
-                        <p style={styles.lead}>
-                          Bugün tamamlaman gereken{" "}
-                          <strong style={{ color: "#818cf8" }}>
-                            {count} {count === 1 ? "rutin" : "rutin"}
-                          </strong>{" "}
-                          var. Her birini tamamladığında serilerin güçlenmeye devam
-                          ediyor.
-                        </p>
+                        <p style={styles.greeting}>{texts.greeting}</p>
+                        <p
+                          style={styles.lead}
+                          dangerouslySetInnerHTML={{ __html: texts.lead }}
+                        />
 
-                        {/* Kritik uyarı — 3+ günlük seri tehlikede */}
+                        {/* Risk alert */}
                         {atRisk.length > 0 && (
                           <div style={styles.alertBox}>
                             <span style={styles.alertIcon}>⚠️</span>
-                            <span style={styles.alertText}>
-                              <strong>{atRisk.length} rutinin</strong> serisi
-                              tehlikede! Bugün tamamlamazsan sıfırlanacak.
-                            </span>
+                            <span
+                              style={styles.alertText}
+                              dangerouslySetInnerHTML={{ __html: texts.alertRisk }}
+                            />
                           </div>
                         )}
 
-                        {/* Rutin listesi */}
+                        {/* Routine list */}
                         <div style={styles.listBox}>
                           {pendingRoutines.map((r, i) => (
                             <div
@@ -92,31 +100,28 @@ export function HabitReminder({
                               style={{
                                 ...styles.listItem,
                                 borderBottom:
-                                  i < pendingRoutines.length - 1
+                                  i < count - 1
                                     ? "1px solid #1e1e2e"
                                     : "none",
                               }}
                             >
-                              {/* Renk noktası */}
                               <span
                                 style={{
                                   ...styles.dot,
                                   backgroundColor: r.color,
                                 }}
                               />
-                              {/* Başlık */}
                               <span style={styles.listTitle}>{r.title}</span>
-                              {/* Seri */}
                               {r.currentStreak > 0 && (
                                 <span style={styles.streak}>
-                                  🔥 {r.currentStreak} gün
+                                  🔥 {r.currentStreak} {texts.dayUnit}
                                 </span>
                               )}
                             </div>
                           ))}
                         </div>
 
-                        {/* CTA Butonu */}
+                        {/* CTA */}
                         <table
                           cellPadding={0}
                           cellSpacing={0}
@@ -126,7 +131,7 @@ export function HabitReminder({
                             <tr>
                               <td style={styles.ctaCell}>
                                 <a href={dashboardUrl} style={styles.cta}>
-                                  Rutinlere Git →
+                                  {texts.cta} →
                                 </a>
                               </td>
                             </tr>
@@ -139,14 +144,13 @@ export function HabitReminder({
                     <tr>
                       <td style={styles.footer}>
                         <p style={styles.footerText}>
-                          Bu hatırlatıcıyı almak istemiyorsan{" "}
+                          {texts.footerText}{" "}
                           <a href={settingsUrl} style={styles.footerLink}>
-                            ayarlardan
-                          </a>{" "}
-                          kapatabilirsin.
+                            {texts.unsubscribe}
+                          </a>
                         </p>
                         <p style={{ ...styles.footerText, marginTop: 4 }}>
-                          © {new Date().getFullYear()} Rutin Takip
+                          {texts.copyright}
                         </p>
                       </td>
                     </tr>

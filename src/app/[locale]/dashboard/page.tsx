@@ -14,6 +14,7 @@ import { getDashboardData } from "@/actions/dashboard.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   CheckCircle2,
   Flame,
@@ -22,7 +23,11 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-export const metadata = { title: "Rutinlerim" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "dashboard.metadata" });
+  return { title: t("title") };
+}
 
 /** Sıfır veri için fallback analytics */
 function emptyAnalytics(): AnalyticsPayload {
@@ -43,8 +48,17 @@ function emptyAnalytics(): AnalyticsPayload {
   };
 }
 
-export default async function DashboardPage() {
-  /* ── Auth ──────────────────────────────────────────────────────────────── */
+export default async function DashboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("dashboard");
+  const tc = await getTranslations("common");
+
+  /* ── Auth ── */
   let session;
   try {
     session = await requireAuth();
@@ -53,7 +67,7 @@ export default async function DashboardPage() {
   }
 
   const userId = (session.user as any)?.id as string | undefined;
-  if (!userId) return <DashboardError message="Oturum bilgisi alınamadı." />;
+  if (!userId) return <DashboardError title={t("errorTitle")} message={t("sessionError")} retry={tc("retry")} />;
 
   const subscriptionTier = getSubscriptionTier(
     (session.user as any)?.subscriptionTier
@@ -139,29 +153,29 @@ export default async function DashboardPage() {
           {/* ── 4 Stat Cards ─────────────────────────────────────────── */}
           <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatsCard
-              title="Bugünün İlerlemesi"
+              title={t("stats.todayProgress")}
               value={`${stats.todayProgress.completed}/${stats.todayProgress.total}`}
-              subtitle={`%${stats.todayProgress.percentage} tamamlandı`}
+              subtitle={t("stats.completedPct", { percentage: stats.todayProgress.percentage })}
               icon={<CheckCircle2 className="h-4 w-4" />}
               trend={stats.trends.todayVsYesterday}
             />
             <StatsCard
-              title="Aktif Seri"
-              value={`${stats.activeStreak} gün`}
-              subtitle="Aralıksız tamamlama"
+              title={t("stats.activeStreak")}
+              value={t("stats.days", { count: stats.activeStreak })}
+              subtitle={t("stats.streakSubtitle")}
               icon={<Flame className="h-4 w-4" />}
             />
             <StatsCard
-              title="Haftalık Verimlilik"
+              title={t("stats.weeklyEfficiency")}
               value={`%${stats.weeklyProductivity}`}
-              subtitle="Son 7 gün performansı"
+              subtitle={t("stats.weeklySubtitle")}
               icon={<TrendingUp className="h-4 w-4" />}
               trend={stats.trends.thisWeekVsLastWeek}
             />
             <StatsCard
-              title="Bu Hafta Toplam"
+              title={t("stats.weeklyTotal")}
               value={stats.totalCompletions}
-              subtitle="Tamamlanan rutin"
+              subtitle={t("stats.weeklyTotalSubtitle")}
               icon={<Target className="h-4 w-4" />}
               trend={stats.trends.thisWeekVsLastWeek}
             />
@@ -186,14 +200,18 @@ export default async function DashboardPage() {
   } catch (error) {
     console.error("[DashboardPage] Beklenmeyen hata:", error);
     return (
-      <DashboardError message="Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin." />
+      <DashboardError
+        title={t("errorTitle")}
+        message={t("errorMessage")}
+        retry={tc("retry")}
+      />
     );
   }
 }
 
 /* ── Error State bileşeni ─────────────────────────────────────────────────── */
 
-function DashboardError({ message }: { message: string }) {
+function DashboardError({ title, message, retry }: { title?: string; message: string; retry?: string }) {
   return (
     <>
       <DashboardNav />
@@ -202,13 +220,13 @@ function DashboardError({ message }: { message: string }) {
           <div className="h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center">
             <AlertTriangle className="h-7 w-7 text-destructive" />
           </div>
-          <h2 className="text-xl font-semibold">Bir şeyler ters gitti</h2>
+          <h2 className="text-xl font-semibold">{title ?? "Error"}</h2>
           <p className="text-muted-foreground max-w-md">{message}</p>
           <a
             href="/dashboard"
             className="mt-2 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            Tekrar Dene
+            {retry ?? "Retry"}
           </a>
         </div>
       </main>

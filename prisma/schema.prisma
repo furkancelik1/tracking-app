@@ -39,6 +39,7 @@ model User {
 
   xp                      Int              @default(0)
   isPublic                Boolean          @default(true)
+  language                String           @default("en")
 
   accounts              Account[]
   sessions              Session[]

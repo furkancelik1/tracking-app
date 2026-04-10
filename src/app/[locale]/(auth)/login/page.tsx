@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,19 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { GoogleIcon } from "@/components/shared/GoogleIcon";
 import { cn } from "@/lib/utils";
 
-const emailSchema = z.string().email("Geçerli bir e-posta adresi girin.");
-
 type LoginState = "idle" | "loading" | "email_sent" | "error";
-
-const ERROR_MESSAGES: Record<string, string> = {
-  OAuthSignin: "Google girişi başlatılamadı. Lütfen tekrar deneyin.",
-  OAuthCallback: "Google girişi başarısız. Lütfen tekrar deneyin.",
-  OAuthAccountNotLinked: "Bu e-posta farklı bir yöntemle kayıtlı.",
-  EmailSignin: "Sihirli bağlantı gönderilemedi. Lütfen tekrar deneyin.",
-  EmailCreateAccount: "Hesabınız oluşturulamadı. Lütfen tekrar deneyin.",
-  SessionRequired: "Devam etmek için giriş yapın.",
-  Default: "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
-};
 
 export default function LoginPage() {
   return (
@@ -34,6 +23,8 @@ export default function LoginPage() {
 }
 
 function LoginPageContent() {
+  const t = useTranslations("auth.login");
+  const tc = useTranslations("common");
   const searchParams = useSearchParams();
   const errorCode = searchParams.get("error");
   const isVerifyMode = searchParams.get("verify") === "1";
@@ -45,10 +36,13 @@ function LoginPageContent() {
     isVerifyMode ? "email_sent" : "idle"
   );
 
-  const errorMessage =
-    errorCode != null
-      ? (ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES["Default"])
-      : null;
+  const ERROR_KEYS = ["OAuthSignin", "OAuthCallback", "OAuthAccountNotLinked", "EmailSignin", "EmailCreateAccount", "SessionRequired", "Default"] as const;
+  const getErrorMessage = (code: string | null) => {
+    if (!code) return null;
+    const key = ERROR_KEYS.includes(code as typeof ERROR_KEYS[number]) ? code : "Default";
+    return t(`errors.${key}` as Parameters<typeof t>[0]);
+  };
+  const errorMessage = getErrorMessage(errorCode);
 
   async function handleGoogleSignIn() {
     setState("loading");
@@ -59,9 +53,10 @@ function LoginPageContent() {
     e.preventDefault();
     setEmailError("");
 
+    const emailSchema = z.string().email(t("errors.invalidEmail"));
     const result = emailSchema.safeParse(email);
     if (!result.success) {
-      setEmailError(result.error.issues[0]?.message ?? "Geçersiz e-posta.");
+      setEmailError(result.error.issues[0]?.message ?? t("errors.invalidEmail"));
       return;
     }
 
@@ -74,7 +69,7 @@ function LoginPageContent() {
 
     if (res?.error) {
       setState("error");
-      setEmailError(ERROR_MESSAGES["EmailSignin"] ?? "");
+      setEmailError(t("errors.EmailSignin"));
     } else {
       setState("email_sent");
     }
@@ -89,9 +84,9 @@ function LoginPageContent() {
   return (
     <div className="space-y-6">
       <div className="space-y-1 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Tekrar hoş geldin</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Devam etmek için hesabına giriş yap
+          {t("subtitle")}
         </p>
       </div>
 
@@ -108,22 +103,22 @@ function LoginPageContent() {
         disabled={isLoading}
       >
         <GoogleIcon className="size-4" />
-        Google ile devam et
+        {t("google")}
       </Button>
 
       <div className="flex items-center gap-3">
         <Separator className="flex-1" />
-        <span className="text-xs text-muted-foreground">veya</span>
+        <span className="text-xs text-muted-foreground">{tc("or")}</span>
         <Separator className="flex-1" />
       </div>
 
       <form onSubmit={handleEmailSignIn} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="email">E-posta adresi</Label>
+          <Label htmlFor="email">{t("emailLabel")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="sen@ornek.com"
+            placeholder={t("emailPlaceholder")}
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -136,20 +131,19 @@ function LoginPageContent() {
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Gönderiliyor…" : "E-posta ile devam et"}
+          {isLoading ? t("emailSending") : t("emailSubmit")}
         </Button>
       </form>
 
       <p className="text-center text-xs text-muted-foreground">
-        Devam ederek{" "}
+        {t("terms")}{" "}
         <a href="/terms" className="underline underline-offset-2 hover:text-foreground">
-          Kullanım Şartları
+          {t("termsLink")}
         </a>{" "}
-        ve{" "}
+        {t("and")}{" "}
         <a href="/privacy" className="underline underline-offset-2 hover:text-foreground">
-          Gizlilik Politikası
+          {t("privacyLink")}
         </a>
-        &apos;nı kabul etmiş olursunuz.
       </p>
     </div>
   );
@@ -159,8 +153,8 @@ function LoginPageFallback() {
   return (
     <div className="space-y-6">
       <div className="space-y-1 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Tekrar hoş geldin</h1>
-        <p className="text-sm text-muted-foreground">Giriş yükleniyor…</p>
+        <div className="h-7 w-48 mx-auto bg-muted rounded animate-pulse" />
+        <div className="h-4 w-64 mx-auto bg-muted rounded animate-pulse" />
       </div>
     </div>
   );
@@ -173,30 +167,29 @@ function EmailSentView({
   email: string;
   onBack: () => void;
 }) {
+  const t = useTranslations("auth.login");
   return (
     <div className="space-y-6 text-center">
       <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10 text-2xl">
         ✉️
       </div>
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold">E-postanı kontrol et</h2>
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">
-            {email || "gelen kutuna"}
-          </span>{" "}
-          adresine sihirli bir bağlantı gönderdik.
-        </p>
+        <h2 className="text-xl font-semibold">{t("emailSent.title")}</h2>
+        <p
+          className="text-sm text-muted-foreground"
+          dangerouslySetInnerHTML={{
+            __html: t("emailSent.description", { email: email || "" }),
+          }}
+        />
       </div>
       <p className="text-xs text-muted-foreground">
-        Almadın mı? Spam klasörünü kontrol et veya{" "}
         <button
           type="button"
           onClick={onBack}
           className="underline underline-offset-2 hover:text-foreground"
         >
-          tekrar dene
+          {t("emailSent.back")}
         </button>
-        .
       </p>
     </div>
   );

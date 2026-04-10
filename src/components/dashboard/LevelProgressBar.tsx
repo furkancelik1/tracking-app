@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import { calculateLevel } from "@/lib/level";
 import { Shield, Sparkles } from "lucide-react";
 
@@ -11,8 +12,10 @@ type Props = {
 };
 
 export function LevelProgressBar({ xp, className }: Props) {
+  const t = useTranslations("levels");
   const { level, currentLevelXp, xpForNextLevel, xpToNextLevel, rank, rankColor, progress } =
     calculateLevel(xp);
+  const localizedRank = t(`ranks.${rank}` as Parameters<typeof t>[0]);
 
   return (
     <div className={cn("rounded-xl border bg-card p-4", className)}>
@@ -30,7 +33,7 @@ export function LevelProgressBar({ xp, className }: Props) {
               <span className="text-sm font-bold" style={{ color: rankColor }}>
                 Level {level}
               </span>
-              <span className="text-xs text-muted-foreground">• {rank}</span>
+              <span className="text-xs text-muted-foreground">• {localizedRank}</span>
             </div>
             <p className="text-[11px] text-muted-foreground tabular-nums">
               {currentLevelXp}/{xpForNextLevel} XP
@@ -40,7 +43,7 @@ export function LevelProgressBar({ xp, className }: Props) {
 
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Sparkles className="size-3 text-indigo-400" />
-          <span className="tabular-nums">{xpToNextLevel} XP kaldı</span>
+          <span className="tabular-nums">{t("progressRemaining", { count: xpToNextLevel })}</span>
         </div>
       </div>
 

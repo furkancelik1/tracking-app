@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         email: true,
+        language: true,
         routines: {
           where: { isActive: true, frequency: "DAILY" },
           select: {
@@ -101,8 +102,9 @@ export async function GET(req: NextRequest) {
         batch.map((user) =>
           sendRoutineReminderEmail({
             to: user.email!,
-            userName: user.name ?? "Kullanıcı",
+            userName: user.name ?? "User",
             pendingRoutines: user.pending,
+            language: user.language,
           })
         )
       );

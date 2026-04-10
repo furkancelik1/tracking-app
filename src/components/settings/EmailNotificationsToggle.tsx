@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useTranslations } from "next-intl";
 import { toggleEmailNotificationsAction } from "@/actions/notification.actions";
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function EmailNotificationsToggle({ enabled, isPro }: Props) {
+  const t = useTranslations("settings.notifications");
   const [checked, setChecked] = useState(enabled);
   const [isPending, startTransition] = useTransition();
 
@@ -23,7 +25,7 @@ export function EmailNotificationsToggle({ enabled, isPro }: Props) {
     startTransition(async () => {
       try {
         await toggleEmailNotificationsAction(value);
-        toast.success(value ? "E-posta bildirimleri açıldı." : "E-posta bildirimleri kapatıldı.");
+        toast.success(value ? t("enabled") : t("disabled"));
       } catch (err) {
         setChecked(prev); // rollback
         toast.error(err instanceof Error ? err.message : "İşlem başarısız.");
@@ -36,7 +38,7 @@ export function EmailNotificationsToggle({ enabled, isPro }: Props) {
       <div className="space-y-0.5">
         <div className="flex items-center gap-2">
           <Label htmlFor="email-notifications" className="text-sm font-medium">
-            Günlük E-posta Hatırlatıcısı
+            {t("emailToggle")}
           </Label>
           {!isPro && (
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
@@ -46,8 +48,8 @@ export function EmailNotificationsToggle({ enabled, isPro }: Props) {
         </div>
         <p className="text-xs text-muted-foreground">
           {isPro
-            ? "Tamamlanmamış rutinlerin için her gün hatırlatıcı al."
-            : "Bu özellik yalnızca PRO kullanıcılara özeldir."}
+            ? t("enabledDescription")
+            : t("disabledDescription")}
         </p>
       </div>
       <Switch

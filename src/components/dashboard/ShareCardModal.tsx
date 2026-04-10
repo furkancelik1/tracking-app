@@ -7,6 +7,7 @@ import { Download, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShareCard, type ShareCardProps } from "@/components/dashboard/ShareCard";
 import { downloadShareCard } from "@/lib/share";
+import { useTranslations } from "next-intl";
 
 type Props = {
   open: boolean;
@@ -17,6 +18,7 @@ type Props = {
 export function ShareCardModal({ open, onClose, cardProps }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const t = useTranslations("share");
 
   const handleDownload = useCallback(async () => {
     if (!cardRef.current) return;
@@ -24,16 +26,16 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
     try {
       const filename =
         cardProps.variant === "level-up"
-          ? "seviye-atladi"
-          : "haftalik-ozet";
+          ? t("filenameLevelUp")
+          : t("filenameWeeklySummary");
       await downloadShareCard(cardRef.current, filename);
-      toast.success("Görsel indirildi! 📸");
+      toast.success(t("downloaded"));
     } catch {
-      toast.error("Görsel oluşturulamadı, tekrar deneyin.");
+      toast.error(t("downloadError"));
     } finally {
       setDownloading(false);
     }
-  }, [cardProps.variant]);
+  }, [cardProps.variant, t]);
 
   return (
     <AnimatePresence>
@@ -96,12 +98,12 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
                   {downloading ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
-                      Hazırlanıyor…
+                      {t("preparing")}
                     </>
                   ) : (
                     <>
                       <Download className="size-4" />
-                      Görseli İndir
+                      {t("download")}
                     </>
                   )}
                 </Button>
@@ -111,7 +113,7 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
                   size="lg"
                   className="border-white/10 text-white/70 hover:bg-white/5"
                 >
-                  Kapat
+                  {t("close")}
                 </Button>
               </div>
             </div>

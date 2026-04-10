@@ -1,4 +1,7 @@
+"use client";
+
 import { AlertTriangle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 
 type Props = {
@@ -20,6 +23,7 @@ function getAtRiskRoutines(routines: RoutineWithMeta[]): RoutineWithMeta[] {
 }
 
 export function StreakAlert({ routines }: Props) {
+  const t = useTranslations("dashboard.streakAlert");
   const atRisk = getAtRiskRoutines(routines);
   if (atRisk.length === 0) return null;
 
@@ -32,8 +36,9 @@ export function StreakAlert({ routines }: Props) {
       />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-red-700 dark:text-red-400">
-          Kritik Durum — {atRisk.length}{" "}
-          {atRisk.length === 1 ? "rutinin serisi" : "rutinin serisi"} tehlikede!
+          {atRisk.length === 1
+            ? t("titleSingle", { count: atRisk.length })
+            : t("title", { count: atRisk.length })}
         </p>
         <p className="text-xs text-red-600/80 dark:text-red-400/70 mt-0.5">
           {atRisk.map((r) => (

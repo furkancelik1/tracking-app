@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 type Props = {
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export function CheckoutButton({ isLoggedIn }: Props) {
+  const t = useTranslations("landing.pricing.pro");
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
@@ -39,7 +41,7 @@ export function CheckoutButton({ isLoggedIn }: Props) {
       onClick={handleClick}
       disabled={loading}
     >
-      {loading ? "Yönlendiriliyor…" : "Pro'ya Başla"}
+      {loading ? "..." : t("cta")}
     </Button>
   );
 }

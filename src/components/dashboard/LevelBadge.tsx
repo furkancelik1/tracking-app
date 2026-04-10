@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import { calculateLevel } from "@/lib/level";
 import { Shield } from "lucide-react";
 
@@ -12,7 +13,9 @@ type Props = {
 };
 
 export function LevelBadge({ xp, compact = false, className }: Props) {
+  const t = useTranslations("levels");
   const { level, rank, rankColor } = calculateLevel(xp);
+  const localizedRank = t(`ranks.${rank}` as Parameters<typeof t>[0]);
 
   if (compact) {
     return (
@@ -36,7 +39,7 @@ export function LevelBadge({ xp, compact = false, className }: Props) {
     >
       <Shield className="size-3.5" />
       <span className="text-xs font-bold tabular-nums">Lvl {level}</span>
-      <span className="text-[10px] font-medium opacity-80">• {rank}</span>
+      <span className="text-[10px] font-medium opacity-80">• {localizedRank}</span>
     </div>
   );
 }

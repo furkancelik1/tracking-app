@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useTranslations } from "next-intl";
 import type { STRIPE_PLANS, SubscriptionTier } from "@/lib/stripe";
 
 type Plan = (typeof STRIPE_PLANS)["PRO"];
@@ -18,6 +19,8 @@ type Props = {
 
 export function SubscriptionCard({ tier, hasStripeCustomer, plan }: Props) {
   const router = useRouter();
+  const t = useTranslations("settings.subscription");
+  const tc = useTranslations("common");
   const [loading, setLoading] = useState<"checkout" | "portal" | null>(null);
   const isPro = tier === "PRO";
 
@@ -56,15 +59,13 @@ export function SubscriptionCard({ tier, hasStripeCustomer, plan }: Props) {
       {/* Current plan */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-semibold">{isPro ? "Pro Plan" : "Free Plan"}</p>
+          <p className="font-semibold">{isPro ? t("proPlan") : t("freePlan")}</p>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {isPro
-              ? "Full access — unlimited basket items"
-              : "Up to 5 basket items"}
+            {isPro ? t("proDescription") : t("freeDescription")}
           </p>
         </div>
         <Badge variant={isPro ? "default" : "secondary"}>
-          {isPro ? "PRO" : "FREE"}
+          {isPro ? tc("pro") : tc("free")}
         </Badge>
       </div>
 
@@ -75,7 +76,7 @@ export function SubscriptionCard({ tier, hasStripeCustomer, plan }: Props) {
           {/* Pro plan benefits */}
           <div className="space-y-3">
             <div className="flex items-baseline justify-between">
-              <p className="font-semibold text-sm">Upgrade to Pro</p>
+              <p className="font-semibold text-sm">{t("upgrade")}</p>
               <p className="text-sm">
                 <span className="font-bold text-lg">{plan.price}</span>
                 <span className="text-muted-foreground">/{plan.interval}</span>
@@ -94,7 +95,7 @@ export function SubscriptionCard({ tier, hasStripeCustomer, plan }: Props) {
               onClick={handleCheckout}
               disabled={loading !== null}
             >
-              {loading === "checkout" ? "Redirecting…" : "Upgrade to Pro"}
+              {loading === "checkout" ? "..." : t("upgrade")}
             </Button>
           </div>
         </>
@@ -112,7 +113,7 @@ export function SubscriptionCard({ tier, hasStripeCustomer, plan }: Props) {
               onClick={handlePortal}
               disabled={loading !== null}
             >
-              {loading === "portal" ? "Opening…" : "Manage Billing"}
+              {loading === "portal" ? "..." : t("manageBilling")}
             </Button>
           </div>
         </>

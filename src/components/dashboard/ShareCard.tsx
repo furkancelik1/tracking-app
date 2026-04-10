@@ -3,6 +3,7 @@
 import { forwardRef } from "react";
 import { Shield, Flame, Trophy, Zap, Target } from "lucide-react";
 import { calculateLevel } from "@/lib/level";
+import { useTranslations, useLocale } from "next-intl";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -27,10 +28,14 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
     { variant, userName, userImage, xp, weeklyRate, currentStreak, totalCompletions },
     ref
   ) {
+    const t = useTranslations("share");
+    const tLevels = useTranslations("levels");
+    const tCommon = useTranslations("common");
+    const locale = useLocale();
     const { level, rank, rankColor, progress, currentLevelXp, xpForNextLevel } =
       calculateLevel(xp);
 
-    const displayName = userName || "Anonim";
+    const displayName = userName || tCommon("anonymous");
     const initials = displayName
       .split(" ")
       .map((n) => n[0])
@@ -75,7 +80,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 <Zap className="size-5 text-white" />
               </div>
               <span className="text-white/90 font-semibold text-lg tracking-tight">
-                Rutin Takip
+                {tCommon("appName")}
               </span>
             </div>
 
@@ -85,7 +90,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             >
               <Shield className="size-4" style={{ color: rankColor }} />
               <span className="text-sm font-bold" style={{ color: rankColor }}>
-                {rank}
+                {tLevels(`ranks.${rank}`)}
               </span>
             </div>
           </div>
@@ -98,8 +103,8 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 className="size-28 rounded-2xl flex items-center justify-center ring-2 overflow-hidden"
                 style={{
                   backgroundColor: rankColor + "15",
-                  ringColor: rankColor + "50",
-                }}
+                  ["--tw-ring-color" as string]: rankColor + "50",
+                } as React.CSSProperties}
               >
                 {userImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -115,7 +120,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
               </div>
               <div className="text-center">
                 <p className="text-white font-semibold text-lg">{displayName}</p>
-                <p className="text-white/50 text-sm">furkancelik.online</p>
+                <p className="text-white/50 text-sm">{tCommon("site")}</p>
               </div>
             </div>
 
@@ -125,21 +130,21 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 <>
                   <div>
                     <p className="text-indigo-300/80 text-sm font-medium uppercase tracking-widest mb-1">
-                      Seviye Atladı!
+                      {t("levelUp.label")}
                     </p>
                     <p className="text-white text-5xl font-extrabold tracking-tight">
                       Level{" "}
                       <span style={{ color: rankColor }}>{level}</span>
                     </p>
                     <p className="text-white/50 text-lg mt-1">
-                      Toplam <span className="text-indigo-300 font-semibold">{xp} XP</span> kazandı
+                      {t("levelUp.totalXp", { xp })}
                     </p>
                   </div>
 
                   {/* XP Progress */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-white/60">İlerleme</span>
+                      <span className="text-white/60">{t("levelUp.progress")}</span>
                       <span className="text-white/80 font-medium tabular-nums">
                         {currentLevelXp}/{xpForNextLevel} XP
                       </span>
@@ -162,7 +167,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                         <Flame className="size-5 text-orange-400" />
                         <div>
                           <p className="text-white font-bold text-lg tabular-nums">{currentStreak}</p>
-                          <p className="text-white/40 text-xs">Gün Seri</p>
+                          <p className="text-white/40 text-xs">{t("statLabels.dayStreak")}</p>
                         </div>
                       </div>
                       {totalCompletions !== undefined && (
@@ -170,7 +175,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                           <Trophy className="size-5 text-yellow-400" />
                           <div>
                             <p className="text-white font-bold text-lg tabular-nums">{totalCompletions}</p>
-                            <p className="text-white/40 text-xs">Tamamlama</p>
+                            <p className="text-white/40 text-xs">{t("statLabels.completions")}</p>
                           </div>
                         </div>
                       )}
@@ -183,11 +188,11 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 <>
                   <div>
                     <p className="text-indigo-300/80 text-sm font-medium uppercase tracking-widest mb-1">
-                      Haftalık Özet
+                      {t("weeklySummary.label")}
                     </p>
                     <p className="text-white text-4xl font-extrabold tracking-tight">
                       %{weeklyRate ?? 0}{" "}
-                      <span className="text-2xl font-semibold text-white/60">Disiplin</span>
+                      <span className="text-2xl font-semibold text-white/60">{t("weeklySummary.discipline")}</span>
                     </p>
                   </div>
 
@@ -196,19 +201,19 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     <StatBox
                       icon={<Shield className="size-5" style={{ color: rankColor }} />}
                       value={`Lvl ${level}`}
-                      label={rank}
+                      label={tLevels(`ranks.${rank}`)}
                       color={rankColor}
                     />
                     <StatBox
                       icon={<Flame className="size-5 text-orange-400" />}
                       value={`${currentStreak ?? 0}`}
-                      label="Gün Seri"
+                      label={t("statLabels.dayStreak")}
                       color="#fb923c"
                     />
                     <StatBox
                       icon={<Target className="size-5 text-emerald-400" />}
                       value={`${totalCompletions ?? 0}`}
-                      label="Tamamlama"
+                      label={t("statLabels.completions")}
                       color="#34d399"
                     />
                   </div>
@@ -216,7 +221,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                   {/* XP bar */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-white/50">Toplam {xp} XP</span>
+                      <span className="text-white/50">{t("weeklySummary.totalXp", { xp })}</span>
                       <span className="text-white/50 tabular-nums">
                         {currentLevelXp}/{xpForNextLevel} XP → Level {level + 1}
                       </span>
@@ -239,10 +244,10 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           {/* Alt Bar */}
           <div className="flex items-center justify-between mt-auto pt-4">
             <p className="text-white/30 text-xs">
-              furkancelik.online • Alışkanlık Takip
+              {tCommon("site")} • {t("footerBrand")}
             </p>
             <p className="text-white/30 text-xs">
-              {new Date().toLocaleDateString("tr-TR", {
+              {new Date().toLocaleDateString(locale, {
                 year: "numeric",
                 month: "long",
                 day: "numeric",

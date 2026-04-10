@@ -1,0 +1,372 @@
+{
+  "common": {
+    "appName": "Routine Tracker",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "or": "or",
+    "pro": "PRO",
+    "free": "FREE",
+    "xpUnit": "XP",
+    "dayStreak": "{count} day streak",
+    "level": "Level {level}",
+    "anonymous": "Anonymous",
+    "you": "(you)",
+    "footer": "© {year} Routine Tracker. All rights reserved.",
+    "site": "furkancelik.online"
+  },
+
+  "nav": {
+    "routines": "My Routines",
+    "leaderboard": "Leaderboard",
+    "settings": "Settings",
+    "logo": "Routine Tracker",
+    "lightMode": "Switch to Light Mode",
+    "darkMode": "Switch to Dark Mode",
+    "signOut": "Sign Out"
+  },
+
+  "landing": {
+    "metadata": {
+      "title": "Routine Tracker — Build Better Habits, Transform Your Life",
+      "description": "Easily track your daily habits. Stay motivated with streaks, weekly stats, and analytics."
+    },
+    "header": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "goToDashboard": "Go to Dashboard",
+      "signIn": "Sign In"
+    },
+    "hero": {
+      "badge": "🔥 Stay motivated with the streak system",
+      "titleStart": "Track Your Routines,",
+      "titleHighlight": "Transform Your Life",
+      "description": "Set up your daily habits in minutes. See your progress with streaks and weekly charts — never lose your momentum.",
+      "ctaPrimary": "Start for Free",
+      "ctaSecondary": "How It Works?",
+      "ctaNote": "No credit card required · 5 routines on free plan"
+    },
+    "features": {
+      "title": "Everything you need, in one place",
+      "subtitle": "No complicated apps needed. A clean, fast, and effective routine tracking experience.",
+      "smartTracking": {
+        "title": "Smart Tracking",
+        "description": "Create daily, weekly, and monthly routines in seconds. Complete with a checkbox, see your progress instantly."
+      },
+      "streaks": {
+        "title": "Flaming Streaks",
+        "description": "Complete your routine every day and grow your streak. Streaks are tracked visually and you'll be warned before they break."
+      },
+      "analytics": {
+        "title": "Advanced Analytics",
+        "description": "Examine your last 7 days' performance with interactive charts. Discover which days you're most productive.",
+        "badge": "Pro Feature"
+      }
+    },
+    "testimonials": {
+      "label": "What users say?",
+      "items": [
+        {
+          "quote": "When I saw the streak system, my motivation doubled in the first week to never skip a routine.",
+          "name": "Elif K."
+        },
+        {
+          "quote": "I didn't expect such a powerful tracking system in such a clean interface. I use it daily.",
+          "name": "Mert A."
+        },
+        {
+          "quote": "After upgrading to Pro, the weekly charts showed me which days I'm actually more productive.",
+          "name": "Selin T."
+        }
+      ]
+    },
+    "pricing": {
+      "title": "Simple and transparent pricing",
+      "subtitle": "Upgrade anytime, cancel anytime.",
+      "free": {
+        "name": "Free",
+        "price": "$0",
+        "interval": "Forever free",
+        "cta": "Start for Free"
+      },
+      "pro": {
+        "popular": "Most Popular",
+        "cancelAnytime": "Cancel anytime",
+        "cta": "Start Pro"
+      },
+      "freeFeatures": [
+        "Up to 5 routines",
+        "Daily / Weekly / Monthly frequency",
+        "Streak tracking",
+        "Daily progress bar",
+        "Access on all devices"
+      ],
+      "proFeatures": [
+        "Unlimited routines",
+        "Daily / Weekly / Monthly frequency",
+        "Streak tracking",
+        "Weekly stats charts",
+        "Priority support",
+        "All future features"
+      ]
+    },
+    "cta": {
+      "title": "Create your first routine today",
+      "description": "Thousands of users use Routine Tracker to track their habits. It's your turn.",
+      "button": "Get Started — Free"
+    },
+    "footer": {
+      "signIn": "Sign In",
+      "pricing": "Pricing"
+    }
+  },
+
+  "auth": {
+    "layout": {
+      "quote": "Build better routines. Track every action. Stay consistent.",
+      "quoteAuthor": "— Productivity redefined"
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account to continue",
+      "google": "Continue with Google",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@example.com",
+      "emailSubmit": "Continue with Email",
+      "emailSending": "Sending…",
+      "terms": "By continuing you agree to the",
+      "termsLink": "Terms of Service",
+      "and": "and",
+      "privacyLink": "Privacy Policy",
+      "emailSent": {
+        "title": "Check your inbox",
+        "description": "We sent a magic link to <b>{email}</b>. Click the link to sign in.",
+        "back": "Use a different email"
+      },
+      "errors": {
+        "invalidEmail": "Please enter a valid email address.",
+        "OAuthSignin": "Could not start Google sign-in. Please try again.",
+        "OAuthCallback": "Google sign-in failed. Please try again.",
+        "OAuthAccountNotLinked": "This email is registered with a different method.",
+        "EmailSignin": "Could not send magic link. Please try again.",
+        "EmailCreateAccount": "Your account could not be created. Please try again.",
+        "SessionRequired": "Please sign in to continue.",
+        "Default": "Something went wrong. Please try again."
+      }
+    },
+    "register": {
+      "title": "Create account",
+      "description": "New accounts are created automatically after your first sign-in.",
+      "backToLogin": "Continue to sign in"
+    }
+  },
+
+  "dashboard": {
+    "metadata": { "title": "My Routines" },
+    "errorTitle": "Something went wrong",
+    "errorMessage": "An error occurred while loading data. Please refresh the page.",
+    "sessionError": "Could not retrieve session info.",
+    "emptyState": {
+      "title": "No routines yet",
+      "description": "Start tracking by adding your first routine. You can create daily, weekly, or monthly routines.",
+      "cta": "Add Your First Routine"
+    },
+    "stats": {
+      "todayProgress": "Today's Progress",
+      "completed": "{completed}/{total}",
+      "completedPct": "{percentage}% completed",
+      "activeStreak": "Active Streak",
+      "streakSubtitle": "Consecutive completions",
+      "weeklyEfficiency": "Weekly Efficiency",
+      "weeklySubtitle": "Last 7 days performance",
+      "weeklyTotal": "This Week Total",
+      "weeklyTotalSubtitle": "Completed routines",
+      "days": "{count} days"
+    },
+    "streakAlert": {
+      "title": "Critical — {count} routine streak(s) at risk!",
+      "titleSingle": "Critical — {count} routine streak at risk!"
+    },
+    "progressBar": {
+      "label": "Today's progress",
+      "completed": "{completed}/{total} completed"
+    },
+    "routineList": {
+      "title": "My Routines",
+      "subtitle": "Track your daily habits",
+      "addRoutine": "+ Add Routine",
+      "limitWarning": "{count}/{max} routines — You've reached the free plan limit. Upgrade to PRO for unlimited routines.",
+      "upgradeCta": "Upgrade to PRO",
+      "allCategories": "All",
+      "noRoutinesInCategory": "No routines in this category.",
+      "showAll": "Show all",
+      "emptyTitle": "No routines yet",
+      "emptyDescription": "Start tracking by adding your first routine.",
+      "emptyAdd": "Add First Routine",
+      "completed": "Routine completed! 🔥",
+      "undone": "Completion undone.",
+      "deleted": "Routine deleted.",
+      "deleteFailed": "Could not delete.",
+      "actionFailed": "Action failed.",
+      "allDone": "Awesome! You completed all of today's routines! 🎉",
+      "levelUp": "🎉 Congrats! You Leveled Up: Level {level} — {rank}",
+      "levelUpShare": "Share"
+    },
+    "routineCard": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "completed": "Completed",
+      "streak": "{count} days",
+      "noStreak": "—",
+      "longestStreak": "Longest: {count}d",
+      "totalCompleted": "Completed {count} times total",
+      "completeTitle": "Complete Routine",
+      "completeDescription": "Add an optional note about your completion.",
+      "notePlaceholder": "Today's note (optional)…",
+      "confirmComplete": "Complete ✓",
+      "cancelComplete": "Cancel",
+      "deleteTitle": "Delete Routine",
+      "deleteDescription": "Are you sure? This action cannot be undone.",
+      "confirmDelete": "Delete",
+      "cancelDelete": "Cancel"
+    },
+    "addRoutine": {
+      "title": "New Routine",
+      "description": "Create a new habit to track.",
+      "titleLabel": "Routine Name",
+      "titlePlaceholder": "e.g. Morning Exercise",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "Short description about your routine…",
+      "frequencyLabel": "Frequency",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "categoryLabel": "Category",
+      "categoryPlaceholder": "e.g. Health",
+      "colorLabel": "Color",
+      "iconLabel": "Icon",
+      "create": "Create Routine",
+      "creating": "Creating…",
+      "success": "Routine created!",
+      "error": "Could not create routine.",
+      "limitTitle": "Routine Limit Reached",
+      "limitDescription": "Free plan allows up to {max} routines. Upgrade to PRO for unlimited routines.",
+      "limitUpgrade": "Upgrade to PRO",
+      "limitClose": "Close"
+    }
+  },
+
+  "leaderboard": {
+    "metadata": { "title": "Leaderboard" },
+    "title": "Leaderboard",
+    "subtitle": "Complete routines, earn XP, rise to the top!",
+    "emptyTitle": "No rankings yet",
+    "emptyDescription": "Complete your routines to earn XP and get on the leaderboard!",
+    "usersAmong": "#{rank} among {total} users"
+  },
+
+  "settings": {
+    "metadata": { "title": "Settings" },
+    "title": "Settings",
+    "subtitle": "Manage your account and notification preferences.",
+    "profile": {
+      "title": "Profile",
+      "name": "Name:",
+      "email": "Email:"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "emailToggle": "Daily Email Reminder",
+      "enabledDescription": "Get daily reminders for your incomplete routines.",
+      "disabledDescription": "This feature is available for PRO users only.",
+      "enabled": "Email notifications enabled.",
+      "disabled": "Email notifications disabled."
+    },
+    "subscription": {
+      "proPlan": "Pro Plan",
+      "proDescription": "Full access — unlimited routines",
+      "freePlan": "Free Plan",
+      "freeDescription": "Up to 5 routines",
+      "upgrade": "Upgrade to Pro",
+      "manageBilling": "Manage Billing"
+    }
+  },
+
+  "stats": {
+    "metadata": { "title": "My Statistics" },
+    "title": "My Statistics",
+    "subtitle": "Analyze your habit data and visualize your progress.",
+    "totalCompletions": "Total Completions",
+    "currentStreak": "Current Streak",
+    "longestStreak": "Longest: {count} days",
+    "monthlySuccess": "Monthly Success Rate",
+    "monthlySuccessSubtitle": "Active day rate in last 30 days",
+    "activeRoutines": "Active Routines",
+    "avgPerDay": "Avg. {count}/day",
+    "completionRate": "Completion Rate",
+    "completionRateSubtitle": "Rate of days with at least 1 completion in last {days} days",
+    "peakDay": "Peak Day",
+    "peakDaySubtitle": "Most active day with {count} completions",
+    "dailyAverage": "Daily Average",
+    "dailyAverageSubtitle": "Average routines completed per day",
+    "lastDays": "Last {days} days",
+    "shareWeekly": "Share Weekly Summary",
+    "days": "{count} days"
+  },
+
+  "levels": {
+    "progressRemaining": "{count} XP remaining",
+    "levelLabel": "Level {level}",
+    "ranks": {
+      "Çırak": "Apprentice",
+      "Disiplinli": "Disciplined",
+      "Rutin Canavarı": "Routine Beast",
+      "Üstat": "Master",
+      "Efsane": "Legend"
+    }
+  },
+
+  "share": {
+    "download": "Download Image",
+    "close": "Close",
+    "preparing": "Preparing…",
+    "downloaded": "Image downloaded! 📸",
+    "downloadError": "Could not create image, please try again.",
+    "levelUp": {
+      "label": "Level Up!",
+      "totalXp": "Earned a total of {xp} XP",
+      "progress": "Progress"
+    },
+    "weeklySummary": {
+      "label": "Weekly Summary",
+      "discipline": "Discipline",
+      "totalXp": "Total {xp} XP"
+    },
+    "statLabels": {
+      "dayStreak": "Day Streak",
+      "completions": "Completions"
+    },
+    "footerBrand": "Habit Tracker",
+    "streakDays": "{count} days",
+    "filenameLevelUp": "level-up",
+    "filenameWeeklySummary": "weekly-summary"
+  },
+
+  "email": {
+    "reminder": {
+      "badge": "🔥 Reminder",
+      "headerTitle": "Don't break your streak!",
+      "headerSub": "Today {count} routines are waiting for you",
+      "greeting": "Hey {name}, 👋",
+      "lead": "You have <strong>{count}</strong> routines to complete today. Every completion strengthens your streaks.",
+      "alertRisk": "<strong>{count} routines</strong> with streaks at risk! They'll reset if you don't complete them today.",
+      "cta": "Open Dashboard",
+      "footer": "You're receiving this because email notifications are enabled.",
+      "unsubscribe": "Manage notification settings"
+    }
+  }
+}

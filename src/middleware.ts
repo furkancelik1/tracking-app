@@ -1,52 +1,72 @@
+import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { routing } from "@/i18n/routing";
+
+const intlMiddleware = createMiddleware(routing);
 
 /**
- * MIDDLEWARE — Session kontrolü
+ * MIDDLEWARE — Locale detection + Session kontrolü
  *
- * KRITIK NOT: NextAuth "database" session stratejisi kullanıyoruz.
- * Bu durumda `getToken()` (JWT bazlı) ÇALIŞMAZ çünkü JWT token üretilmez.
- * Bunun yerine session cookie'sinin varlığını kontrol ediyoruz.
+ * 1. next-intl locale prefix'ini işler (redirect / rewrite)
+ * 2. Korumalı route'lar için session cookie kontrolü yapar
  *
- * Gerçek session doğrulaması sunucu tarafında (getServerSession) yapılır.
- * Middleware sadece hızlı bir "cookie var mı?" kontrolü yapar.
+ * NextAuth "database" session stratejisi → JWT yok.
+ * Middleware sadece hızlı "cookie var mı?" kontrolü yapar.
  */
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // NextAuth database strategy cookie adı:
-  // Production'da (HTTPS): __Secure-next-auth.session-token
-  // Development'ta (HTTP):  next-auth.session-token
-  const isSecure = req.nextUrl.protocol === "https:";
-  const cookieName = isSecure
-    ? "__Secure-next-auth.session-token"
-    : "next-auth.session-token";
-
-  const sessionToken = req.cookies.get(cookieName)?.value;
-
-  const protectedPaths = ["/dashboard", "/settings", "/admin"];
-  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
-
-  // Korumalı sayfa + session cookie yok → login'e yönlendir
-  if (isProtected && !sessionToken) {
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+  // API ve statik dosyaları atla
+  if (
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
+    pathname.includes(".")
+  ) {
+    return NextResponse.next();
   }
 
-  // Admin kontrolü — cookie var ama admin değilse yönlendir
-  // Not: Middleware'de tam admin doğrulaması yapamayız (DB erişimi yok).
-  // Admin guard asıl olarak src/lib/auth.ts → requireAdmin() ile yapılır.
-  // Burada sadece ek bir güvenlik katmanı olarak ADMIN_EMAILS kontrolü yapılabilir
-  // ama JWT olmadan email bilgisine erişemeyiz, bu yüzden bu kontrolü server-side'a bırakıyoruz.
+  // --- Auth kontrolü ---
+  // Locale prefix'ini çıkarıp asıl path'i bul
+  const segments = pathname.split("/");
+  const locales = routing.locales as readonly string[];
+  const pathWithoutLocale =
+    segments.length > 1 && locales.includes(segments[1] as string)
+      ? "/" + segments.slice(2).join("/")
+      : pathname;
 
-  return NextResponse.next();
+  const protectedPaths = ["/dashboard", "/settings", "/admin"];
+  const isProtected = protectedPaths.some((p) =>
+    pathWithoutLocale.startsWith(p)
+  );
+
+  if (isProtected) {
+    const isSecure = req.nextUrl.protocol === "https:";
+    const cookieName = isSecure
+      ? "__Secure-next-auth.session-token"
+      : "next-auth.session-token";
+
+    const sessionToken = req.cookies.get(cookieName)?.value;
+
+    if (!sessionToken) {
+      // Locale-aware login redirect
+      const locale =
+        segments.length > 1 && locales.includes(segments[1] as string)
+          ? segments[1]
+          : routing.defaultLocale;
+      const loginUrl = new URL(`/${locale}/login`, req.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // --- Locale handling ---
+  return intlMiddleware(req);
 }
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/settings/:path*",
-    "/admin/:path*",
+    // Match all pathnames except API, _next, and static files
+    "/((?!api|_next|.*\\..*).*)",
   ],
 };

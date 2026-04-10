@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Share2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ShareCardModal } from "@/components/dashboard/ShareCardModal";
 import type { ShareCardProps } from "@/components/dashboard/ShareCard";
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function StatsShareButton({ cardProps }: Props) {
+  const t = useTranslations("stats");
   const [open, setOpen] = useState(false);
 
   return (
@@ -22,7 +24,7 @@ export function StatsShareButton({ cardProps }: Props) {
         onClick={() => setOpen(true)}
       >
         <Share2 className="size-4" />
-        Haftalık Özetimi Paylaş
+        {t("shareWeekly")}
       </Button>
 
       <ShareCardModal

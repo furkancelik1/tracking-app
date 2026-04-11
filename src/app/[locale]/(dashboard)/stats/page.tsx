@@ -1,11 +1,14 @@
 import { requireAuth } from "@/lib/auth";
-import { getUserAnalytics } from "@/lib/analytics";
+import { getUserAnalytics, getAdvancedAnalytics } from "@/lib/analytics";
 import { StatsRangeTabs } from "@/components/dashboard/StatsRangeTabs";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { CategoryPieChart } from "@/components/dashboard/CategoryPieChart";
 import { YearlyActivityHeatmap } from "@/components/dashboard/YearlyActivityHeatmap";
 import { ActivityAreaChart } from "@/components/dashboard/ActivityAreaChart";
 import { StatsShareButton } from "@/components/dashboard/StatsShareButton";
+import { ConsistencyRadarChart } from "@/components/dashboard/ConsistencyRadarChart";
+import { RoutineSuccessList } from "@/components/dashboard/RoutineSuccessList";
+import { InsightCards } from "@/components/dashboard/InsightCards";
 import { prisma } from "@/lib/prisma";
 import {
   CheckCircle2,
@@ -47,6 +50,7 @@ export default async function StatsPage({
   const days = rangeParam === "7d" ? 7 : rangeParam === "30d" ? 30 : 365;
 
   const analytics = await getUserAnalytics(userId, days);
+  const advanced = await getAdvancedAnalytics(userId, days);
 
   // Kullanıcı XP + ad bilgisi (share card için)
   const userInfo = await prisma.user.findUnique({
@@ -195,6 +199,25 @@ export default async function StatsPage({
 
       {/* ── Heatmap (tam genişlik) ────────────────────────────────────────── */}
       <YearlyActivityHeatmap data={yearlyData} />
+
+      {/* ── Advanced Analytics ────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Radar chart — weekday consistency */}
+        <div className="lg:col-span-2">
+          <ConsistencyRadarChart data={advanced.weekdayPerformance} />
+        </div>
+
+        {/* Routine success list */}
+        <div className="lg:col-span-3">
+          <RoutineSuccessList data={advanced.routineSuccessRates} />
+        </div>
+      </div>
+
+      {/* ── AI Insights ───────────────────────────────────────────────────── */}
+      <InsightCards
+        insights={advanced.insights}
+        monthlyComparison={advanced.monthlyComparison}
+      />
     </div>
   );
 }

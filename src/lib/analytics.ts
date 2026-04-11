@@ -37,6 +37,45 @@ export type AnalyticsPayload = {
   summary: AnalyticsSummary;
 };
 
+// ─── Advanced Analytics Types ────────────────────────────────────────────────
+
+export type RoutineSuccessRate = {
+  routineId: string;
+  name: string;
+  category: string;
+  color: string;
+  icon: string;
+  completedDays: number;
+  totalDays: number;
+  successRate: number; // 0-100
+};
+
+export type WeekdayPerformance = {
+  day: string;
+  dayIndex: number;
+  completions: number;
+  average: number; // average per that weekday
+};
+
+export type MonthlyComparison = {
+  thisMonth: number;
+  lastMonth: number;
+  changePercent: number; // positive = improvement
+};
+
+export type Insight = {
+  type: "positive" | "warning" | "neutral";
+  key: string;
+  params: Record<string, string | number>;
+};
+
+export type AdvancedAnalyticsPayload = {
+  routineSuccessRates: RoutineSuccessRate[];
+  weekdayPerformance: WeekdayPerformance[];
+  monthlyComparison: MonthlyComparison;
+  insights: Insight[];
+};
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const TR_MONTHS_SHORT = [
@@ -279,6 +318,223 @@ export async function getUserAnalytics(
         peakDay: { day: "Pazartesi", dayIndex: 1, count: 0 },
         averagePerDay: 0,
       },
+    };
+  }
+}
+
+// ─── Advanced Analytics ──────────────────────────────────────────────────────
+
+export async function getAdvancedAnalytics(
+  userId: string,
+  days = 30
+): Promise<AdvancedAnalyticsPayload> {
+  try {
+    const { start, end } = getLastNDaysWindow(days);
+    const endExclusive = addUtcDays(end, 1);
+
+    // Previous period for monthly comparison
+    const prevStart = addUtcDays(start, -days);
+
+    const [routines, logs, prevLogs] = await Promise.all([
+      prisma.routine.findMany({
+        where: { userId, isActive: true },
+        select: {
+          id: true,
+          title: true,
+          category: true,
+          color: true,
+          icon: true,
+          createdAt: true,
+        },
+      }),
+      prisma.routineLog.findMany({
+        where: {
+          userId,
+          completedAt: { gte: start, lt: endExclusive },
+        },
+        select: {
+          completedAt: true,
+          routineId: true,
+        },
+        orderBy: { completedAt: "asc" },
+      }),
+      prisma.routineLog.findMany({
+        where: {
+          userId,
+          completedAt: { gte: prevStart, lt: start },
+        },
+        select: { completedAt: true },
+      }),
+    ]);
+
+    // ── Routine Success Rates ───────────────────────────────────────────
+
+    const routineSuccessRates: RoutineSuccessRate[] = routines.map((r) => {
+      const routineLogs = logs.filter((l) => l.routineId === r.id);
+      const uniqueDays = new Set(routineLogs.map((l) => toIsoDate(l.completedAt)));
+      const routineAge = Math.max(
+        1,
+        Math.min(
+          days,
+          Math.ceil(
+            (endExclusive.getTime() - r.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+          )
+        )
+      );
+      const successRate = routineAge > 0 ? Math.round((uniqueDays.size / routineAge) * 100) : 0;
+
+      return {
+        routineId: r.id,
+        name: r.title,
+        category: r.category,
+        color: r.color ?? "#3b82f6",
+        icon: r.icon ?? "Check",
+        completedDays: uniqueDays.size,
+        totalDays: routineAge,
+        successRate: Math.min(100, successRate),
+      };
+    }).sort((a, b) => b.successRate - a.successRate);
+
+    // ── Weekday Performance ─────────────────────────────────────────────
+
+    const weekdayCounts = new Array(7).fill(0) as number[];
+    const weekdayOccurrences = new Array(7).fill(0) as number[];
+
+    // Count how many of each weekday exist in the range
+    for (let i = 0; i < days; i++) {
+      const d = addUtcDays(start, i);
+      weekdayOccurrences[d.getUTCDay()] = (weekdayOccurrences[d.getUTCDay()] ?? 0) + 1;
+    }
+
+    for (const log of logs) {
+      const idx = log.completedAt.getUTCDay();
+      weekdayCounts[idx] = (weekdayCounts[idx] ?? 0) + 1;
+    }
+
+    // Reorder: Mon(1) .. Sun(0)
+    const weekdayOrder = [1, 2, 3, 4, 5, 6, 0];
+    const weekdayPerformance: WeekdayPerformance[] = weekdayOrder.map((idx) => ({
+      day: TR_DAYS[idx] ?? "",
+      dayIndex: idx,
+      completions: weekdayCounts[idx] ?? 0,
+      average:
+        (weekdayOccurrences[idx] ?? 0) > 0
+          ? Math.round(((weekdayCounts[idx] ?? 0) / (weekdayOccurrences[idx] ?? 1)) * 10) / 10
+          : 0,
+    }));
+
+    // ── Monthly Comparison ──────────────────────────────────────────────
+
+    const thisMonthDays = new Set(logs.map((l) => toIsoDate(l.completedAt))).size;
+    const lastMonthDays = new Set(prevLogs.map((l) => toIsoDate(l.completedAt))).size;
+    const changePercent =
+      lastMonthDays > 0
+        ? Math.round(((thisMonthDays - lastMonthDays) / lastMonthDays) * 100)
+        : thisMonthDays > 0
+          ? 100
+          : 0;
+
+    const monthlyComparison: MonthlyComparison = {
+      thisMonth: thisMonthDays,
+      lastMonth: lastMonthDays,
+      changePercent,
+    };
+
+    // ── Insights ────────────────────────────────────────────────────────
+
+    const insights: Insight[] = [];
+
+    // Best weekday insight
+    const bestWeekday = weekdayPerformance.reduce(
+      (best, w) => (w.completions > best.completions ? w : best),
+      weekdayPerformance[0]!
+    );
+    if (bestWeekday.completions > 0) {
+      insights.push({
+        type: "positive",
+        key: "bestWeekday",
+        params: { day: bestWeekday.day, count: bestWeekday.completions },
+      });
+    }
+
+    // Most disciplined routine
+    const topRoutine = routineSuccessRates[0];
+    if (topRoutine && topRoutine.successRate >= 50) {
+      insights.push({
+        type: "positive",
+        key: "topRoutine",
+        params: { name: topRoutine.name, rate: topRoutine.successRate },
+      });
+    }
+
+    // Needs focus routine
+    const weakRoutine = routineSuccessRates[routineSuccessRates.length - 1];
+    if (
+      weakRoutine &&
+      routineSuccessRates.length > 1 &&
+      weakRoutine.successRate < 40
+    ) {
+      insights.push({
+        type: "warning",
+        key: "weakRoutine",
+        params: { name: weakRoutine.name, rate: weakRoutine.successRate },
+      });
+    }
+
+    // Monthly improvement
+    if (monthlyComparison.changePercent > 0 && monthlyComparison.lastMonth > 0) {
+      insights.push({
+        type: "positive",
+        key: "monthlyImprovement",
+        params: { percent: monthlyComparison.changePercent },
+      });
+    } else if (monthlyComparison.changePercent < 0 && monthlyComparison.lastMonth > 0) {
+      insights.push({
+        type: "warning",
+        key: "monthlyDecline",
+        params: { percent: Math.abs(monthlyComparison.changePercent) },
+      });
+    }
+
+    // Weekend vs weekday
+    const weekdayTotal =
+      (weekdayCounts[1] ?? 0) + (weekdayCounts[2] ?? 0) + (weekdayCounts[3] ?? 0) +
+      (weekdayCounts[4] ?? 0) + (weekdayCounts[5] ?? 0);
+    const weekendTotal = (weekdayCounts[0] ?? 0) + (weekdayCounts[6] ?? 0);
+    const weekdayAvg = weekdayTotal / 5;
+    const weekendAvg = weekendTotal / 2;
+    if (weekendAvg > weekdayAvg * 1.3 && weekendTotal > 0) {
+      insights.push({
+        type: "neutral",
+        key: "weekendWarrior",
+        params: {},
+      });
+    } else if (weekdayAvg > weekendAvg * 1.3 && weekdayTotal > 0) {
+      insights.push({
+        type: "neutral",
+        key: "weekdayWarrior",
+        params: {},
+      });
+    }
+
+    return {
+      routineSuccessRates,
+      weekdayPerformance,
+      monthlyComparison,
+      insights,
+    };
+  } catch (error) {
+    console.error("[analytics] getAdvancedAnalytics error:", error);
+    return {
+      routineSuccessRates: [],
+      weekdayPerformance: [1, 2, 3, 4, 5, 6, 0].map((idx) => ({
+        day: TR_DAYS[idx] ?? "",
+        dayIndex: idx,
+        completions: 0,
+        average: 0,
+      })),
+      monthlyComparison: { thisMonth: 0, lastMonth: 0, changePercent: 0 },
+      insights: [],
     };
   }
 }

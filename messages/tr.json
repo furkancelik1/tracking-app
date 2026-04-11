@@ -232,7 +232,8 @@
       "deleteTitle": "Rutini Sil",
       "deleteDescription": "Emin misin? Bu işlem geri alınamaz.",
       "confirmDelete": "Sil",
-      "cancelDelete": "İptal"
+      "cancelDelete": "İptal",
+      "shareRoutine": "Rutini Paylaş"
     },
     "addRoutine": {
       "title": "Yeni Rutin",
@@ -317,7 +318,61 @@
     "dailyAverageSubtitle": "Günde ortalama tamamlanan rutin sayısı",
     "lastDays": "Son {days} gün",
     "shareWeekly": "Haftalık Özeti Paylaş",
-    "days": "{count} gün"
+    "days": "{count} gün",
+    "radar": {
+      "title": "Haftalık Tutarlılık",
+      "description": "Haftanın günlerine göre tamamlama dağılımı",
+      "noData": "Henüz haftalık veri yok",
+      "completions": "Tamamlama",
+      "days": {
+        "0": "Paz",
+        "1": "Pzt",
+        "2": "Sal",
+        "3": "Çar",
+        "4": "Per",
+        "5": "Cum",
+        "6": "Cmt"
+      }
+    },
+    "routineSuccess": {
+      "title": "Rutin Performansı",
+      "description": "Aktif rutinlerinin başarı oranları",
+      "mostDisciplined": "En Disiplinli",
+      "needsFocus": "Odaklanılması Gereken"
+    },
+    "insights": {
+      "title": "Analizler",
+      "monthlyComparison": "Aylık Karşılaştırma",
+      "monthlyComparisonDetail": "{thisMonth} aktif gün vs önceki dönem {lastMonth} ({direction}%{percent})",
+      "bestWeekday": {
+        "title": "En İyi Gün",
+        "description": "{day} günleri {count} tamamlama ile en verimli günün!"
+      },
+      "topRoutine": {
+        "title": "En Tutarlı",
+        "description": "{name} %{rate} başarı oranıyla harika gidiyor!"
+      },
+      "weakRoutine": {
+        "title": "Dikkat Gerekli",
+        "description": "{name} sadece %{rate} — hatırlatıcı kurmayı dene."
+      },
+      "monthlyImprovement": {
+        "title": "Yükselişte",
+        "description": "Önceki döneme göre %{percent} iyileşme gösterdin!"
+      },
+      "monthlyDecline": {
+        "title": "Hafif Düşüş",
+        "description": "Aktivite %{percent} düştü — toparlanabilirsin!"
+      },
+      "weekendWarrior": {
+        "title": "Hafta Sonu Savaşçısı",
+        "description": "Hafta sonları hafta içinden daha aktifsin."
+      },
+      "weekdayWarrior": {
+        "title": "Hafta İçi Savaşçısı",
+        "description": "Hafta içi daha aktifsin — hafta sonlarını da değerlendir."
+      }
+    }
   },
 
   "levels": {
@@ -338,6 +393,11 @@
     "preparing": "Hazırlanıyor…",
     "downloaded": "Görüntü indirildi! 📸",
     "downloadError": "Görüntü oluşturulamadı, lütfen tekrar dene.",
+    "shareNative": "Paylaş",
+    "nativeShareTitle": "Rutin İlerlemem",
+    "nativeShareText": "Alışkanlık takip ilerlememe göz at!",
+    "layoutLandscape": "Yatay",
+    "layoutPortrait": "Story",
     "levelUp": {
       "label": "Seviye Atladı!",
       "totalXp": "Toplam {xp} XP kazandı",
@@ -348,14 +408,26 @@
       "discipline": "Disiplin",
       "totalXp": "Toplam {xp} XP"
     },
+    "singleRoutine": {
+      "label": "Rutin Serisi"
+    },
     "statLabels": {
       "dayStreak": "Gün Seri",
       "completions": "Tamamlama"
     },
+    "stickers": {
+      "streak10": "10 Gün Seri",
+      "streak30": "30 Gün Seri",
+      "consistencyKing": "Tutarlılık Kralı",
+      "centurion": "Yüzbaşı",
+      "dedicated": "Adanmış",
+      "earlyBird": "Erken Kuş"
+    },
     "footerBrand": "Alışkanlık Takip",
     "streakDays": "{count} gün",
     "filenameLevelUp": "seviye-atladi",
-    "filenameWeeklySummary": "haftalik-ozet"
+    "filenameWeeklySummary": "haftalik-ozet",
+    "filenameSingleRoutine": "rutin-serisi"
   },
 
   "email": {

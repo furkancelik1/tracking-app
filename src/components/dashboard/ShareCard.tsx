@@ -1,31 +1,76 @@
 "use client";
 
 import { forwardRef } from "react";
-import { Shield, Flame, Trophy, Zap, Target } from "lucide-react";
+import { Shield, Flame, Trophy, Zap, Target, Award, Star, Sunrise } from "lucide-react";
 import { calculateLevel } from "@/lib/level";
 import { useTranslations, useLocale } from "next-intl";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
-export type ShareCardVariant = "level-up" | "weekly-summary";
+export type ShareCardVariant = "level-up" | "weekly-summary" | "single-routine";
+export type ShareCardLayout = "landscape" | "portrait";
 
 export type ShareCardProps = {
   variant: ShareCardVariant;
+  layout?: ShareCardLayout;
   userName: string | null;
   userImage: string | null;
   xp: number;
-  /** level-up: yeni seviye bilgisi otomatik hesaplanır */
   /** weekly-summary ek alanları */
-  weeklyRate?: number; // 0–100
+  weeklyRate?: number;
   currentStreak?: number;
   totalCompletions?: number;
+  /** single-routine ek alanları */
+  routineName?: string;
+  routineIcon?: string;
+  routineColor?: string;
+  routineStreak?: number;
 };
+
+// ─── Achievement Sticker Logic ───────────────────────────────────────────────
+
+type Sticker = { key: string; icon: React.ReactNode; color: string };
+
+function getStickers(
+  currentStreak: number | undefined,
+  totalCompletions: number | undefined,
+  weeklyRate: number | undefined,
+  level: number
+): Sticker[] {
+  const stickers: Sticker[] = [];
+  if ((currentStreak ?? 0) >= 10)
+    stickers.push({ key: "streak10", icon: <Flame className="size-3.5" />, color: "#f97316" });
+  if ((currentStreak ?? 0) >= 30)
+    stickers.push({ key: "streak30", icon: <Flame className="size-3.5" />, color: "#ef4444" });
+  if ((weeklyRate ?? 0) >= 80)
+    stickers.push({ key: "consistencyKing", icon: <Award className="size-3.5" />, color: "#a855f7" });
+  if ((totalCompletions ?? 0) >= 100)
+    stickers.push({ key: "centurion", icon: <Trophy className="size-3.5" />, color: "#eab308" });
+  if (level >= 10)
+    stickers.push({ key: "dedicated", icon: <Star className="size-3.5" />, color: "#3b82f6" });
+  if ((currentStreak ?? 0) >= 7)
+    stickers.push({ key: "earlyBird", icon: <Sunrise className="size-3.5" />, color: "#06b6d4" });
+  return stickers.slice(0, 3); // max 3
+}
 
 // ─── Bileşen ─────────────────────────────────────────────────────────────────
 
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
   function ShareCard(
-    { variant, userName, userImage, xp, weeklyRate, currentStreak, totalCompletions },
+    {
+      variant,
+      layout = "landscape",
+      userName,
+      userImage,
+      xp,
+      weeklyRate,
+      currentStreak,
+      totalCompletions,
+      routineName,
+      routineIcon,
+      routineColor,
+      routineStreak,
+    },
     ref
   ) {
     const t = useTranslations("share");
@@ -43,12 +88,18 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
       .join("")
       .toUpperCase();
 
+    const isPortrait = layout === "portrait";
+    const stickers = getStickers(currentStreak, totalCompletions, weeklyRate, level);
+
+    const w = isPortrait ? 1080 : 1200;
+    const h = isPortrait ? 1920 : 630;
+
     return (
       <div
         ref={ref}
         style={{
-          width: 1200,
-          height: 630,
+          width: w,
+          height: h,
           fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
         }}
         className="relative overflow-hidden flex flex-col"
@@ -72,7 +123,11 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
         />
 
         {/* ── İçerik ───────────────────────────────────────────────────── */}
-        <div className="relative z-10 flex flex-col h-full px-16 py-12">
+        <div
+          className={`relative z-10 flex flex-col h-full ${
+            isPortrait ? "px-12 py-16" : "px-16 py-12"
+          }`}
+        >
           {/* Üst Bar: Logo + Rütbe rozeti */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -96,11 +151,19 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           </div>
 
           {/* Ana İçerik */}
-          <div className="flex-1 flex items-center gap-12 mt-4">
-            {/* Sol: Avatar + İsim */}
-            <div className="flex flex-col items-center gap-4 shrink-0">
+          <div
+            className={`flex-1 flex ${
+              isPortrait ? "flex-col items-center gap-10 mt-12" : "items-center gap-12 mt-4"
+            }`}
+          >
+            {/* Avatar + İsim */}
+            <div
+              className={`flex flex-col items-center gap-4 shrink-0 ${
+                isPortrait ? "" : ""
+              }`}
+            >
               <div
-                className="size-28 rounded-2xl flex items-center justify-center ring-2 overflow-hidden"
+                className={`${isPortrait ? "size-40" : "size-28"} rounded-2xl flex items-center justify-center ring-2 overflow-hidden`}
                 style={{
                   backgroundColor: rankColor + "15",
                   ["--tw-ring-color" as string]: rankColor + "50",
@@ -115,24 +178,29 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     crossOrigin="anonymous"
                   />
                 ) : (
-                  <span className="text-3xl font-bold text-white/80">{initials}</span>
+                  <span className={`${isPortrait ? "text-5xl" : "text-3xl"} font-bold text-white/80`}>
+                    {initials}
+                  </span>
                 )}
               </div>
               <div className="text-center">
-                <p className="text-white font-semibold text-lg">{displayName}</p>
+                <p className={`text-white font-semibold ${isPortrait ? "text-2xl" : "text-lg"}`}>
+                  {displayName}
+                </p>
                 <p className="text-white/50 text-sm">{tCommon("site")}</p>
               </div>
             </div>
 
-            {/* Sağ: Kart içeriği */}
-            <div className="flex-1 space-y-6">
+            {/* Kart içeriği */}
+            <div className={`${isPortrait ? "w-full" : "flex-1"} space-y-6`}>
+              {/* ── Level Up Variant ──────────────────────────────────── */}
               {variant === "level-up" && (
                 <>
-                  <div>
+                  <div className={isPortrait ? "text-center" : ""}>
                     <p className="text-indigo-300/80 text-sm font-medium uppercase tracking-widest mb-1">
                       {t("levelUp.label")}
                     </p>
-                    <p className="text-white text-5xl font-extrabold tracking-tight">
+                    <p className={`text-white font-extrabold tracking-tight ${isPortrait ? "text-6xl" : "text-5xl"}`}>
                       Level{" "}
                       <span style={{ color: rankColor }}>{level}</span>
                     </p>
@@ -141,7 +209,6 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     </p>
                   </div>
 
-                  {/* XP Progress */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-white/60">{t("levelUp.progress")}</span>
@@ -160,9 +227,8 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     </div>
                   </div>
 
-                  {/* Mini istatistikler */}
                   {currentStreak !== undefined && (
-                    <div className="flex gap-6 mt-2">
+                    <div className={`flex gap-6 mt-2 ${isPortrait ? "justify-center" : ""}`}>
                       <div className="flex items-center gap-2">
                         <Flame className="size-5 text-orange-400" />
                         <div>
@@ -184,20 +250,20 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 </>
               )}
 
+              {/* ── Weekly Summary Variant ────────────────────────────── */}
               {variant === "weekly-summary" && (
                 <>
-                  <div>
+                  <div className={isPortrait ? "text-center" : ""}>
                     <p className="text-indigo-300/80 text-sm font-medium uppercase tracking-widest mb-1">
                       {t("weeklySummary.label")}
                     </p>
-                    <p className="text-white text-4xl font-extrabold tracking-tight">
+                    <p className={`text-white font-extrabold tracking-tight ${isPortrait ? "text-5xl" : "text-4xl"}`}>
                       %{weeklyRate ?? 0}{" "}
                       <span className="text-2xl font-semibold text-white/60">{t("weeklySummary.discipline")}</span>
                     </p>
                   </div>
 
-                  {/* Büyük stat grid */}
-                  <div className="grid grid-cols-3 gap-6">
+                  <div className={`grid ${isPortrait ? "grid-cols-1 gap-4" : "grid-cols-3 gap-6"}`}>
                     <StatBox
                       icon={<Shield className="size-5" style={{ color: rankColor }} />}
                       value={`Lvl ${level}`}
@@ -218,7 +284,6 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     />
                   </div>
 
-                  {/* XP bar */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
                       <span className="text-white/50">{t("weeklySummary.totalXp", { xp })}</span>
@@ -238,11 +303,82 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                   </div>
                 </>
               )}
+
+              {/* ── Single Routine Variant ────────────────────────────── */}
+              {variant === "single-routine" && (
+                <>
+                  <div className={isPortrait ? "text-center" : ""}>
+                    <p className="text-indigo-300/80 text-sm font-medium uppercase tracking-widest mb-1">
+                      {t("singleRoutine.label")}
+                    </p>
+                    <div className={`flex items-center gap-4 ${isPortrait ? "justify-center" : ""} mt-3`}>
+                      <div
+                        className="size-16 rounded-2xl flex items-center justify-center"
+                        style={{
+                          backgroundColor: (routineColor ?? "#3b82f6") + "25",
+                          border: `2px solid ${(routineColor ?? "#3b82f6")}50`,
+                        }}
+                      >
+                        <span className="text-2xl" style={{ color: routineColor ?? "#3b82f6" }}>
+                          {routineIcon ?? "✓"}
+                        </span>
+                      </div>
+                      <div className={isPortrait ? "text-center" : ""}>
+                        <p className={`text-white font-extrabold tracking-tight ${isPortrait ? "text-4xl" : "text-3xl"}`}>
+                          {routineName ?? "Routine"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={`flex gap-8 ${isPortrait ? "justify-center mt-4" : "mt-2"}`}>
+                    <div className="flex items-center gap-3">
+                      <Flame className="size-7 text-orange-400" />
+                      <div>
+                        <p className="text-white font-bold text-3xl tabular-nums">
+                          {routineStreak ?? 0}
+                        </p>
+                        <p className="text-white/40 text-sm">{t("statLabels.dayStreak")}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Shield className="size-7" style={{ color: rankColor }} />
+                      <div>
+                        <p className="text-white font-bold text-3xl tabular-nums">
+                          Lvl {level}
+                        </p>
+                        <p className="text-white/40 text-sm">{tLevels(`ranks.${rank}`)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
+          {/* ── Achievement Stickers ──────────────────────────────────── */}
+          {stickers.length > 0 && (
+            <div className={`flex gap-2.5 ${isPortrait ? "justify-center mt-8" : "mt-4"}`}>
+              {stickers.map((s) => (
+                <div
+                  key={s.key}
+                  className="flex items-center gap-1.5 rounded-full px-3 py-1.5"
+                  style={{
+                    backgroundColor: s.color + "18",
+                    border: `1px solid ${s.color}35`,
+                  }}
+                >
+                  <span style={{ color: s.color }}>{s.icon}</span>
+                  <span className="text-xs font-semibold" style={{ color: s.color }}>
+                    {t(`stickers.${s.key}`)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Alt Bar */}
-          <div className="flex items-center justify-between mt-auto pt-4">
+          <div className={`flex items-center justify-between mt-auto ${isPortrait ? "pt-8" : "pt-4"}`}>
             <p className="text-white/30 text-xs">
               {tCommon("site")} • {t("footerBrand")}
             </p>

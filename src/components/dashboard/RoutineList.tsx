@@ -346,6 +346,21 @@ export function RoutineList({ initialRoutines }: Props) {
               routine={r}
               onToggle={handleToggle}
               onDelete={handleDelete}
+              onShare={(routine) => {
+                setShareModal({
+                  open: true,
+                  props: {
+                    variant: "single-routine",
+                    userName: auth.status === "authenticated" ? auth.user.name : null,
+                    userImage: auth.status === "authenticated" ? auth.user.image : null,
+                    xp: 0,
+                    routineName: routine.title,
+                    routineIcon: routine.icon,
+                    routineColor: routine.color,
+                    routineStreak: routine.currentStreak,
+                  },
+                });
+              }}
               isPending={pendingId === r.id}
               index={i}
             />

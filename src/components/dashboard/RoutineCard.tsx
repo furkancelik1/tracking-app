@@ -21,6 +21,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import { Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
@@ -33,6 +34,7 @@ type Props = {
   /** RoutineList'ten gelen optimistic-aware callback'ler */
   onToggle: (id: string, completed: boolean, note?: string) => void;
   onDelete: (id: string) => void;
+  onShare?: (routine: RoutineWithMeta) => void;
   /** useTransition isPending — tüm kartlar için geçerli değil, sadece bu kart */
   isPending: boolean;
   /** Stagger animasyonu için kart indeksi */
@@ -54,7 +56,7 @@ const cardVariants = {
   }),
 };
 
-export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 }: Props) {
+export function RoutineCard({ routine, onToggle, onDelete, onShare, isPending, index = 0 }: Props) {
   const t = useTranslations("dashboard.routineCard");
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
@@ -212,6 +214,19 @@ export function RoutineCard({ routine, onToggle, onDelete, isPending, index = 0 
         >
           {isCompleted ? t("completed") : t("confirmComplete").replace(" ✓", "")}
         </Button>
+
+        {onShare && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="px-2 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            disabled={isPending}
+            onClick={() => onShare(routine)}
+            aria-label={t("shareRoutine")}
+          >
+            <Share2 className="size-3.5" />
+          </Button>
+        )}
 
         <Button
           size="sm"

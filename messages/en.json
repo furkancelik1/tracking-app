@@ -232,7 +232,8 @@
       "deleteTitle": "Delete Routine",
       "deleteDescription": "Are you sure? This action cannot be undone.",
       "confirmDelete": "Delete",
-      "cancelDelete": "Cancel"
+      "cancelDelete": "Cancel",
+      "shareRoutine": "Share Routine"
     },
     "addRoutine": {
       "title": "New Routine",
@@ -317,7 +318,61 @@
     "dailyAverageSubtitle": "Average routines completed per day",
     "lastDays": "Last {days} days",
     "shareWeekly": "Share Weekly Summary",
-    "days": "{count} days"
+    "days": "{count} days",
+    "radar": {
+      "title": "Weekly Consistency",
+      "description": "Completion distribution by day of week",
+      "noData": "No weekday data yet",
+      "completions": "Completions",
+      "days": {
+        "0": "Sun",
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat"
+      }
+    },
+    "routineSuccess": {
+      "title": "Routine Performance",
+      "description": "Success rates for your active routines",
+      "mostDisciplined": "Most Disciplined",
+      "needsFocus": "Needs Focus"
+    },
+    "insights": {
+      "title": "Insights",
+      "monthlyComparison": "Monthly Comparison",
+      "monthlyComparisonDetail": "{thisMonth} active days vs {lastMonth} last period ({direction}{percent}%)",
+      "bestWeekday": {
+        "title": "Best Day",
+        "description": "You perform best on {day} with {count} completions!"
+      },
+      "topRoutine": {
+        "title": "Most Consistent",
+        "description": "{name} has a {rate}% success rate — great discipline!"
+      },
+      "weakRoutine": {
+        "title": "Needs Attention",
+        "description": "{name} is at only {rate}% — try setting a reminder."
+      },
+      "monthlyImprovement": {
+        "title": "On the Rise",
+        "description": "You improved {percent}% compared to last period!"
+      },
+      "monthlyDecline": {
+        "title": "Slight Dip",
+        "description": "Activity dropped {percent}% — you can bounce back!"
+      },
+      "weekendWarrior": {
+        "title": "Weekend Warrior",
+        "description": "You're more active on weekends than weekdays."
+      },
+      "weekdayWarrior": {
+        "title": "Weekday Warrior",
+        "description": "You're more active on weekdays — weekends could use a boost."
+      }
+    }
   },
 
   "levels": {
@@ -338,6 +393,11 @@
     "preparing": "Preparing…",
     "downloaded": "Image downloaded! 📸",
     "downloadError": "Could not create image, please try again.",
+    "shareNative": "Share",
+    "nativeShareTitle": "My Routine Progress",
+    "nativeShareText": "Check out my habit tracking progress!",
+    "layoutLandscape": "Landscape",
+    "layoutPortrait": "Story",
     "levelUp": {
       "label": "Level Up!",
       "totalXp": "Earned a total of {xp} XP",
@@ -348,14 +408,26 @@
       "discipline": "Discipline",
       "totalXp": "Total {xp} XP"
     },
+    "singleRoutine": {
+      "label": "Routine Streak"
+    },
     "statLabels": {
       "dayStreak": "Day Streak",
       "completions": "Completions"
     },
+    "stickers": {
+      "streak10": "10 Day Streak",
+      "streak30": "30 Day Streak",
+      "consistencyKing": "Consistency King",
+      "centurion": "Centurion",
+      "dedicated": "Dedicated",
+      "earlyBird": "Early Bird"
+    },
     "footerBrand": "Habit Tracker",
     "streakDays": "{count} days",
     "filenameLevelUp": "level-up",
-    "filenameWeeklySummary": "weekly-summary"
+    "filenameWeeklySummary": "weekly-summary",
+    "filenameSingleRoutine": "routine-streak"
   },
 
   "email": {

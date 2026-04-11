@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -25,7 +28,13 @@ export function StatsCard({
   trend,
 }: StatsCardProps) {
   return (
-    <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm hover:border-zinc-700/50 transition-colors">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+    >
+    <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm hover:border-zinc-700/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
@@ -59,5 +68,6 @@ export function StatsCard({
         )}
       </CardContent>
     </Card>
+    </motion.div>
   );
 }

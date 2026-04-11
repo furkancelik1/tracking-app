@@ -97,6 +97,7 @@ export function RoutineCard({ routine, onToggle, onDelete, onShare, isPending, i
       initial="hidden"
       animate="visible"
       custom={index}
+      whileHover={{ y: -3, transition: { duration: 0.2 } }}
       whileTap={{ scale: 0.98 }}
     >
       <motion.div
@@ -121,7 +122,7 @@ export function RoutineCard({ routine, onToggle, onDelete, onShare, isPending, i
             "flex flex-col transition-all duration-200",
             isCompleted
               ? "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20"
-              : "hover:shadow-md"
+              : "hover:shadow-lg hover:shadow-primary/5 hover:border-zinc-300 dark:hover:border-zinc-600"
           )}
         >
       <CardHeader className="pb-2">

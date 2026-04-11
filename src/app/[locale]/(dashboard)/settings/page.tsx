@@ -30,6 +30,7 @@ export default async function SettingsPage({
       subscriptionTier: true,
       emailNotificationsEnabled: true,
       stripeCustomerId: true,
+      stripeCurrentPeriodEnd: true,
     },
   });
 
@@ -72,6 +73,15 @@ export default async function SettingsPage({
           tier={tier}
           hasStripeCustomer={!!user.stripeCustomerId}
           plan={STRIPE_PLANS.PRO}
+          periodEnd={
+            user.stripeCurrentPeriodEnd
+              ? user.stripeCurrentPeriodEnd.toLocaleDateString(locale, {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })
+              : null
+          }
         />
       </section>
     </div>

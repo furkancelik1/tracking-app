@@ -47,7 +47,7 @@
       "description": "Set up your daily habits in minutes. See your progress with streaks and weekly charts — never lose your momentum.",
       "ctaPrimary": "Start for Free",
       "ctaSecondary": "How It Works?",
-      "ctaNote": "No credit card required · 5 routines on free plan"
+      "ctaNote": "No credit card required · 3 routines on free plan"
     },
     "features": {
       "title": "Everything you need, in one place",
@@ -98,7 +98,7 @@
         "cta": "Start Pro"
       },
       "freeFeatures": [
-        "Up to 5 routines",
+        "Up to 3 routines",
         "Daily / Weekly / Monthly frequency",
         "Streak tracking",
         "Daily progress bar",
@@ -290,9 +290,11 @@
       "proPlan": "Pro Plan",
       "proDescription": "Full access — unlimited routines",
       "freePlan": "Free Plan",
-      "freeDescription": "Up to 5 routines",
+      "freeDescription": "Up to 3 routines",
       "upgrade": "Upgrade to Pro",
-      "manageBilling": "Manage Billing"
+      "manageBilling": "Manage Billing",
+      "manageDescription": "Manage payment method, invoices, or cancel subscription.",
+      "renewsOn": "Renews on {date}"
     }
   },
 
@@ -368,5 +370,17 @@
       "footer": "You're receiving this because email notifications are enabled.",
       "unsubscribe": "Manage notification settings"
     }
+  },
+
+  "proGate": {
+    "defaultFeature": "this feature",
+    "title": "Upgrade to Pro",
+    "description": "Unlock {feature} and everything else Pro has to offer.",
+    "tooltip": "Upgrade to Pro to unlock {feature}",
+    "cancelAnytime": "cancel anytime",
+    "maybeLater": "Maybe later",
+    "upgradeNow": "Upgrade Now",
+    "redirecting": "Redirecting…",
+    "checkoutError": "Could not start checkout."
   }
 }

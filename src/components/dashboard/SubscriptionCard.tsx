@@ -15,9 +15,10 @@ type Props = {
   tier: SubscriptionTier;
   hasStripeCustomer: boolean;
   plan: Plan;
+  periodEnd?: string | null;
 };
 
-export function SubscriptionCard({ tier, hasStripeCustomer, plan }: Props) {
+export function SubscriptionCard({ tier, hasStripeCustomer, plan, periodEnd }: Props) {
   const router = useRouter();
   const t = useTranslations("settings.subscription");
   const tc = useTranslations("common");
@@ -105,8 +106,13 @@ export function SubscriptionCard({ tier, hasStripeCustomer, plan }: Props) {
         <>
           <Separator />
           <div className="space-y-2">
+            {periodEnd && (
+              <p className="text-sm text-muted-foreground">
+                {t("renewsOn", { date: periodEnd })}
+              </p>
+            )}
             <p className="text-sm text-muted-foreground">
-              Manage payment method, invoices, or cancel subscription.
+              {t("manageDescription")}
             </p>
             <Button
               variant="outline"

@@ -86,6 +86,17 @@ export async function createBillingPortalSession(
   return session.url;
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getPeriodEnd(sub: Stripe.Subscription): Date | null {
+  const ts = (sub as any).current_period_end;
+  return typeof ts === "number" ? new Date(ts * 1000) : null;
+}
+
+function getCustomerId(customer: string | Stripe.Customer | Stripe.DeletedCustomer): string | null {
+  return typeof customer === "string" ? customer : customer?.id ?? null;
+}
+
 // ─── Webhook Handlers ─────────────────────────────────────────────────────────
 
 export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
@@ -102,17 +113,22 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
 
       if (!userId || !subId) break;
 
+      // Fetch full subscription to get period end
+      const sub = await stripe.subscriptions.retrieve(subId);
+
       await prisma.user.update({
         where: { id: userId },
         data: {
           subscriptionTier: "PRO",
           stripeSubscriptionId: subId,
           stripeCustomerId: session.customer as string,
+          stripeCurrentPeriodEnd: getPeriodEnd(sub),
         },
       });
       break;
     }
 
+    case "invoice.paid":
     case "invoice.payment_succeeded": {
       const invoice = event.data.object as Stripe.Invoice;
       const invoiceWithSubscription = invoice as Stripe.Invoice & {
@@ -135,8 +151,8 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
         data: {
           subscriptionTier: "PRO",
           stripeSubscriptionId: sub.id,
-          stripeCustomerId:
-            typeof sub.customer === "string" ? sub.customer : sub.customer?.id ?? null,
+          stripeCustomerId: getCustomerId(sub.customer),
+          stripeCurrentPeriodEnd: getPeriodEnd(sub),
         },
       });
       break;
@@ -154,8 +170,8 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
         data: {
           subscriptionTier: isActive ? "PRO" : "FREE",
           stripeSubscriptionId: isActive ? sub.id : null,
-          stripeCustomerId:
-            typeof sub.customer === "string" ? sub.customer : sub.customer?.id ?? null,
+          stripeCustomerId: getCustomerId(sub.customer),
+          stripeCurrentPeriodEnd: isActive ? getPeriodEnd(sub) : null,
         },
       });
       break;
@@ -171,8 +187,8 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
         data: {
           subscriptionTier: "FREE",
           stripeSubscriptionId: null,
-          stripeCustomerId:
-            typeof sub.customer === "string" ? sub.customer : sub.customer?.id ?? null,
+          stripeCustomerId: getCustomerId(sub.customer),
+          stripeCurrentPeriodEnd: null,
         },
       });
       break;

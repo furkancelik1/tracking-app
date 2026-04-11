@@ -47,7 +47,7 @@
       "description": "Günlük alışkanlıklarını dakikalar içinde kur. Seriler ve haftalık grafiklerle ilerlemeni gör — motivasyonunu asla kaybetme.",
       "ctaPrimary": "Ücretsiz Başla",
       "ctaSecondary": "Nasıl Çalışır?",
-      "ctaNote": "Kredi kartı gerekmez · Ücretsiz planda 5 rutin"
+      "ctaNote": "Kredi kartı gerekmez · Ücretsiz planda 3 rutin"
     },
     "features": {
       "title": "İhtiyacın olan her şey, tek yerde",
@@ -98,7 +98,7 @@
         "cta": "Pro'ya Başla"
       },
       "freeFeatures": [
-        "5 rutine kadar",
+        "3 rutine kadar",
         "Günlük / Haftalık / Aylık sıklık",
         "Seri takibi",
         "Günlük ilerleme çubuğu",
@@ -290,9 +290,11 @@
       "proPlan": "Pro Plan",
       "proDescription": "Tam erişim — sınırsız rutin",
       "freePlan": "Ücretsiz Plan",
-      "freeDescription": "5 rutine kadar",
+      "freeDescription": "3 rutine kadar",
       "upgrade": "Pro'ya Yükselt",
-      "manageBilling": "Faturalandırmayı Yönet"
+      "manageBilling": "Faturalandırmayı Yönet",
+      "manageDescription": "Ödeme yöntemi, faturalar veya abonelik iptali için yönet.",
+      "renewsOn": "{date} tarihinde yenilenir"
     }
   },
 
@@ -368,5 +370,17 @@
       "footer": "Bu e-postayı, e-posta bildirimleri açık olduğu için alıyorsunuz.",
       "unsubscribe": "Bildirim ayarlarını yönet"
     }
+  },
+
+  "proGate": {
+    "defaultFeature": "bu özellik",
+    "title": "Pro'ya Yükselt",
+    "description": "{feature} ve Pro'nun sunduğu tüm özelliklerin kilidini aç.",
+    "tooltip": "{feature} için Pro'ya yükselt",
+    "cancelAnytime": "istediğin zaman iptal et",
+    "maybeLater": "Belki sonra",
+    "upgradeNow": "Şimdi Yükselt",
+    "redirecting": "Yönlendiriliyor…",
+    "checkoutError": "Ödeme başlatılamadı."
   }
 }

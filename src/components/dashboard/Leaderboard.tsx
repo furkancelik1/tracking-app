@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { LeaderboardEntry, LeaderboardPayload } from "@/actions/leaderboard.actions";
-import { Trophy, Medal, Flame, Crown } from "lucide-react";
+import { Trophy, Medal, Flame, Crown, Sparkles } from "lucide-react";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { useTranslations } from "next-intl";
 
@@ -83,6 +83,11 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
                 <span className="text-xs text-indigo-400 ml-1">{t("you")}</span>
               )}
             </p>
+            {entry.subscriptionTier === "PRO" && (
+              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 text-[10px] px-1.5 py-0 gap-0.5">
+                <Sparkles className="size-2.5" /> PRO
+              </Badge>
+            )}
             <Badge
               variant="secondary"
               className={cn("tabular-nums text-xs", style.text)}
@@ -117,7 +122,9 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
             "flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors",
             entry.isCurrentUser
               ? "bg-indigo-500/10 border border-indigo-500/20"
-              : "bg-card/50 hover:bg-card/80"
+              : entry.subscriptionTier === "PRO"
+                ? "bg-card/50 hover:bg-card/80 border border-amber-400/30"
+                : "bg-card/50 hover:bg-card/80"
           )}
         >
           <span className="w-6 text-center text-sm font-bold tabular-nums text-muted-foreground">
@@ -135,6 +142,11 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
               )}
             </p>
           </div>
+          {entry.subscriptionTier === "PRO" && (
+            <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 text-[10px] px-1.5 py-0 gap-0.5 shrink-0">
+              <Sparkles className="size-2.5" /> PRO
+            </Badge>
+          )}
           <LevelBadge xp={entry.xp} compact />
           {entry.currentStreak > 0 && (
             <span className="flex items-center gap-0.5 text-xs text-orange-400 shrink-0">

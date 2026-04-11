@@ -13,6 +13,7 @@ export type LeaderboardEntry = {
   xp: number;
   currentStreak: number;
   isCurrentUser: boolean;
+  subscriptionTier: string;
 };
 
 export type LeaderboardPayload = {
@@ -37,6 +38,7 @@ export async function getLeaderboard(): Promise<LeaderboardPayload> {
       name: true,
       image: true,
       xp: true,
+      subscriptionTier: true,
       routines: {
         where: { isActive: true },
         select: { currentStreak: true },
@@ -54,6 +56,7 @@ export async function getLeaderboard(): Promise<LeaderboardPayload> {
     xp: u.xp,
     currentStreak: u.routines[0]?.currentStreak ?? 0,
     isCurrentUser: u.id === currentUserId,
+    subscriptionTier: u.subscriptionTier,
   }));
 
   // Kullanıcının kendi sıralaması
@@ -72,6 +75,7 @@ export async function getLeaderboard(): Promise<LeaderboardPayload> {
           image: true,
           xp: true,
           isPublic: true,
+          subscriptionTier: true,
           routines: {
             where: { isActive: true },
             select: { currentStreak: true },
@@ -98,6 +102,7 @@ export async function getLeaderboard(): Promise<LeaderboardPayload> {
           xp: user.xp,
           currentStreak: user.routines[0]?.currentStreak ?? 0,
           isCurrentUser: true,
+          subscriptionTier: user.subscriptionTier,
         };
       }
     }

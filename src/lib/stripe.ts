@@ -17,17 +17,18 @@ export const STRIPE_PLANS = {
     price: "$9",
     interval: "month",
     features: [
-      "Unlimited basket items",
+      "Unlimited routines",
+      "Weekly stats charts",
+      "Email reminders",
       "Priority support",
-      "Advanced analytics",
-      "Chrome Extension access",
+      "All future features",
     ],
   },
 } as const;
 
-/** Basket item limit per tier */
+/** Routine limit per tier */
 export const TIER_LIMITS = {
-  FREE: 5,
+  FREE: 3,
   PRO: Infinity,
 } as const;
 
@@ -37,4 +38,40 @@ export function getSubscriptionTier(
   value: string | null | undefined
 ): SubscriptionTier {
   return value === "PRO" ? "PRO" : "FREE";
+}
+
+// ─── Subscription Status Helper ───────────────────────────────────────────────
+
+export type SubscriptionStatus = {
+  tier: SubscriptionTier;
+  isPro: boolean;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  stripeCurrentPeriodEnd: Date | null;
+  isActive: boolean;
+};
+
+/**
+ * Kullanıcı objesinden abonelik durumunu türetir.
+ * Server Component / Server Action içinde kullanılır.
+ */
+export function getSubscriptionStatus(user: {
+  subscriptionTier: string;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  stripeCurrentPeriodEnd?: Date | null;
+}): SubscriptionStatus {
+  const tier = getSubscriptionTier(user.subscriptionTier);
+  const isPro = tier === "PRO";
+  const now = new Date();
+  const periodEnd = user.stripeCurrentPeriodEnd ?? null;
+
+  return {
+    tier,
+    isPro,
+    stripeCustomerId: user.stripeCustomerId ?? null,
+    stripeSubscriptionId: user.stripeSubscriptionId ?? null,
+    stripeCurrentPeriodEnd: periodEnd,
+    isActive: isPro && (!periodEnd || periodEnd > now),
+  };
 }

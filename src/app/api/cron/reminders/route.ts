@@ -27,17 +27,20 @@ export async function GET(req: NextRequest) {
   const startTime = Date.now();
 
   // ── 1) Güvenlik ───────────────────────────────────────────────────────────
-  const isVercel = !!process.env.VERCEL;
-  if (isVercel && req.headers.get("x-vercel-cron") !== "1") {
-    console.warn("[cron] ⛔ x-vercel-cron header eksik — reddedildi.");
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const authHeader = req.headers.get("authorization");
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
   const cronSecret = process.env.CRON_SECRET;
+  const isVercelCron = req.headers.get("x-vercel-cron") === "1";
 
-  if (!cronSecret || !token || !isValidSecret(token, cronSecret)) {
+  // Bearer token veya ?secret= query param ile doğrulama
+  const authHeader = req.headers.get("authorization");
+  const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const queryToken = req.nextUrl.searchParams.get("secret");
+  const token = headerToken ?? queryToken;
+
+  const isAuthorized =
+    isVercelCron || (!!cronSecret && !!token && isValidSecret(token, cronSecret));
+
+  if (!isAuthorized) {
+    console.warn("[cron] ⛔ Yetkisiz erişim — header/token eşleşmedi.");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

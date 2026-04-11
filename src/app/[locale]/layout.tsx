@@ -31,6 +31,7 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(SITE_URL),
+    manifest: "/manifest.json",
     title: {
       default: title,
       template: `%s | ${t("siteName")}`,
@@ -39,6 +40,14 @@ export async function generateMetadata({
     keywords: t("keywords"),
     authors: [{ name: "Furkan Çelik", url: SITE_URL }],
     creator: "Furkan Çelik",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: t("siteName"),
+    },
+    formatDetection: {
+      telephone: false,
+    },
     openGraph: {
       type: "website",
       locale: locale === "tr" ? "tr_TR" : "en_US",
@@ -96,6 +105,10 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#6366f1" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+      </head>
       <body>
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>

@@ -560,5 +560,10 @@
         "description": "Analitik sayfasında grafikler, seriler ve alışkanlık analizlerini gör."
       }
     }
+  },
+  "pwa": {
+    "installTitle": "Routine Tracker'ı Yükle",
+    "installDescription": "En iyi deneyim için ana ekranına ekle.",
+    "installButton": "Yükle"
   }
 }

@@ -560,5 +560,10 @@
         "description": "Visit Analytics to see charts, streaks, and insights about your habits over time."
       }
     }
+  },
+  "pwa": {
+    "installTitle": "Install Routine Tracker",
+    "installDescription": "Add to your home screen for the best experience.",
+    "installButton": "Install"
   }
 }

@@ -21,6 +21,7 @@ import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ShopDialog } from "@/components/dashboard/ShopDialog";
 import { BadgeGallery } from "@/components/dashboard/BadgeGallery";
 import { OnboardingDialog } from "@/components/dashboard/OnboardingDialog";
+import { InstallPrompt } from "@/components/shared/InstallPrompt";
 import { getUserCoins } from "@/actions/shop.actions";
 
 const NAV_KEYS = [
@@ -156,6 +157,7 @@ export function DashboardNav() {
       <ShopDialog open={shopOpen} onOpenChange={setShopOpen} />
       <BadgeGallery open={badgesOpen} onOpenChange={setBadgesOpen} />
       <OnboardingDialog />
+      <InstallPrompt />
     </header>
   );
 }

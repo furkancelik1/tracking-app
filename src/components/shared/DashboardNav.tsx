@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Coins } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { ShopDialog } from "@/components/dashboard/ShopDialog";
+import { getUserCoins } from "@/actions/shop.actions";
 
 const NAV_KEYS = [
   { href: "/dashboard" as Route, key: "routines" },
@@ -29,6 +32,14 @@ export function DashboardNav() {
   const auth = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const t = useTranslations("nav");
+  const [shopOpen, setShopOpen] = useState(false);
+  const [coins, setCoins] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (auth.status === "authenticated") {
+      getUserCoins().then(setCoins).catch(() => {});
+    }
+  }, [auth.status]);
 
   if (auth.status !== "authenticated") return null;
 
@@ -70,6 +81,18 @@ export function DashboardNav() {
 
         {/* User menu */}
         <div className="flex items-center gap-2">
+          {/* Coin display & shop */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/10"
+            onClick={() => setShopOpen(true)}
+          >
+            <Coins className="h-4 w-4" />
+            <span className="text-sm font-semibold tabular-nums">
+              {coins !== null ? coins.toLocaleString() : "—"}
+            </span>
+          </Button>
           <LanguageSwitcher />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -109,6 +132,7 @@ export function DashboardNav() {
           </DropdownMenu>
         </div>
       </div>
+      <ShopDialog open={shopOpen} onOpenChange={setShopOpen} />
     </header>
   );
 }

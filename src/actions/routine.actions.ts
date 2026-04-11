@@ -3,6 +3,7 @@
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { useStreakFreeze } from "@/actions/shop.actions";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Yardımcı: periyot başlangıcı (Route Handler ile aynı mantık)
@@ -66,12 +67,36 @@ function calcNewStreak(
   return last >= prevStart && last < currentStart ? currentStreak + 1 : 1;
 }
 
+/**
+ * Streak Freeze farkında streak hesaplaması.
+ * Normal mantık başarısız olursa (streak kırılacaksa), envanterdeki bir STREAK_FREEZE harcanarak
+ * streak korunur.
+ */
+async function calcNewStreakWithFreeze(
+  userId: string,
+  frequency: string,
+  currentStreak: number,
+  lastCompletedAt: Date | null
+): Promise<number> {
+  const streak = calcNewStreak(frequency, currentStreak, lastCompletedAt);
+  // Streak zaten devam ediyorsa veya ilk tamamlanmaysa, freeze gerekmez
+  if (streak > 1 || !lastCompletedAt) return streak;
+  // Streak kırılacak — freeze dene
+  if (currentStreak > 0) {
+    const froze = await useStreakFreeze(userId);
+    if (froze) return currentStreak + 1;
+  }
+  return streak;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // XP Sabitleri
 // ─────────────────────────────────────────────────────────────────────────────
 
 const XP_PER_COMPLETION = 10;
 const XP_ALL_DONE_BONUS = 50;
+const COINS_PER_COMPLETION = 10;
+const COINS_ALL_DONE_BONUS = 50;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Server Actions
@@ -90,7 +115,7 @@ async function requireUser() {
 export async function completeRoutineAction(
   routineId: string,
   note?: string
-): Promise<{ xpGain: number; totalXp: number }> {
+): Promise<{ xpGain: number; totalXp: number; coinGain: number; totalCoins: number }> {
   const userId = await requireUser();
 
   try {
@@ -108,11 +133,12 @@ export async function completeRoutineAction(
     });
     if (alreadyLogged) throw new Error("Bu periyot için zaten tamamlandı.");
 
-    const newStreak = calcNewStreak(routine.frequency, routine.currentStreak, routine.lastCompletedAt);
+    const newStreak = await calcNewStreakWithFreeze(userId, routine.frequency, routine.currentStreak, routine.lastCompletedAt);
     const newLongest = Math.max(newStreak, routine.longestStreak);
 
-    // ── XP hesaplaması ────────────────────────────────────────────────────
+    // ── XP & Coin hesaplaması ──────────────────────────────────────────────
     let xpGain = XP_PER_COMPLETION;
+    let coinGain = COINS_PER_COMPLETION;
 
     // All Done bonus: bu tamamlama sonrası bugünkü tüm aktif rutinler tamam mı?
     const todayStart = getPeriodStart("DAILY");
@@ -123,6 +149,7 @@ export async function completeRoutineAction(
     // todayLogs henüz bu tamamlamayı içermiyor, +1 ekleyerek kontrol et
     if (todayLogs + 1 >= activeRoutines && activeRoutines > 1) {
       xpGain += XP_ALL_DONE_BONUS;
+      coinGain += COINS_ALL_DONE_BONUS;
     }
 
     await prisma.$transaction([
@@ -135,18 +162,18 @@ export async function completeRoutineAction(
       }),
       prisma.user.update({
         where: { id: userId },
-        data: { xp: { increment: xpGain } },
+        data: { xp: { increment: xpGain }, coins: { increment: coinGain } },
       }),
     ]);
 
-    // Güncel XP'yi al (level-up algılaması için)
+    // Güncel XP ve coin bilgisini al
     const updatedUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { xp: true },
+      select: { xp: true, coins: true },
     });
 
     revalidatePath("/dashboard");
-    return { xpGain, totalXp: updatedUser?.xp ?? 0 };
+    return { xpGain, totalXp: updatedUser?.xp ?? 0, coinGain, totalCoins: updatedUser?.coins ?? 0 };
   } catch (error) {
     console.error("[completeRoutineAction] Hata:", error);
     throw error;
@@ -188,17 +215,21 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
         where: { id: routineId },
         data: { currentStreak: restoredStreak, lastCompletedAt: prevLog ? prevPeriodStart : null },
       }),
-      // XP geri al (minimum 0)
+      // XP ve coin geri al (minimum 0)
       prisma.user.update({
         where: { id: userId },
-        data: { xp: { decrement: XP_PER_COMPLETION } },
+        data: { xp: { decrement: XP_PER_COMPLETION }, coins: { decrement: COINS_PER_COMPLETION } },
       }),
     ]);
 
-    // XP negatife düşmesini engelle
+    // XP ve coin negatife düşmesini engelle
     await prisma.user.updateMany({
       where: { id: userId, xp: { lt: 0 } },
       data: { xp: 0 },
+    });
+    await prisma.user.updateMany({
+      where: { id: userId, coins: { lt: 0 } },
+      data: { coins: 0 },
     });
 
     revalidatePath("/dashboard");

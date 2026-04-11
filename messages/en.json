@@ -23,6 +23,7 @@
     "routines": "My Routines",
     "leaderboard": "Leaderboard",
     "settings": "Settings",
+    "shop": "Shop",
     "logo": "Routine Tracker",
     "lightMode": "Switch to Light Mode",
     "darkMode": "Switch to Dark Mode",
@@ -461,5 +462,24 @@
     "upgradeNow": "Upgrade Now",
     "redirecting": "Redirecting…",
     "checkoutError": "Could not start checkout."
+  },
+
+  "shop": {
+    "title": "Shop",
+    "description": "Spend your hard-earned coins on useful items.",
+    "coins": "Coins",
+    "buy": "Buy",
+    "owned": "{count}x owned",
+    "emptyShop": "No items available yet.",
+    "loadError": "Could not load shop.",
+    "purchaseSuccess": "Item purchased! \uD83C\uDF89",
+    "purchaseFailed": "Purchase failed.",
+    "notEnoughCoins": "Not enough coins!",
+    "items": {
+      "STREAK_FREEZE": {
+        "name": "Streak Freeze",
+        "description": "Protects your streak for one missed day. Automatically used when your streak is about to break."
+      }
+    }
   }
 }

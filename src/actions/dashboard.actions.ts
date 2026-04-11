@@ -11,6 +11,7 @@ import {
   differenceInCalendarDays,
 } from "date-fns";
 import { tr } from "date-fns/locale";
+import { useStreakFreeze } from "@/actions/shop.actions";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -163,6 +164,7 @@ export async function getDashboardData(): Promise<DashboardPayload> {
   }
 
   let activeStreak = 0;
+  let usedFreeze = false;
   for (let i = 0; i <= 60; i++) {
     const day = subDays(todayStart, i);
     const key = format(day, "yyyy-MM-dd");
@@ -171,6 +173,15 @@ export async function getDashboardData(): Promise<DashboardPayload> {
     } else {
       // Bugün henüz tamamlama yoksa dünden say
       if (i === 0) continue;
+      // Streak Freeze: bir boşluğa tolerans göster ve bir dondurucu harca
+      if (!usedFreeze) {
+        const froze = await useStreakFreeze(userId);
+        if (froze) {
+          usedFreeze = true;
+          activeStreak++; // dondurulan gün streak'e dahil
+          continue;
+        }
+      }
       break;
     }
   }

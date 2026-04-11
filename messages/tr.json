@@ -23,6 +23,7 @@
     "routines": "Rutinlerim",
     "leaderboard": "Liderlik",
     "settings": "Ayarlar",
+    "shop": "Dükkan",
     "logo": "Rutin Takip",
     "lightMode": "Açık Moda Geç",
     "darkMode": "Karanlık Moda Geç",
@@ -461,5 +462,24 @@
     "upgradeNow": "Şimdi Yükselt",
     "redirecting": "Yönlendiriliyor…",
     "checkoutError": "Ödeme başlatılamadı."
+  },
+
+  "shop": {
+    "title": "Dükkan",
+    "description": "Kazandığın altınları kullanışlı eşyalara harca.",
+    "coins": "Altın",
+    "buy": "Satın Al",
+    "owned": "{count}x sahip",
+    "emptyShop": "Henüz ürün yok.",
+    "loadError": "Dükkan yüklenemedi.",
+    "purchaseSuccess": "Eşya satın alındı! 🎉",
+    "purchaseFailed": "Satın alma başarısız.",
+    "notEnoughCoins": "Yeterli altının yok!",
+    "items": {
+      "STREAK_FREEZE": {
+        "name": "Seri Dondurucu",
+        "description": "Kaçırdığın bir gün için serini korur. Serin kırılmak üzereyken otomatik olarak kullanılır."
+      }
+    }
   }
 }

@@ -27,12 +27,32 @@ export function PushNotificationButton() {
   const checkSubscription = useCallback(async () => {
     console.log("[Push] 🔍 checkSubscription başlatıldı");
 
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      console.warn("[Push] ❌ serviceWorker veya PushManager desteklenmiyor");
+    if (!("serviceWorker" in navigator)) {
+      console.warn("[Push] ❌ serviceWorker desteklenmiyor");
+      setState("unsupported");
+      return;
+    }
+    if (!("PushManager" in window)) {
+      console.warn("[Push] ❌ PushManager desteklenmiyor");
       setState("unsupported");
       return;
     }
     console.log("[Push] ✅ serviceWorker & PushManager mevcut");
+
+    // Dev modda SW yoksa elle register et
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    console.log("[Push] 📋 Kayıtlı SW sayısı:", registrations.length, registrations.map(r => r.scope));
+    if (registrations.length === 0) {
+      console.log("[Push] ⚙️ SW bulunamadı, /sw.js elle register ediliyor...");
+      try {
+        const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+        console.log("[Push] ✅ SW register edildi — scope:", reg.scope);
+      } catch (regErr) {
+        console.error("[Push] ❌ SW register BAŞARISIZ:", regErr);
+        setState("unsupported");
+        return;
+      }
+    }
 
     const permission = Notification.permission;
     console.log("[Push] 🔔 Mevcut izin durumu:", permission);
@@ -55,19 +75,25 @@ export function PushNotificationButton() {
   }, []);
 
   useEffect(() => {
-    console.log("[Push] 🔑 VAPID_PUBLIC_KEY:", VAPID_PUBLIC_KEY ? VAPID_PUBLIC_KEY.slice(0, 20) + "..." : "⚠️ BOŞ / undefined!");
+    console.log("[Push] 🔑 VAPID_PUBLIC_KEY:", VAPID_PUBLIC_KEY || "⚠️ BOŞ / undefined!");
+    console.log("[Push] 🔑 VAPID_PUBLIC_KEY tam değer:", VAPID_PUBLIC_KEY);
     checkSubscription();
   }, [checkSubscription]);
 
   // ── Abone ol ──────────────────────────────────────────────────────────────
   async function handleSubscribe() {
+    alert("Butona basıldı!");
+    console.log("Push desteği kontrol ediliyor:", "PushManager" in window);
+    console.log("--- ABONELİK BAŞLADI ---");
     console.log("[Push] 1. Adım: Butona tıklandı — handleSubscribe başlatıldı");
     setBusy(true);
     try {
       // 2 — VAPID kontrolü
-      console.log("[Push] 2. Adım: VAPID Key kontrolü:", VAPID_PUBLIC_KEY ?? "BOŞ!");
+      console.log("[Push] 2. Adım: VAPID Key kontrolü:", VAPID_PUBLIC_KEY);
       if (!VAPID_PUBLIC_KEY) {
-        throw new Error("NEXT_PUBLIC_VAPID_PUBLIC_KEY ortam değişkeni tanımlı değil!");
+        const msg = "NEXT_PUBLIC_VAPID_PUBLIC_KEY ortam değişkeni tanımlı değil!";
+        alert("❌ " + msg);
+        throw new Error(msg);
       }
 
       // 3 — İzin iste
@@ -80,9 +106,16 @@ export function PushNotificationButton() {
         return;
       }
 
-      // 4 — Service Worker ready
+      // 4 — Service Worker ready (timeout korumalı)
       console.log("[Push] 4. Adım: SW Kaydı aranıyor... navigator.serviceWorker.ready");
-      const reg = await navigator.serviceWorker.ready;
+      console.log("[Push] 4. Adım: Mevcut SW kayıtları:", await navigator.serviceWorker.getRegistrations().then(r => r.map(x => x.scope)));
+
+      const reg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("SW ready 10 saniyede yanıt vermedi — Service Worker kayıtlı değil!")), 10_000)
+        ),
+      ]);
       console.log("[Push] 4. Adım sonuç: SW ready — scope:", reg.scope, "active:", reg.active?.state);
 
       // 5 — PushManager subscribe
@@ -93,7 +126,7 @@ export function PushNotificationButton() {
         userVisibleOnly: true,
         applicationServerKey,
       });
-      console.log("[Push] 5. Adım sonuç: Abonelik objesi oluşturuldu:", sub);
+      console.log("[Push] 5. Adım sonuç: Abonelik objesi oluşturuldu:", JSON.stringify(sub.toJSON()));
       console.log("[Push] 5. Adım: endpoint:", sub.endpoint);
 
       // 6 — Server'a kaydet
@@ -115,12 +148,14 @@ export function PushNotificationButton() {
       setState("subscribed");
       toast.success("Push bildirimleri etkinleştirildi!");
     } catch (err: any) {
-      console.error("[Push] HATA DETAYI (handleSubscribe):", err);
-      console.error("[Push] Hata adı:", err?.name, "| Mesaj:", err?.message);
-      toast.error("Abonelik başarısız: " + (err.message ?? "Bilinmeyen hata"));
+      console.error("[Push] ❌ HATA DETAYI (handleSubscribe):", err);
+      console.error("[Push] Hata adı:", err?.name, "| Mesaj:", err?.message, "| Stack:", err?.stack);
+      const errorMsg = "Abonelik başarısız: " + (err.message ?? "Bilinmeyen hata");
+      toast.error(errorMsg);
+      alert("❌ " + errorMsg);
     } finally {
       setBusy(false);
-      console.log("[Push] handleSubscribe tamamlandı");
+      console.log("--- ABONELİK BİTTİ ---");
     }
   }
 
@@ -163,7 +198,22 @@ export function PushNotificationButton() {
     }
   }
 
-  if (state === "unsupported" || state === "loading") return null;
+  if (state === "unsupported") {
+    console.log("[Push] ⚠️ Bileşen render edilmiyor — state:", state);
+    return null;
+  }
+
+  if (state === "loading") {
+    return (
+      <div className="flex items-center gap-3 rounded-xl border bg-muted/40 px-4 py-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium">Push Bildirimleri</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Kontrol ediliyor…</p>
+        </div>
+        <Loader2 size={16} className="animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-3 rounded-xl border bg-muted/40 px-4 py-3">

@@ -22,6 +22,15 @@ enum ItemType {
   STREAK_FREEZE
 }
 
+enum BadgeCriteriaType {
+  STREAK
+  TOTAL_COMPLETIONS
+  COIN_EARNED
+  FIRST_HABIT
+  ALL_DONE
+  TOUR_COMPLETE
+}
+
 model User {
   id                    String           @id @default(cuid())
   name                  String?
@@ -44,6 +53,7 @@ model User {
   xp                      Int              @default(0)
   coins                   Int              @default(0)
   isPublic                Boolean          @default(true)
+  hasSeenTour             Boolean          @default(false)
   language                String           @default("en")
 
   accounts              Account[]
@@ -51,6 +61,7 @@ model User {
   routines              Routine[]
   routineLogs           RoutineLog[]
   userItems             UserItem[]
+  userBadges            UserBadge[]
 }
 
 model Account {
@@ -162,5 +173,29 @@ model UserItem {
   item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
   @@unique([userId, itemId])
+  @@index([userId])
+}
+
+model Badge {
+  id            String            @id @default(cuid())
+  name          String            @unique
+  description   String?
+  icon          String?
+  criteriaType  BadgeCriteriaType
+  criteriaValue Int               @default(0)
+
+  userBadges    UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
   @@index([userId])
 }

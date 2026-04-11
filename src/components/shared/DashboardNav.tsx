@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
-import { Moon, Sun, Coins } from "lucide-react";
+import { Moon, Sun, Coins, Trophy } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ShopDialog } from "@/components/dashboard/ShopDialog";
+import { BadgeGallery } from "@/components/dashboard/BadgeGallery";
+import { OnboardingDialog } from "@/components/dashboard/OnboardingDialog";
 import { getUserCoins } from "@/actions/shop.actions";
 
 const NAV_KEYS = [
@@ -33,6 +35,7 @@ export function DashboardNav() {
   const { resolvedTheme, setTheme } = useTheme();
   const t = useTranslations("nav");
   const [shopOpen, setShopOpen] = useState(false);
+  const [badgesOpen, setBadgesOpen] = useState(false);
   const [coins, setCoins] = useState<number | null>(null);
 
   useEffect(() => {
@@ -93,6 +96,15 @@ export function DashboardNav() {
               {coins !== null ? coins.toLocaleString() : "—"}
             </span>
           </Button>
+          {/* Badge gallery */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 px-2"
+            onClick={() => setBadgesOpen(true)}
+          >
+            <Trophy className="h-4 w-4" />
+          </Button>
           <LanguageSwitcher />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -133,6 +145,8 @@ export function DashboardNav() {
         </div>
       </div>
       <ShopDialog open={shopOpen} onOpenChange={setShopOpen} />
+      <BadgeGallery open={badgesOpen} onOpenChange={setBadgesOpen} />
+      <OnboardingDialog />
     </header>
   );
 }

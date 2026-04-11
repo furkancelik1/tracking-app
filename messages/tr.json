@@ -24,6 +24,7 @@
     "leaderboard": "Liderlik",
     "settings": "Ayarlar",
     "shop": "Dükkan",
+    "badges": "Rozetler",
     "logo": "Rutin Takip",
     "lightMode": "Açık Moda Geç",
     "darkMode": "Karanlık Moda Geç",
@@ -479,6 +480,84 @@
       "STREAK_FREEZE": {
         "name": "Seri Dondurucu",
         "description": "Kaçırdığın bir gün için serini korur. Serin kırılmak üzereyken otomatik olarak kullanılır."
+      }
+    }
+  },
+
+  "badges": {
+    "title": "Rozetler",
+    "description": "{earned}/{total} rozet kazanıldı",
+    "earned": "Kazanılan",
+    "locked": "Kilitli",
+    "empty": "Henüz rozet yok.",
+    "loadError": "Rozetler yüklenemedi.",
+    "items": {
+      "First Step": {
+        "name": "İlk Adım",
+        "description": "İlk rutinini oluşturdun.",
+        "hint": "İlk rutinini oluştur"
+      },
+      "7 Day Streak": {
+        "name": "7 Gün Seri",
+        "description": "7 günlük seri yaptın!",
+        "hint": "7 günlük seriye ulaş"
+      },
+      "30 Day Streak": {
+        "name": "30 Gün Seri",
+        "description": "30 günlük seri yaptın!",
+        "hint": "30 günlük seriye ulaş"
+      },
+      "Centurion": {
+        "name": "Yüzbaşı",
+        "description": "Toplam 100 rutin tamamladın.",
+        "hint": "100 rutin tamamla"
+      },
+      "Golden Boy": {
+        "name": "Altın Çocuk",
+        "description": "Toplam 1000 altın kazandın!",
+        "hint": "1000 altın kazan"
+      },
+      "All Star": {
+        "name": "Yıldız",
+        "description": "Tüm rutinlerini bir günde tamamladın!",
+        "hint": "Bir günde tüm rutinlerini tamamla"
+      },
+      "Explorer": {
+        "name": "Kaşif",
+        "description": "Tanıtım turunu tamamladın.",
+        "hint": "Hoş geldin turunu bitir"
+      }
+    }
+  },
+
+  "onboarding": {
+    "title": "Hoş Geldin! 🌟",
+    "subtitle": "Rutin Takipçisi'nden en iyi şekilde nasıl faydalanacağını gösterelim.",
+    "back": "Geri",
+    "next": "İleri",
+    "finish": "Takibe Başla!",
+    "finishing": "Hazırlanıyor…",
+    "skip": "Turu Geç",
+    "rewardHint": "Turu tamamla, 50 Altın + Kaşif rozeti kazan!",
+    "rewardToast": "🎉 Hoş geldin ödülü: +50 Altın!",
+    "badgeEarned": "🏅 Rozet kazanıldı: {badge}",
+    "error": "Bir hata oluştu.",
+    "steps": {
+      "addRoutine": {
+        "title": "İlk Rutinini Oluştur",
+        "description": "+ butonuna basarak takip etmek istediğin günlük, haftalık veya aylık bir alışkanlık ekle."
+      },
+      "completeRoutine": {
+        "title": "Tamamla ve Seri Oluştur",
+        "description": "Her gün rutinlerini işaretle. Ardı ardına tamamlamalar serini büyütür — kırma!"
+      },
+      "earnCoins": {
+        "title": "Altın Kazan ve Alışveriş Yap",
+        "description": "Her tamamlama altın kazanır. Dükkandan Seri Dondurucu gibi kullanışlı eşyalar satın al."
+      },
+      "viewAnalytics": {
+        "title": "İlerlemeni Takip Et",
+        "description": "Analitik sayfasında grafikler, seriler ve alışkanlık analizlerini gör."
       }
     }
   }

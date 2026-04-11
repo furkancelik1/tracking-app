@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { useStreakFreeze } from "@/actions/shop.actions";
+import { checkBadges } from "@/actions/badge.actions";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Yardımcı: periyot başlangıcı (Route Handler ile aynı mantık)
@@ -115,7 +116,7 @@ async function requireUser() {
 export async function completeRoutineAction(
   routineId: string,
   note?: string
-): Promise<{ xpGain: number; totalXp: number; coinGain: number; totalCoins: number }> {
+): Promise<{ xpGain: number; totalXp: number; coinGain: number; totalCoins: number; newBadges: string[] }> {
   const userId = await requireUser();
 
   try {
@@ -172,8 +173,11 @@ export async function completeRoutineAction(
       select: { xp: true, coins: true },
     });
 
+    // Rozet kontrolü
+    const newBadges = await checkBadges(userId);
+
     revalidatePath("/dashboard");
-    return { xpGain, totalXp: updatedUser?.xp ?? 0, coinGain, totalCoins: updatedUser?.coins ?? 0 };
+    return { xpGain, totalXp: updatedUser?.xp ?? 0, coinGain, totalCoins: updatedUser?.coins ?? 0, newBadges };
   } catch (error) {
     console.error("[completeRoutineAction] Hata:", error);
     throw error;

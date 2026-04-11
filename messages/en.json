@@ -24,6 +24,7 @@
     "leaderboard": "Leaderboard",
     "settings": "Settings",
     "shop": "Shop",
+    "badges": "Badges",
     "logo": "Routine Tracker",
     "lightMode": "Switch to Light Mode",
     "darkMode": "Switch to Dark Mode",
@@ -479,6 +480,84 @@
       "STREAK_FREEZE": {
         "name": "Streak Freeze",
         "description": "Protects your streak for one missed day. Automatically used when your streak is about to break."
+      }
+    }
+  },
+
+  "badges": {
+    "title": "Badges",
+    "description": "{earned}/{total} badges earned",
+    "earned": "Earned",
+    "locked": "Locked",
+    "empty": "No badges available yet.",
+    "loadError": "Could not load badges.",
+    "items": {
+      "First Step": {
+        "name": "First Step",
+        "description": "Created your first routine.",
+        "hint": "Create your first routine"
+      },
+      "7 Day Streak": {
+        "name": "7 Day Streak",
+        "description": "Maintained a 7-day streak!",
+        "hint": "Reach a 7-day streak"
+      },
+      "30 Day Streak": {
+        "name": "30 Day Streak",
+        "description": "Maintained a 30-day streak!",
+        "hint": "Reach a 30-day streak"
+      },
+      "Centurion": {
+        "name": "Centurion",
+        "description": "Completed 100 routines total.",
+        "hint": "Complete 100 routines"
+      },
+      "Golden Boy": {
+        "name": "Golden Boy",
+        "description": "Earned 1000 coins total!",
+        "hint": "Earn 1000 coins"
+      },
+      "All Star": {
+        "name": "All Star",
+        "description": "Completed all routines in a day!",
+        "hint": "Complete all routines in one day"
+      },
+      "Explorer": {
+        "name": "Explorer",
+        "description": "Completed the onboarding tour.",
+        "hint": "Finish the welcome tour"
+      }
+    }
+  },
+
+  "onboarding": {
+    "title": "Welcome! \uD83C\uDF1F",
+    "subtitle": "Let us show you how to get the most out of Routine Tracker.",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Start Tracking!",
+    "finishing": "Setting up…",
+    "skip": "Skip Tour",
+    "rewardHint": "Complete the tour to earn 50 Coins + Explorer badge!",
+    "rewardToast": "\uD83C\uDF89 Welcome reward: +50 Coins!",
+    "badgeEarned": "\uD83C\uDFC5 Badge earned: {badge}",
+    "error": "Something went wrong.",
+    "steps": {
+      "addRoutine": {
+        "title": "Create Your First Routine",
+        "description": "Tap the + button to add a daily, weekly, or monthly habit you want to track."
+      },
+      "completeRoutine": {
+        "title": "Complete & Build Streaks",
+        "description": "Check off your routines each day. Consecutive completions build your streak — don't break it!"
+      },
+      "earnCoins": {
+        "title": "Earn Coins & Shop",
+        "description": "Every completion earns you coins. Spend them in the Shop on useful items like Streak Freeze."
+      },
+      "viewAnalytics": {
+        "title": "Track Your Progress",
+        "description": "Visit Analytics to see charts, streaks, and insights about your habits over time."
       }
     }
   }

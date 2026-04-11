@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSubscriptionTier, STRIPE_PLANS } from "@/lib/stripe";
 import { EmailNotificationsToggle } from "@/components/settings/EmailNotificationsToggle";
 import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
+import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -62,9 +63,10 @@ export default async function SettingsPage({
       </section>
 
       {/* ── Notifications ── */}
-      <section className="rounded-lg border p-5 space-y-1">
+      <section className="rounded-lg border p-5 space-y-3">
         <h2 className="font-semibold">{t("notifications.title")}</h2>
         <EmailNotificationsToggle enabled={user.emailNotificationsEnabled} isPro={isPro} />
+        <PushNotificationButton />
       </section>
 
       {/* ── Abonelik ── */}

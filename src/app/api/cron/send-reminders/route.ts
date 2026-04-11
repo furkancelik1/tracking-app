@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendRoutineReminderEmail } from "@/lib/mail";
+import { webpush } from "@/lib/web-push";
 import { startOfDay } from "date-fns";
 import { timingSafeEqual } from "crypto";
 
@@ -145,13 +146,53 @@ for (let j = 0; j < results.length; j++) {
     }
 
     const duration = Date.now() - startTime;
+
+    // ── Push Bildirimleri Gönder ────────────────────────────────────────────
+    let pushSent = 0;
+    for (const user of usersWithPending) {
+      if (Date.now() - startTime > 55_000) break;
+
+      const subs = await prisma.pushSubscription.findMany({
+        where: { userId: user.id },
+      });
+
+      const body =
+        user.pending.length === 1
+          ? `"${user.pending[0].title}" rutinini henüz tamamlamadın!`
+          : `${user.pending.length} tamamlanmamış rutinin var. Serini bozma!`;
+
+      const payload = JSON.stringify({
+        title: "⏰ Rutin Hatırlatıcısı",
+        body,
+        icon: "/icons/maskable_icon_x192.png",
+        badge: "/icons/maskable_icon_x192.png",
+        url: "/dashboard",
+        tag: "routine-reminder",
+      });
+
+      for (const sub of subs) {
+        try {
+          await webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            payload
+          );
+          pushSent++;
+        } catch (err: any) {
+          if (err.statusCode === 410 || err.statusCode === 404) {
+            await prisma.pushSubscription.delete({ where: { id: sub.id } });
+          }
+        }
+      }
+    }
+
     console.log(
-      `[cron/reminders] ✅ Tamamlandı — gönderildi: ${sent}, atlandı: ${eligibleUsers.length - usersWithPending.length}, hata: ${failed}, süre: ${duration}ms`
+      `[cron/reminders] ✅ Tamamlandı — email: ${sent}, push: ${pushSent}, atlandı: ${eligibleUsers.length - usersWithPending.length}, hata: ${failed}, süre: ${duration}ms`
     );
 
     return NextResponse.json({
       ok: true,
       sent,
+      pushSent,
       skipped: eligibleUsers.length - usersWithPending.length,
       failed,
       duration: `${duration}ms`,

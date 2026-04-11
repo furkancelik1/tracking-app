@@ -46,8 +46,8 @@ export async function generateMetadata({
       title: t("siteName"),
     },
     icons: {
-      icon: "/maskable_icon_192.png",
-      apple: "/maskable_icon_192.png",
+      icon: "/icons/maskable_icon_x192.png",
+      apple: "/icons/apple-touch-icon.png",
     },
     formatDetection: {
       telephone: false,

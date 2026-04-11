@@ -165,7 +165,7 @@
   },
 
   "dashboard": {
-    "metadata": { "title": "My Routines" },
+    "metadata": { "title": "My Routines", "description": "Manage and track your daily routines. Stay consistent and build lasting habits." },
     "errorTitle": "Something went wrong",
     "errorMessage": "An error occurred while loading data. Please refresh the page.",
     "sessionError": "Could not retrieve session info.",
@@ -262,7 +262,7 @@
   },
 
   "leaderboard": {
-    "metadata": { "title": "Leaderboard" },
+    "metadata": { "title": "Leaderboard", "description": "See how you rank among other users. Earn XP by completing routines and climb the leaderboard." },
     "title": "Leaderboard",
     "subtitle": "Complete routines, earn XP, rise to the top!",
     "emptyTitle": "No rankings yet",
@@ -271,7 +271,7 @@
   },
 
   "settings": {
-    "metadata": { "title": "Settings" },
+    "metadata": { "title": "Settings", "description": "Manage your account, notifications, and subscription preferences." },
     "title": "Settings",
     "subtitle": "Manage your account and notification preferences.",
     "profile": {
@@ -300,7 +300,7 @@
   },
 
   "stats": {
-    "metadata": { "title": "My Statistics" },
+    "metadata": { "title": "My Statistics", "description": "Analyze your habit data with detailed charts, streaks, and performance insights." },
     "title": "My Statistics",
     "subtitle": "Analyze your habit data and visualize your progress.",
     "totalCompletions": "Total Completions",
@@ -442,6 +442,13 @@
       "footer": "You're receiving this because email notifications are enabled.",
       "unsubscribe": "Manage notification settings"
     }
+  },
+
+  "metadata": {
+    "title": "Routine Tracker — Build Better Habits",
+    "description": "Easily track your daily habits. Stay motivated with streaks, weekly stats, and analytics.",
+    "siteName": "Routine Tracker",
+    "keywords": "habit tracker, routine tracker, daily habits, streak, productivity, self-improvement"
   },
 
   "proGate": {

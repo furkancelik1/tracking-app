@@ -18,6 +18,38 @@ export async function generateMetadata({
   return { title: t("title"), description: t("description") };
 }
 
+function JsonLd({ locale }: { locale: string }) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Routine Tracker",
+    applicationCategory: "LifestyleApplication",
+    operatingSystem: "Web",
+    url: `https://furkancelik.online/${locale}`,
+    offers: {
+      "@type": "Offer",
+      price: "4.99",
+      priceCurrency: "USD",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      ratingCount: "120",
+    },
+    description:
+      locale === "tr"
+        ? "Günlük alışkanlıklarınızı kolayca takip edin. Seriler, haftalık istatistikler ve analizlerle motivasyonunuzu koruyun."
+        : "Easily track your daily habits. Stay motivated with streaks, weekly stats, and analytics.",
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 export default async function LandingPage({
   params,
 }: {
@@ -60,6 +92,7 @@ export default async function LandingPage({
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <JsonLd locale={locale} />
       {/* ─── HEADER ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
         <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">

@@ -165,7 +165,7 @@
   },
 
   "dashboard": {
-    "metadata": { "title": "Rutinlerim" },
+    "metadata": { "title": "Rutinlerim", "description": "Günlük rutinlerini yönet ve takip et. Tutarlı ol ve kalıcı alışkanlıklar edin." },
     "errorTitle": "Bir hata oluştu",
     "errorMessage": "Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.",
     "sessionError": "Oturum bilgisi alınamadı.",
@@ -262,7 +262,7 @@
   },
 
   "leaderboard": {
-    "metadata": { "title": "Liderlik Tablosu" },
+    "metadata": { "title": "Liderlik Tablosu", "description": "Diğer kullanıcılar arasındaki sıralamana bak. Rutinlerini tamamlayarak XP kazan ve zirveye çık." },
     "title": "Liderlik Tablosu",
     "subtitle": "Rutinlerini tamamla, XP kazan, zirveye çık!",
     "emptyTitle": "Henüz sıralama yok",
@@ -271,7 +271,7 @@
   },
 
   "settings": {
-    "metadata": { "title": "Ayarlar" },
+    "metadata": { "title": "Ayarlar", "description": "Hesap, bildirim ve abonelik tercihlerini yönet." },
     "title": "Ayarlar",
     "subtitle": "Hesap ve bildirim tercihlerini yönet.",
     "profile": {
@@ -300,7 +300,7 @@
   },
 
   "stats": {
-    "metadata": { "title": "İstatistiklerim" },
+    "metadata": { "title": "İstatistiklerim", "description": "Detaylı grafikler, seriler ve performans analizleriyle alışkanlık verilerini analiz et." },
     "title": "İstatistiklerim",
     "subtitle": "Alışkanlık verilerini analiz et ve ilerlemeni görselleştir.",
     "totalCompletions": "Toplam Tamamlama",
@@ -442,6 +442,13 @@
       "footer": "Bu e-postayı, e-posta bildirimleri açık olduğu için alıyorsunuz.",
       "unsubscribe": "Bildirim ayarlarını yönet"
     }
+  },
+
+  "metadata": {
+    "title": "Routine Tracker — Daha İyi Alışkanlıklar Edin",
+    "description": "Günlük alışkanlıklarınızı kolayca takip edin. Seriler, haftalık istatistikler ve analizlerle motivasyonunuzu koruyun.",
+    "siteName": "Routine Tracker",
+    "keywords": "alışkanlık takip, rutin takip, günlük alışkanlıklar, seri, verimlilik, kişisel gelişim"
   },
 
   "proGate": {

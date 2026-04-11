@@ -1,11 +1,13 @@
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { QueryProvider } from "@/components/query-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import type { Metadata } from "next";
+
+const SITE_URL = "https://furkancelik.online";
 
 type Props = {
   children: React.ReactNode;
@@ -22,14 +24,62 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const isEn = locale === "en";
+  const t = await getTranslations({ locale, namespace: "metadata" });
+
+  const title = t("title");
+  const description = t("description");
+
   return {
-    title: isEn
-      ? "Routine Tracker — Build Better Habits"
-      : "Rutin Takipçisi — Alışkanlıklarını Geliştir",
-    description: isEn
-      ? "Easily track your daily habits. Stay motivated with streaks, weekly stats, and analytics."
-      : "Günlük alışkanlıklarını kolayca takip et. Seriler, istatistikler ve analizlerle motivasyonunu koru.",
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: title,
+      template: `%s | ${t("siteName")}`,
+    },
+    description,
+    keywords: t("keywords"),
+    authors: [{ name: "Furkan Çelik", url: SITE_URL }],
+    creator: "Furkan Çelik",
+    openGraph: {
+      type: "website",
+      locale: locale === "tr" ? "tr_TR" : "en_US",
+      url: SITE_URL,
+      siteName: t("siteName"),
+      title,
+      description,
+      images: [
+        {
+          url: "/opengraph-image.png",
+          width: 1200,
+          height: 630,
+          alt: t("siteName"),
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph-image.png"],
+    },
+    alternates: {
+      canonical: `${SITE_URL}/${locale}`,
+      languages: {
+        en: `${SITE_URL}/en`,
+        tr: `${SITE_URL}/tr`,
+        "x-default": `${SITE_URL}/en`,
+      },
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
   };
 }
 

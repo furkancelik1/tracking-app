@@ -1,9 +1,9 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { DashboardNav } from "@/components/shared/DashboardNav";
 import { RoutineList } from "@/components/dashboard/RoutineList";
-import { WeeklyProgressChart } from "@/components/dashboard/WeeklyProgressChart";
-import { CategoryPieChart } from "@/components/dashboard/CategoryPieChart";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { StreakAlert } from "@/components/dashboard/StreakAlert";
 import { DashboardEmptyState } from "@/components/dashboard/DashboardEmptyState";
@@ -14,7 +14,6 @@ import { getDashboardData } from "@/actions/dashboard.actions";
 import { getYearlyActivityData } from "@/actions/dashboard.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
-import { YearlyActivityHeatmap } from "@/components/dashboard/YearlyActivityHeatmap";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
@@ -24,6 +23,34 @@ import {
   Target,
   AlertTriangle,
 } from "lucide-react";
+
+/* ── Dynamic imports for heavy chart components (recharts code-splitting) ── */
+const WeeklyProgressChart = dynamic(
+  () => import("@/components/dashboard/WeeklyProgressChart").then((m) => m.WeeklyProgressChart),
+  {
+    loading: () => (
+      <div className="h-[350px] rounded-xl border bg-card animate-pulse" />
+    ),
+  }
+);
+
+const CategoryPieChart = dynamic(
+  () => import("@/components/dashboard/CategoryPieChart").then((m) => m.CategoryPieChart),
+  {
+    loading: () => (
+      <div className="h-[350px] rounded-xl border bg-card animate-pulse" />
+    ),
+  }
+);
+
+const YearlyActivityHeatmap = dynamic(
+  () => import("@/components/dashboard/YearlyActivityHeatmap").then((m) => m.YearlyActivityHeatmap),
+  {
+    loading: () => (
+      <div className="h-[180px] rounded-xl border bg-card animate-pulse" />
+    ),
+  }
+);
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -185,21 +212,36 @@ export default async function DashboardPage({
           </section>
 
           {/* ── Charts ───────────────────────────────────────────────── */}
-          <section className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <WeeklyProgressChart data={weeklyChart} />
-            </div>
-            <div className="lg:col-span-1">
-              <CategoryPieChart data={analytics.categoryDistribution ?? []} />
-            </div>
-          </section>
+          <Suspense
+            fallback={
+              <section className="grid gap-6 lg:grid-cols-3">
+                <div className="lg:col-span-2 h-[350px] rounded-xl border bg-card animate-pulse" />
+                <div className="lg:col-span-1 h-[350px] rounded-xl border bg-card animate-pulse" />
+              </section>
+            }
+          >
+            <section className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <WeeklyProgressChart data={weeklyChart} />
+              </div>
+              <div className="lg:col-span-1">
+                <CategoryPieChart data={analytics.categoryDistribution ?? []} />
+              </div>
+            </section>
+          </Suspense>
 
           <PushNotificationButton />
           <TestEmailButton />
           <RoutineList initialRoutines={routines} />
 
           {/* ── Yearly Activity Heatmap ──────────────────────────────── */}
-          <YearlyActivityHeatmap data={yearlyData} />
+          <Suspense
+            fallback={
+              <div className="h-[180px] rounded-xl border bg-card animate-pulse" />
+            }
+          >
+            <YearlyActivityHeatmap data={yearlyData} />
+          </Suspense>
         </main>
       </>
     );

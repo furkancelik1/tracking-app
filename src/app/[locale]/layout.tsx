@@ -5,6 +5,8 @@ import { routing } from "@/i18n/routing";
 import { QueryProvider } from "@/components/query-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 
 const SITE_URL = "https://furkancelik.online";
@@ -61,9 +63,9 @@ export async function generateMetadata({
       description,
       images: [
         {
-          url: "/opengraph-image.png",
-          width: 1200,
-          height: 630,
+          url: "/icons/icon-512x512.png",
+          width: 512,
+          height: 512,
           alt: t("siteName"),
         },
       ],
@@ -72,7 +74,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: ["/opengraph-image.png"],
+      images: ["/icons/icon-512x512.png"],
     },
     alternates: {
       canonical: `${SITE_URL}/${locale}`,
@@ -127,6 +129,8 @@ export default async function LocaleLayout({ children, params }: Props) {
             </AuthProvider>
           </QueryProvider>
         </NextIntlClientProvider>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

@@ -31,6 +31,20 @@ enum BadgeCriteriaType {
   TOUR_COMPLETE
 }
 
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum ChallengeStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  DECLINED
+  EXPIRED
+}
+
 model User {
   id                    String           @id @default(cuid())
   name                  String?
@@ -63,6 +77,13 @@ model User {
   userItems             UserItem[]
   userBadges            UserBadge[]
   pushSubscriptions     PushSubscription[]
+
+  // Social
+  sentFollows           Friendship[]    @relation("FollowerRelation")
+  receivedFollows       Friendship[]    @relation("FollowingRelation")
+  sentChallenges        Challenge[]     @relation("ChallengerRelation")
+  receivedChallenges    Challenge[]     @relation("OpponentRelation")
+  challengeLogs         ChallengeLog[]
 }
 
 model Account {
@@ -212,5 +233,62 @@ model PushSubscription {
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+}
+
+// ─── Social: Friendship ──────────────────────────────────────────────────────
+
+model Friendship {
+  id          String           @id @default(cuid())
+  followerId  String
+  followingId String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  follower    User @relation("FollowerRelation", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User @relation("FollowingRelation", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@index([followingId, status])
+}
+
+// ─── Social: Challenge (Düello) ──────────────────────────────────────────────
+
+model Challenge {
+  id            String          @id @default(cuid())
+  challengerId  String
+  opponentId    String
+  routineTitle  String
+  durationDays  Int             @default(7)
+  status        ChallengeStatus @default(PENDING)
+  startDate     DateTime?
+  endDate       DateTime?
+  winnerId      String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  challenger    User            @relation("ChallengerRelation", fields: [challengerId], references: [id], onDelete: Cascade)
+  opponent      User            @relation("OpponentRelation", fields: [opponentId], references: [id], onDelete: Cascade)
+  logs          ChallengeLog[]
+
+  @@index([challengerId])
+  @@index([opponentId])
+  @@index([status])
+}
+
+model ChallengeLog {
+  id          String   @id @default(cuid())
+  challengeId String
+  userId      String
+  completedAt DateTime @default(now())
+
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, userId, completedAt])
+  @@index([challengeId])
   @@index([userId])
 }

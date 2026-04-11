@@ -22,6 +22,7 @@
   "nav": {
     "routines": "My Routines",
     "leaderboard": "Leaderboard",
+    "social": "Social",
     "settings": "Settings",
     "shop": "Shop",
     "badges": "Badges",
@@ -43,13 +44,13 @@
       "signIn": "Sign In"
     },
     "hero": {
-      "badge": "🔥 Stay motivated with the streak system",
-      "titleStart": "Track Your Routines,",
-      "titleHighlight": "Transform Your Life",
-      "description": "Set up your daily habits in minutes. See your progress with streaks and weekly charts — never lose your momentum.",
-      "ctaPrimary": "Start for Free",
-      "ctaSecondary": "How It Works?",
-      "ctaNote": "No credit card required · 3 routines on free plan"
+      "badge": "� 10,000+ routines completed",
+      "titleStart": "Turn Your Habits Into",
+      "titleHighlight": "Your Superpower",
+      "description": "Build lasting habits with a proven streak system, interactive heatmap, and instant push notifications. One step forward, every single day.",
+      "ctaPrimary": "Start Free Now",
+      "ctaSecondary": "Explore Features",
+      "ctaNote": "No credit card required · 30-second setup · Works on all devices"
     },
     "features": {
       "title": "Everything you need, in one place",
@@ -66,6 +67,22 @@
         "title": "Advanced Analytics",
         "description": "Examine your last 7 days' performance with interactive charts. Discover which days you're most productive.",
         "badge": "Pro Feature"
+      },
+      "heatmap": {
+        "title": "Interactive Heatmap",
+        "description": "See your consistency at a glance with a 365-day activity map. GitHub-style green squares that fuel your motivation."
+      },
+      "pushNotifications": {
+        "title": "Smart Notifications",
+        "description": "Never miss a routine with Web Push notifications. Get reminders even when your browser is closed."
+      },
+      "pwa": {
+        "title": "Always With You",
+        "description": "Install as a PWA on your phone or desktop. Access your routines even without an internet connection."
+      },
+      "gamification": {
+        "title": "Gamification",
+        "description": "Earn XP, level up, collect badges, and climb the leaderboard. Building habits has never been this fun."
       }
     },
     "testimonials": {
@@ -120,6 +137,41 @@
       "description": "Thousands of users use Routine Tracker to track their habits. It's your turn.",
       "button": "Get Started — Free"
     },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know, right here.",
+      "items": [
+        {
+          "question": "Is the app really free?",
+          "answer": "Yes! On the free plan you can create up to 3 routines, track streaks, and access from all devices. No credit card required."
+        },
+        {
+          "question": "What changes when I upgrade to Pro?",
+          "answer": "Pro gives you unlimited routines, advanced weekly stats charts, priority support, and access to all future features."
+        },
+        {
+          "question": "Is my data safe?",
+          "answer": "Absolutely. All data is transmitted over encrypted connections and stored in secure cloud infrastructure. We never share your data with third parties."
+        },
+        {
+          "question": "Can I use it as a phone app?",
+          "answer": "Yes! Routine Tracker is a PWA (Progressive Web App). Use 'Add to Home Screen' from your browser to install it on your phone — it even works offline."
+        },
+        {
+          "question": "How do notifications work?",
+          "answer": "With Web Push technology, you'll get reminders even when your browser is closed. You can easily toggle notifications on or off in settings."
+        },
+        {
+          "question": "Can I cancel anytime?",
+          "answer": "Of course. You can cancel your Pro subscription anytime with a single click. You'll keep Pro features until the end of your billing period."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Better habits are waiting for you",
+      "description": "Start today, feel the difference tomorrow. Thousands of users are already on the way.",
+      "button": "Create Free Account"
+    },
     "footer": {
       "signIn": "Sign In",
       "pricing": "Pricing"
@@ -132,6 +184,10 @@
       "quoteAuthor": "— Productivity redefined"
     },
     "login": {
+      "metadata": {
+        "title": "Sign In",
+        "description": "Sign in to your Routine Tracker account. Continue quickly with Google or email."
+      },
       "title": "Welcome back",
       "subtitle": "Sign in to your account to continue",
       "google": "Continue with Google",
@@ -160,6 +216,10 @@
       }
     },
     "register": {
+      "metadata": {
+        "title": "Create Account",
+        "description": "Sign up for Routine Tracker for free. Start tracking your habits right away."
+      },
       "title": "Create account",
       "description": "New accounts are created automatically after your first sign-in.",
       "backToLogin": "Continue to sign in"
@@ -269,7 +329,66 @@
     "subtitle": "Complete routines, earn XP, rise to the top!",
     "emptyTitle": "No rankings yet",
     "emptyDescription": "Complete your routines to earn XP and get on the leaderboard!",
-    "usersAmong": "#{rank} among {total} users"
+    "usersAmong": "#{rank} among {total} users",
+    "tabs": {
+      "global": "Global",
+      "friends": "Friends"
+    },
+    "friendsEmpty": "No friends yet. Search for users and follow them!"
+  },
+
+  "social": {
+    "title": "Friends",
+    "searchPlaceholder": "Search by username...",
+    "noResults": "No users found",
+    "follow": "Follow",
+    "following": "Following",
+    "pending": "Pending",
+    "unfollow": "Unfollow",
+    "accept": "Accept",
+    "reject": "Reject",
+    "pendingRequests": "Pending Requests",
+    "friendsList": "Friends List",
+    "friendsCount": "{count} friends",
+    "noFriends": "No friends yet",
+    "noFriendsDesc": "Search for users to make new friends!",
+    "xpLabel": "XP",
+    "challenge": "Send Challenge",
+    "followers": "Followers",
+    "followingTab": "Following",
+    "noFollowers": "No followers yet",
+    "noFollowing": "You're not following anyone yet",
+    "noRequests": "No pending requests",
+    "pageTitle": "Social",
+    "pageSubtitle": "Connect with friends, track progress together!",
+    "metadata": {
+      "title": "Social",
+      "description": "Connect with friends, send challenges and compete together."
+    }
+  },
+
+  "challenges": {
+    "title": "Challenges",
+    "subtitle": "Compete with friends — winner earns XP and coins!",
+    "empty": "No active challenges",
+    "emptyDesc": "Send a challenge to one of your friends!",
+    "send": "Send Challenge",
+    "accept": "Accept",
+    "decline": "Decline",
+    "checkIn": "Complete Today",
+    "checkedIn": "Completed Today ✓",
+    "vs": "VS",
+    "daysLeft": "{count} days left",
+    "waiting": "Waiting for response...",
+    "active": "Active",
+    "you": "You",
+    "routineLabel": "Routine Name",
+    "durationLabel": "Duration (days)",
+    "opponent": "Opponent",
+    "reward": "+50 XP, +25 Coins",
+    "selectFriend": "Select friend",
+    "sendChallenge": "Send Challenge",
+    "cancelDialog": "Cancel"
   },
 
   "settings": {

@@ -1,13 +1,15 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { LeaderboardEntry, LeaderboardPayload } from "@/actions/leaderboard.actions";
-import { Trophy, Medal, Flame, Crown, Sparkles } from "lucide-react";
+import { Trophy, Medal, Flame, Crown, Sparkles, Users, Globe } from "lucide-react";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { useTranslations } from "next-intl";
+import { getFriendsLeaderboardAction } from "@/actions/social.actions";
 
 // ─── Podium renkleri ─────────────────────────────────────────────────────────
 
@@ -219,26 +221,88 @@ function LeaderboardEmpty() {
 
 type Props = {
   data: LeaderboardPayload;
+  isLoggedIn?: boolean;
 };
 
-export function Leaderboard({ data }: Props) {
-  const { topTen, currentUser, totalUsers } = data;
+export function Leaderboard({ data, isLoggedIn = false }: Props) {
+  const t = useTranslations("leaderboard");
+  const [tab, setTab] = useState<"global" | "friends">("global");
+  const [friendsData, setFriendsData] = useState<LeaderboardPayload | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  if (topTen.length === 0) return <LeaderboardEmpty />;
+  const handleTabChange = (newTab: "global" | "friends") => {
+    setTab(newTab);
+    if (newTab === "friends" && !friendsData) {
+      startTransition(async () => {
+        try {
+          const result = await getFriendsLeaderboardAction();
+          setFriendsData(result);
+        } catch {
+          setFriendsData({ topTen: [], currentUser: null, totalUsers: 0 });
+        }
+      });
+    }
+  };
 
-  const podiumEntries = topTen.slice(0, 3);
-  const restEntries = topTen.slice(3);
+  const activeData = tab === "global" ? data : friendsData ?? data;
+  const { topTen, currentUser, totalUsers } = activeData;
 
   return (
     <div>
-      {/* Podium — Top 3 */}
-      <Podium entries={podiumEntries} />
+      {/* Tab Switcher */}
+      {isLoggedIn && (
+        <div className="flex gap-1 rounded-lg bg-muted/50 p-1 mb-6">
+          <button
+            onClick={() => handleTabChange("global")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              tab === "global"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Globe className="size-4" />
+            {t("tabs.global")}
+          </button>
+          <button
+            onClick={() => handleTabChange("friends")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              tab === "friends"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Users className="size-4" />
+            {t("tabs.friends")}
+          </button>
+        </div>
+      )}
 
-      {/* Tablo — 4-10 */}
-      <RankTable entries={restEntries} />
+      {/* Loading */}
+      {isPending && (
+        <div className="flex justify-center py-12">
+          <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      )}
 
-      {/* Kişisel panel — kullanıcı top 10'da değilse */}
-      {currentUser && <PersonalPanel entry={currentUser} totalUsers={totalUsers} />}
+      {/* Content */}
+      {!isPending && topTen.length === 0 ? (
+        tab === "friends" ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Users className="size-10 text-muted-foreground/30 mb-4" />
+            <p className="text-sm text-muted-foreground">{t("friendsEmpty")}</p>
+          </div>
+        ) : (
+          <LeaderboardEmpty />
+        )
+      ) : !isPending ? (
+        <>
+          <Podium entries={topTen.slice(0, 3)} />
+          <RankTable entries={topTen.slice(3)} />
+          {currentUser && <PersonalPanel entry={currentUser} totalUsers={totalUsers} />}
+        </>
+      ) : null}
     </div>
   );
 }

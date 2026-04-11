@@ -22,6 +22,7 @@
   "nav": {
     "routines": "Rutinlerim",
     "leaderboard": "Liderlik",
+    "social": "Sosyal",
     "settings": "Ayarlar",
     "shop": "Dükkan",
     "badges": "Rozetler",
@@ -43,13 +44,13 @@
       "signIn": "Giriş Yap"
     },
     "hero": {
-      "badge": "🔥 Seri sistemiyle motivasyonunu koru",
-      "titleStart": "Rutinlerini Takip Et,",
-      "titleHighlight": "Hayatını Değiştir",
-      "description": "Günlük alışkanlıklarını dakikalar içinde kur. Seriler ve haftalık grafiklerle ilerlemeni gör — motivasyonunu asla kaybetme.",
-      "ctaPrimary": "Ücretsiz Başla",
-      "ctaSecondary": "Nasıl Çalışır?",
-      "ctaNote": "Kredi kartı gerekmez · Ücretsiz planda 3 rutin"
+      "badge": "� 10.000+ rutin tamamlandı",
+      "titleStart": "Alışkanlıklarını",
+      "titleHighlight": "Süper Güce Dönüştür",
+      "description": "Bilimsel kanıtlanmış seri sistemi, interaktif heatmap ve anlık bildirimlerle alışkanlıklarını kalıcı hale getir. Her gün bir adım daha ileri.",
+      "ctaPrimary": "Hemen Ücretsiz Başla",
+      "ctaSecondary": "Özellikleri Keşfet",
+      "ctaNote": "Kredi kartı gerekmez · 30 saniyede kurulum · Tüm cihazlarda çalışır"
     },
     "features": {
       "title": "İhtiyacın olan her şey, tek yerde",
@@ -66,6 +67,22 @@
         "title": "Gelişmiş Analitik",
         "description": "Son 7 günlük performansını interaktif grafiklerle incele. Hangi günlerde daha üretken olduğunu keşfet.",
         "badge": "Pro Özellik"
+      },
+      "heatmap": {
+        "title": "İnteraktif Heatmap",
+        "description": "365 günlük aktivite haritanla ne kadar tutarlı olduğunu bir bakışta gör. GitHub tarzı yeşil karelerin motivasyonunu artırsın."
+      },
+      "pushNotifications": {
+        "title": "Akıllı Bildirimler",
+        "description": "Web Push bildirimleriyle rutinlerini asla unutma. Tarayıcın kapalıyken bile hatırlatma al."
+      },
+      "pwa": {
+        "title": "Her Yerde Yanında",
+        "description": "PWA desteğiyle telefonuna kur, masaüstüne ekle. İnternet olmadan bile erişim sağla."
+      },
+      "gamification": {
+        "title": "Oyunlaştırma",
+        "description": "XP kazan, seviye atla, rozetler topla ve liderlik tablosunda rakiplerini geç. Alışkanlık kurmak hiç bu kadar eğlenceli olmamıştı."
       }
     },
     "testimonials": {
@@ -120,6 +137,41 @@
       "description": "Binlerce kullanıcı alışkanlıklarını takip etmek için Rutin Takipçisi'ni kullanıyor. Sıra sende.",
       "button": "Hemen Başla — Ücretsiz"
     },
+    "faq": {
+      "title": "Sıkça Sorulan Sorular",
+      "subtitle": "Merak ettiğin her şeyin cevabı burada.",
+      "items": [
+        {
+          "question": "Uygulama gerçekten ücretsiz mi?",
+          "answer": "Evet! Ücretsiz planda 3 rutine kadar oluşturabilir, seri takibi yapabilir ve tüm cihazlardan erişebilirsin. Kredi kartı gerekmez."
+        },
+        {
+          "question": "Pro plana geçince ne değişiyor?",
+          "answer": "Pro ile sınırsız rutin, gelişmiş haftalık istatistik grafikleri, öncelikli destek ve gelecekte eklenecek tüm yeni özelliklere erişim kazanırsın."
+        },
+        {
+          "question": "Verilerim güvende mi?",
+          "answer": "Kesinlikle. Tüm veriler şifrelenmiş bağlantılarla iletilir ve güvenli bulut altyapısında saklanır. Verilerini asla üçüncü taraflarla paylaşmayız."
+        },
+        {
+          "question": "Telefonda uygulama olarak kullanabilir miyim?",
+          "answer": "Evet! Routine Tracker bir PWA (Progressive Web App). Tarayıcından 'Ana ekrana ekle' seçeneğiyle telefonuna yükleyebilir, internet olmadan bile kullanabilirsin."
+        },
+        {
+          "question": "Bildirimler nasıl çalışıyor?",
+          "answer": "Web Push teknolojisi sayesinde tarayıcın kapalıyken bile hatırlatma alırsın. Ayarlardan bildirimleri kolayca açıp kapatabilirsin."
+        },
+        {
+          "question": "İstediğim zaman iptal edebilir miyim?",
+          "answer": "Tabii ki. Pro aboneliğini istediğin an tek tıkla iptal edebilirsin. Kalan sürenin sonuna kadar Pro özelliklerini kullanmaya devam edersin."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Daha iyi alışkanlıklar seni bekliyor",
+      "description": "Bugün başla, yarın farkı hisset. Binlerce kullanıcı zaten yolda.",
+      "button": "Ücretsiz Hesap Oluştur"
+    },
     "footer": {
       "signIn": "Giriş Yap",
       "pricing": "Fiyatlandırma"
@@ -132,6 +184,10 @@
       "quoteAuthor": "— Verimlilik yeniden tanımlandı"
     },
     "login": {
+      "metadata": {
+        "title": "Giriş Yap",
+        "description": "Routine Tracker hesabınıza giriş yapın. Google veya e-posta ile hızlıca devam edin."
+      },
       "title": "Tekrar hoş geldin",
       "subtitle": "Devam etmek için hesabına giriş yap",
       "google": "Google ile devam et",
@@ -160,6 +216,10 @@
       }
     },
     "register": {
+      "metadata": {
+        "title": "Hesap Oluştur",
+        "description": "Routine Tracker'a ücretsiz kaydolun. Alışkanlıklarınızı takip etmeye hemen başlayın."
+      },
       "title": "Hesap oluştur",
       "description": "İlk girişinizde yeni hesabınız otomatik olarak oluşturulur.",
       "backToLogin": "Giriş yapmaya devam et"
@@ -269,7 +329,66 @@
     "subtitle": "Rutinlerini tamamla, XP kazan, zirveye çık!",
     "emptyTitle": "Henüz sıralama yok",
     "emptyDescription": "Rutinlerini tamamlayarak XP kazan ve liderlik tablosuna gir!",
-    "usersAmong": "{total} kullanıcı arasında #{rank}"
+    "usersAmong": "{total} kullanıcı arasında #{rank}",
+    "tabs": {
+      "global": "Dünya Geneli",
+      "friends": "Arkadaşlar"
+    },
+    "friendsEmpty": "Henüz arkadaşın yok. Kullanıcı ara ve takip et!"
+  },
+
+  "social": {
+    "title": "Arkadaşlar",
+    "searchPlaceholder": "Kullanıcı adı ile ara...",
+    "noResults": "Kullanıcı bulunamadı",
+    "follow": "Takip Et",
+    "following": "Takip Ediliyor",
+    "pending": "Bekliyor",
+    "unfollow": "Takibi Bırak",
+    "accept": "Kabul Et",
+    "reject": "Reddet",
+    "pendingRequests": "Bekleyen İstekler",
+    "friendsList": "Arkadaş Listesi",
+    "friendsCount": "{count} arkadaş",
+    "noFriends": "Henüz arkadaşın yok",
+    "noFriendsDesc": "Kullanıcı arayarak yeni arkadaşlar edin!",
+    "xpLabel": "XP",
+    "challenge": "Düello Gönder",
+    "followers": "Takipçiler",
+    "followingTab": "Takip Edilenler",
+    "noFollowers": "Henüz takipçin yok",
+    "noFollowing": "Henüz kimseyi takip etmiyorsun",
+    "noRequests": "Bekleyen istek yok",
+    "pageTitle": "Sosyal",
+    "pageSubtitle": "Arkadaşlarınla bağlan, birlikte ilerle!",
+    "metadata": {
+      "title": "Sosyal",
+      "description": "Arkadaşlarınla bağlan, düello gönder ve birlikte yarış."
+    }
+  },
+
+  "challenges": {
+    "title": "Düellolar",
+    "subtitle": "Arkadaşlarınla yarış, kazanan XP ve coin kazanır!",
+    "empty": "Aktif düellon yok",
+    "emptyDesc": "Arkadaş listenden birine düello gönder!",
+    "send": "Düello Gönder",
+    "accept": "Kabul Et",
+    "decline": "Reddet",
+    "checkIn": "Bugün Tamamla",
+    "checkedIn": "Bugün Tamamlandı ✓",
+    "vs": "VS",
+    "daysLeft": "{count} gün kaldı",
+    "waiting": "Yanıt bekleniyor...",
+    "active": "Aktif",
+    "you": "Sen",
+    "routineLabel": "Rutin Adı",
+    "durationLabel": "Süre (gün)",
+    "opponent": "Rakip",
+    "reward": "+50 XP, +25 Coin",
+    "selectFriend": "Arkadaş seç",
+    "sendChallenge": "Düello Gönder",
+    "cancelDialog": "İptal"
   },
 
   "settings": {

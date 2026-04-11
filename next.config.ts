@@ -63,9 +63,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    // Turbopack uyumluluğu
-  },
   // CORS ayarları (Chrome Extension için)
   async headers() {
     return [

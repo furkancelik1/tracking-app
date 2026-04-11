@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendRoutineReminderEmail } from "@/lib/mail";
 import { webpush } from "@/lib/web-push";
 import { startOfDay } from "date-fns";
 import { timingSafeEqual } from "crypto";
@@ -8,7 +9,9 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // ── Sabitler ──────────────────────────────────────────────────────────────────
+const EMAIL_BATCH_SIZE = 10;
 const PUSH_BATCH_SIZE = 20;
+const BATCH_DELAY_MS = 200;
 
 // ── Timing-safe secret karşılaştırma ─────────────────────────────────────────
 function isValidSecret(token: string, secret: string): boolean {
@@ -17,16 +20,16 @@ function isValidSecret(token: string, secret: string): boolean {
 }
 
 // ─── GET /api/cron/reminders ─────────────────────────────────────────────────
-// Tüm push abonelerine (FREE + PRO) bekleyen rutin hatırlatıcısı gönderir.
-// Vercel Cron tarafından günlük olarak tetiklenir.
+// Master cron: Tek çağrıda hem PRO e-posta hem tüm kullanıcılara push gönderir.
+// Vercel Hobby planı tek cron hakkına sahip olduğu için birleştirildi.
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now();
 
-  // ── Güvenlik: Vercel Cron header + Bearer token ───────────────────────────
+  // ── 1) Güvenlik ───────────────────────────────────────────────────────────
   const isVercel = !!process.env.VERCEL;
   if (isVercel && req.headers.get("x-vercel-cron") !== "1") {
-    console.warn("[cron/push-reminders] ⛔ x-vercel-cron header eksik");
+    console.warn("[cron] ⛔ x-vercel-cron header eksik — reddedildi.");
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -38,11 +41,113 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const stats = {
+    emailSent: 0,
+    emailFailed: 0,
+    pushSent: 0,
+    pushFailed: 0,
+    subsCleaned: 0,
+  };
+  const errors: { userId: string; channel: string; error: string }[] = [];
+
   try {
     const todayStart = startOfDay(new Date());
 
-    // ── Push aboneliği olan kullanıcıları + bekleyen rutinlerini çek ────────
-    const usersWithSubs = await prisma.user.findMany({
+    // ══════════════════════════════════════════════════════════════════════════
+    // FAZA 1: PRO E-POSTA HATIRLATICLARI
+    // ══════════════════════════════════════════════════════════════════════════
+
+    const proUsers = await prisma.user.findMany({
+      where: {
+        subscriptionTier: "PRO",
+        emailNotificationsEnabled: true,
+        email: { not: null },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        language: true,
+        routines: {
+          where: { isActive: true, frequency: "DAILY" },
+          select: {
+            title: true,
+            color: true,
+            currentStreak: true,
+            logs: {
+              where: { completedAt: { gte: todayStart } },
+              select: { id: true },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+
+    const proWithPending = proUsers
+      .map((user) => {
+        const pending = user.routines
+          .filter((r) => r.logs.length === 0)
+          .map((r) => ({
+            title: r.title,
+            currentStreak: r.currentStreak,
+            color: r.color ?? "#6366f1",
+          }));
+        return { ...user, pending };
+      })
+      .filter((u) => u.pending.length > 0);
+
+    // ── E-posta batch gönderimi ─────────────────────────────────────────────
+    for (let i = 0; i < proWithPending.length; i += EMAIL_BATCH_SIZE) {
+      if (Date.now() - startTime > 30_000) {
+        console.warn(`[cron] ⏱ E-posta fazı timeout — ${i}/${proWithPending.length} işlendi`);
+        break;
+      }
+
+      const batch = proWithPending.slice(i, i + EMAIL_BATCH_SIZE);
+
+      const results = await Promise.allSettled(
+        batch.map((user) =>
+          sendRoutineReminderEmail({
+            to: user.email!,
+            userName: user.name ?? "User",
+            pendingRoutines: user.pending,
+            language: user.language,
+          })
+        )
+      );
+
+      for (let j = 0; j < results.length; j++) {
+        const result = results[j];
+        const user = batch[j];
+        if (!result || !user) continue;
+
+        if (result.status === "fulfilled") {
+          stats.emailSent++;
+        } else {
+          stats.emailFailed++;
+          const reason = (result as PromiseRejectedResult).reason;
+          errors.push({
+            userId: user.id,
+            channel: "email",
+            error: reason instanceof Error ? reason.message : String(reason),
+          });
+          console.error(`[cron] ❌ Email ${user.email}: ${reason}`);
+        }
+      }
+
+      if (i + EMAIL_BATCH_SIZE < proWithPending.length) {
+        await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
+      }
+    }
+
+    console.log(`[cron] 📧 E-posta fazı tamamlandı — gönderilen: ${stats.emailSent}, hata: ${stats.emailFailed}`);
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // FAZA 2: TÜM KULLANICILARA PUSH BİLDİRİM (FREE + PRO)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    const pushUsers = await prisma.user.findMany({
       where: {
         pushSubscriptions: { some: {} },
         routines: { some: { isActive: true } },
@@ -50,7 +155,6 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         name: true,
-        language: true,
         pushSubscriptions: {
           select: { id: true, endpoint: true, p256dh: true, auth: true },
         },
@@ -69,32 +173,23 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // ── Bekleyen rutini olan kullanıcıları filtrele ─────────────────────────
-    const targets = usersWithSubs
+    const pushTargets = pushUsers
       .map((user) => {
         const pending = user.routines.filter((r) => r.logs.length === 0);
         return { ...user, pending };
       })
       .filter((u) => u.pending.length > 0);
 
-    console.log(
-      `[cron/push-reminders] 📋 ${usersWithSubs.length} push abonesi, ${targets.length} kişinin bekleyen rutini var`
-    );
+    console.log(`[cron] 🔔 Push fazı — ${pushUsers.length} abone, ${pushTargets.length} kişinin bekleyen rutini var`);
 
-    // ── Batch halinde push gönder ───────────────────────────────────────────
-    let pushSent = 0;
-    let pushFailed = 0;
-    let subsCleaned = 0;
-
-    for (let i = 0; i < targets.length; i += PUSH_BATCH_SIZE) {
-      if (Date.now() - startTime > 50_000) {
-        console.warn(
-          `[cron/push-reminders] ⏱ Timeout yaklaştı — ${i}/${targets.length} işlendi`
-        );
+    // ── Push batch gönderimi ────────────────────────────────────────────────
+    for (let i = 0; i < pushTargets.length; i += PUSH_BATCH_SIZE) {
+      if (Date.now() - startTime > 55_000) {
+        console.warn(`[cron] ⏱ Push fazı timeout — ${i}/${pushTargets.length} işlendi`);
         break;
       }
 
-      const batch = targets.slice(i, i + PUSH_BATCH_SIZE);
+      const batch = pushTargets.slice(i, i + PUSH_BATCH_SIZE);
 
       await Promise.allSettled(
         batch.flatMap((user) => {
@@ -130,22 +225,17 @@ export async function GET(req: NextRequest) {
                 },
                 payload
               );
-              pushSent++;
+              stats.pushSent++;
             } catch (err: any) {
-              // 410 Gone / 404 — abonelik geçersiz, DB'den temizle
               if (err.statusCode === 410 || err.statusCode === 404) {
                 await prisma.pushSubscription
                   .delete({ where: { id: sub.id } })
                   .catch(() => {});
-                subsCleaned++;
-                console.log(
-                  `[cron/push-reminders] 🧹 Geçersiz abonelik silindi: ${sub.endpoint.slice(0, 60)}…`
-                );
+                stats.subsCleaned++;
+                console.log(`[cron] 🧹 Geçersiz abonelik silindi: ${sub.endpoint.slice(0, 60)}…`);
               } else {
-                pushFailed++;
-                console.error(
-                  `[cron/push-reminders] ❌ Push hatası (${err.statusCode}): ${sub.endpoint.slice(0, 60)}…`
-                );
+                stats.pushFailed++;
+                console.error(`[cron] ❌ Push hatası (${err.statusCode}): ${sub.endpoint.slice(0, 60)}…`);
               }
             }
           });
@@ -153,21 +243,20 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // ── Sonuç ───────────────────────────────────────────────────────────────
     const duration = Date.now() - startTime;
     console.log(
-      `[cron/push-reminders] ✅ Tamamlandı — gönderilen: ${pushSent}, hata: ${pushFailed}, temizlenen: ${subsCleaned}, süre: ${duration}ms`
+      `[cron] ✅ Master cron tamamlandı — email: ${stats.emailSent}, push: ${stats.pushSent}, temizlenen: ${stats.subsCleaned}, süre: ${duration}ms`
     );
 
     return NextResponse.json({
       ok: true,
-      pushSent,
-      pushFailed,
-      subsCleaned,
-      usersNotified: targets.length,
+      ...stats,
       duration: `${duration}ms`,
+      errors: errors.length > 0 ? errors : undefined,
     });
   } catch (err) {
-    console.error("[cron/push-reminders] 💥 Kritik hata:", err);
+    console.error("[cron] 💥 Kritik hata:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

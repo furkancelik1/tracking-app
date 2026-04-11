@@ -45,6 +45,10 @@ export async function generateMetadata({
       statusBarStyle: "black-translucent",
       title: t("siteName"),
     },
+    icons: {
+      icon: "/maskable_icon_192.png",
+      apple: "/maskable_icon_192.png",
+    },
     formatDetection: {
       telephone: false,
     },
@@ -107,7 +111,6 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html lang={locale} suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#6366f1" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body>
         <NextIntlClientProvider messages={messages}>

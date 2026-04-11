@@ -11,8 +11,10 @@ import { PushNotificationButton } from "@/components/dashboard/PushNotificationB
 import { TestEmailButton } from "@/components/dashboard/TestEmailButton";
 import { getSubscriptionTier } from "@/lib/stripe";
 import { getDashboardData } from "@/actions/dashboard.actions";
+import { getYearlyActivityData } from "@/actions/dashboard.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
+import { YearlyActivityHeatmap } from "@/components/dashboard/YearlyActivityHeatmap";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
@@ -81,7 +83,7 @@ export default async function DashboardPage({
     const thirtyDaysAgo = new Date(todayStart);
     thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
 
-    const [dashboardData, analytics, raw, userXpData] = await Promise.all([
+    const [dashboardData, analytics, raw, userXpData, yearlyData] = await Promise.all([
       getDashboardData(),
       getUserAnalytics(userId, 30).catch(() => emptyAnalytics()),
       prisma.routine
@@ -102,6 +104,7 @@ export default async function DashboardPage({
       prisma.user
         .findUnique({ where: { id: userId }, select: { xp: true } })
         .catch(() => null),
+      getYearlyActivityData().catch(() => []),
     ]);
 
     const userXp = userXpData?.xp ?? 0;
@@ -194,6 +197,9 @@ export default async function DashboardPage({
           <PushNotificationButton />
           <TestEmailButton />
           <RoutineList initialRoutines={routines} />
+
+          {/* ── Yearly Activity Heatmap ──────────────────────────────── */}
+          <YearlyActivityHeatmap data={yearlyData} />
         </main>
       </>
     );

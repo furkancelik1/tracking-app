@@ -208,3 +208,47 @@ export async function getDashboardData(): Promise<DashboardPayload> {
     isEmpty,
   };
 }
+
+// ─── Yearly Activity Heatmap Data ────────────────────────────────────────────
+
+export type YearlyHeatPoint = {
+  date: string;   // "2026-04-11"
+  count: number;
+};
+
+/**
+ * Son 365 günlük rutin tamamlama verisini gün bazında grupla.
+ * Her gün için { date, count } döner — boş günler 0 ile doldurulur.
+ */
+export async function getYearlyActivityData(): Promise<YearlyHeatPoint[]> {
+  const session = await requireAuth();
+  const userId = (session.user as { id: string }).id;
+
+  const todayStart = startOfDay(new Date());
+  const yearAgo = subDays(todayStart, 364);
+
+  const logs = await prisma.routineLog.findMany({
+    where: {
+      userId,
+      completedAt: { gte: yearAgo },
+    },
+    select: { completedAt: true },
+  });
+
+  // Gün bazında grupla
+  const countMap = new Map<string, number>();
+  for (const log of logs) {
+    const key = format(log.completedAt, "yyyy-MM-dd");
+    countMap.set(key, (countMap.get(key) ?? 0) + 1);
+  }
+
+  // 365 günlük tam dizi oluştur (boş günler 0)
+  const result: YearlyHeatPoint[] = [];
+  for (let i = 0; i <= 364; i++) {
+    const day = addDays(yearAgo, i);
+    const key = format(day, "yyyy-MM-dd");
+    result.push({ date: key, count: countMap.get(key) ?? 0 });
+  }
+
+  return result;
+}

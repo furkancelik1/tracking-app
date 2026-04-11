@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import {
   PlusCircle,
   CheckCircle2,
@@ -32,6 +33,7 @@ const STEPS = [
 
 export function OnboardingDialog() {
   const t = useTranslations("onboarding");
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [completing, setCompleting] = useState(false);
@@ -49,6 +51,9 @@ export function OnboardingDialog() {
     try {
       const result = await completeTour();
       setOpen(false);
+      // Navbar coin göstergesini anında güncelle
+      window.dispatchEvent(new CustomEvent("coins-updated"));
+      router.refresh();
       toast.success(t("rewardToast"), { duration: 5000 });
       if (result.newBadges.length > 0) {
         toast.success(t("badgeEarned", { badge: result.newBadges[0] }), {

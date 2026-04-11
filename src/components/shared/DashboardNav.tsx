@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
 import { Moon, Sun, Coins, Trophy } from "lucide-react";
@@ -38,11 +38,20 @@ export function DashboardNav() {
   const [badgesOpen, setBadgesOpen] = useState(false);
   const [coins, setCoins] = useState<number | null>(null);
 
+  const refreshCoins = useCallback(() => {
+    getUserCoins().then(setCoins).catch(() => {});
+  }, []);
+
   useEffect(() => {
-    if (auth.status === "authenticated") {
-      getUserCoins().then(setCoins).catch(() => {});
-    }
-  }, [auth.status]);
+    if (auth.status === "authenticated") refreshCoins();
+  }, [auth.status, refreshCoins]);
+
+  // Coin değişikliklerini dinle (onboarding, shop, rutin tamamlama vb.)
+  useEffect(() => {
+    const handler = () => refreshCoins();
+    window.addEventListener("coins-updated", handler);
+    return () => window.removeEventListener("coins-updated", handler);
+  }, [refreshCoins]);
 
   if (auth.status !== "authenticated") return null;
 

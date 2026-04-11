@@ -141,6 +141,8 @@ export async function checkBadges(userId: string): Promise<string[]> {
       data: badgesToCreate,
       skipDuplicates: true,
     });
+
+    revalidatePath("/", "layout");
   }
 
   return newBadges;
@@ -173,7 +175,7 @@ export async function completeTour(): Promise<{ newBadges: string[] }> {
     newBadges.push(tourBadge.name);
   }
 
-  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { newBadges };
 }
 

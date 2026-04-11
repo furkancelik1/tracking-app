@@ -71,6 +71,8 @@ export function ShopDialog({ open, onOpenChange }: Props) {
           )
         );
         toast.success(t("purchaseSuccess"));
+        // Navbar coin göstergesini güncelle
+        window.dispatchEvent(new CustomEvent("coins-updated"));
       } else if (result.message === "NOT_ENOUGH_COINS") {
         toast.error(t("notEnoughCoins"));
       } else {

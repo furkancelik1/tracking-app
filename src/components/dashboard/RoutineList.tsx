@@ -158,9 +158,12 @@ export function RoutineList({ initialRoutines }: Props) {
         if (completed) {
           await undoRoutineAction(id);
           toast.success(t("undone"));
+          window.dispatchEvent(new CustomEvent("coins-updated"));
         } else {
           const result = await completeRoutineAction(id, note);
           toast.success(t("completed"));
+          // Navbar coin göstergesini güncelle
+          window.dispatchEvent(new CustomEvent("coins-updated"));
 
           // ── Level-up algıla ────────────────────────────────────────
           if (result && didLevelUp(result.totalXp - result.xpGain, result.totalXp)) {

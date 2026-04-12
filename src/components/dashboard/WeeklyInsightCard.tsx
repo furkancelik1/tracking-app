@@ -32,12 +32,12 @@ class WeeklyInsightErrorBoundary extends Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[WeeklyInsightCard] Render error caught by ErrorBoundary:", error.message);
     console.error("[WeeklyInsightCard] Component stack:", errorInfo.componentStack);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
       return (

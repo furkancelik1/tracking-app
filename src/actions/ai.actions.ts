@@ -17,8 +17,8 @@ let _geminiCooldownUntil = 0; // epoch ms — skip Gemini calls until this time
 const COOLDOWN_MS = 5 * 60 * 1000; // 5 min cooldown after a 429
 
 // ─── Dual-Model Yapılandırması ───────────────────────────────────────────────
-const MODEL_FLASH = "gemini-1.5-flash";
-const MODEL_PRO   = "gemini-1.5-pro";
+const MODEL_FLASH = "gemini-2.5-flash";
+const MODEL_PRO   = "gemini-2.5-pro";
 
 type AnalysisDepth = "weekly" | "deep";
 
@@ -159,8 +159,12 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
     return { date: d, dayIndex: getDay(d), count };
   });
 
-  const best = dayCompletions.reduce((a, b) => (b.count > a.count ? b : a), dayCompletions[0]);
-  const worst = dayCompletions.reduce((a, b) => (b.count < a.count ? b : a), dayCompletions[0]);
+  const best = dayCompletions.length > 0
+    ? dayCompletions.reduce((a, b) => (b.count > a.count ? b : a))
+    : undefined;
+  const worst = dayCompletions.length > 0
+    ? dayCompletions.reduce((a, b) => (b.count < a.count ? b : a))
+    : undefined;
 
   // Kategori bazlı
   const catMap = new Map<string, { completed: number; total: number }>();
@@ -202,14 +206,19 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
       .map((r) => ({ ...r, completions: routineCompletionMap.get(r.id) ?? 0 }))
       .sort((a, b) => b.completions - a.completions);
 
-    topRoutine = { title: sorted[0].title, completions: sorted[0].completions };
+    const top = sorted[0];
+    if (top) {
+      topRoutine = { title: top.title, completions: top.completions };
+    }
 
     const weakest = sorted[sorted.length - 1];
-    weakestRoutine = {
-      title: weakest.title,
-      completions: weakest.completions,
-      missed: 7 - weakest.completions,
-    };
+    if (weakest) {
+      weakestRoutine = {
+        title: weakest.title,
+        completions: weakest.completions,
+        missed: 7 - weakest.completions,
+      };
+    }
   }
 
   const longestActiveStreak = routines.reduce((max, r) => Math.max(max, r.currentStreak), 0);
@@ -220,11 +229,11 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
     possibleCompletions,
     completionRate,
     bestDay: {
-      day: best ? DAY_NAMES_EN[best.dayIndex] : "—",
+      day: best ? (DAY_NAMES_EN[best.dayIndex] ?? "—") : "—",
       count: best?.count ?? 0,
     },
     worstDay: {
-      day: worst ? DAY_NAMES_EN[worst.dayIndex] : "—",
+      day: worst ? (DAY_NAMES_EN[worst.dayIndex] ?? "—") : "—",
       count: worst?.count ?? 0,
     },
     longestActiveStreak,
@@ -344,10 +353,22 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
       lastError = apiError;
       const status = apiError?.status ?? apiError?.code ?? "unknown";
       const msg = apiError?.message ?? String(apiError);
+      // URL'yi hata mesajından çıkar
+      const urlMatch = msg.match(/https:\/\/[^\s:]+/);
+      const failedUrl = urlMatch ? urlMatch[0] : "unknown";
       console.error(`[AI Insight] Gemini API call FAILED (attempt ${attempt + 1}, model: ${currentModel}) — status: ${status}`);
+      console.error(`[AI Insight] 404 Hatası Alınan URL: ${failedUrl}`);
       console.error(`[AI Insight] Error message: ${msg}`);
 
+      const is404 = String(status) === "404" || msg.includes("404") || msg.toLowerCase().includes("not found");
       const is429 = msg.includes("429") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("quota");
+
+      // 404 = model bulunamadı → hemen Flash'a düş
+      if (is404 && currentModel !== MODEL_FLASH && attempt < MAX_RETRIES) {
+        console.warn(`[AI Insight] ⚠️ Model '${currentModel}' bulunamadı (404) — ${MODEL_FLASH} modeline geri dönülüyor...`);
+        currentModel = MODEL_FLASH;
+        continue;
+      }
 
       // Pro model failed → fallback to Flash
       if (currentModel === MODEL_PRO && attempt < MAX_RETRIES) {
@@ -866,10 +887,13 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 
     return { message, coachTip: coachTip || null, dayKey, hasApiKey: true };
   } catch (error: any) {
+    const errMsg = error?.message ?? String(error);
+    const urlMatch = errMsg.match(/https:\/\/[^\s:]+/);
+    const failedUrl = urlMatch ? urlMatch[0] : "unknown";
     console.error("[AI Coach] Daily message error:");
     console.error("[AI Coach] Error name:", error?.name);
-    console.error("[AI Coach] Error message:", error?.message);
-    if (error?.status) console.error("[AI Coach] HTTP status:", error.status);
+    console.error("[AI Coach] Error message:", errMsg);
+    if (error?.status) console.error(`[AI Coach] HTTP status: ${error.status} — URL: ${failedUrl}`);
 
     // Dummy fallback — kullanıcıya statik mesaj dön
     const dummyMessage = locale === "tr"

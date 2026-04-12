@@ -11,9 +11,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { fireLevelUpConfetti, hapticSuccess } from "@/lib/celebrations";
+import { fireDuelToast } from "@/lib/duel-notifications";
 import { nativeShareImage } from "@/lib/share";
 import type { DuelEntry } from "@/actions/duel.actions";
 import { respondToDuel } from "@/actions/duel.actions";
+import { DuelChat } from "@/components/dashboard/DuelChat";
 import {
   Swords,
   Timer,
@@ -155,6 +157,7 @@ function PlayerCard({
 function Countdown({ endTimeMs }: { endTimeMs: number }) {
   const t = useTranslations("duel");
   const [now, setNow] = useState(Date.now());
+  const lastHourFiredRef = useRef(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -163,6 +166,18 @@ function Countdown({ endTimeMs }: { endTimeMs: number }) {
 
   const ms = Math.max(0, endTimeMs - now);
   const { h, m, s } = formatTimeLeft(ms);
+
+  // Son 1 saat uyarısı (bir kez)
+  const ONE_HOUR = 60 * 60 * 1000;
+  useEffect(() => {
+    if (ms > 0 && ms <= ONE_HOUR && !lastHourFiredRef.current) {
+      lastHourFiredRef.current = true;
+      fireDuelToast("ending", {
+        title: t("notifLastHour"),
+        description: t("notifLastHourDesc"),
+      });
+    }
+  }, [ms, t]);
 
   if (ms <= 0) {
     return (
@@ -488,6 +503,15 @@ export function DuelArena({ duel }: Props) {
 
       {/* Result Banner */}
       {isFinished && <ResultBanner duel={duel} />}
+
+      {/* Duel Chat */}
+      {isActive && duel.opponent && (
+        <DuelChat
+          duelId={duel.id}
+          currentUserId={myId}
+          isActive={isActive}
+        />
+      )}
     </section>
   );
 }

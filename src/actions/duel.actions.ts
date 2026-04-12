@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { getSession } from "@/lib/auth";
 import { sendPushToUserAction } from "@/actions/push.actions";
+import { randomBytes } from "crypto";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -24,16 +25,27 @@ export type DuelEntry = {
   challengerScore: number;
   opponentScore: number;
   challenger: { id: string; name: string | null; image: string | null; xp: number };
-  opponent: { id: string; name: string | null; image: string | null; xp: number };
+  opponent: { id: string; name: string | null; image: string | null; xp: number } | null;
   isChallenger: boolean;
   timeLeftMs: number;
   createdAt: string;
+  inviteCode: string | null;
+  isPrivate: boolean;
 };
 
 export type DuelResult = {
   duelId: string;
   outcome: "win" | "loss" | "draw";
   coinsWon: number;
+};
+
+export type DuelMessageEntry = {
+  id: string;
+  senderId: string;
+  senderName: string | null;
+  senderImage: string | null;
+  content: string;
+  createdAt: string;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -59,15 +71,19 @@ function mapDuel(
       image: d.challenger.image,
       xp: d.challenger.xp,
     },
-    opponent: {
-      id: d.opponent.id,
-      name: d.opponent.name,
-      image: d.opponent.image,
-      xp: d.opponent.xp,
-    },
+    opponent: d.opponent
+      ? {
+          id: d.opponent.id,
+          name: d.opponent.name,
+          image: d.opponent.image,
+          xp: d.opponent.xp,
+        }
+      : null,
     isChallenger: d.challengerId === currentUserId,
     timeLeftMs: endMs > now ? endMs - now : 0,
     createdAt: d.createdAt?.toISOString() ?? new Date().toISOString(),
+    inviteCode: d.inviteCode ?? null,
+    isPrivate: d.isPrivate ?? false,
   };
 }
 
@@ -83,6 +99,8 @@ const DUEL_SELECT = {
   challengerId: true,
   opponentId: true,
   createdAt: true,
+  inviteCode: true,
+  isPrivate: true,
   challenger: { select: { id: true, name: true, image: true, xp: true } },
   opponent: { select: { id: true, name: true, image: true, xp: true } },
 } as const;
@@ -286,7 +304,7 @@ export async function respondToDuel(input: {
 
 export async function updateDuelScore(
   userId: string
-): Promise<void> {
+): Promise<{ updated: boolean; opponentName: string | null }> {
   // Aktif düelloları bul
   const activeDuels = await prisma.duel.findMany({
     where: {
@@ -294,10 +312,18 @@ export async function updateDuelScore(
       endTime: { gt: new Date() },
       OR: [{ challengerId: userId }, { opponentId: userId }],
     },
-    select: { id: true, challengerId: true, opponentId: true },
+    select: {
+      id: true,
+      challengerId: true,
+      opponentId: true,
+      challenger: { select: { name: true } },
+      opponent: { select: { name: true } },
+    },
   });
 
-  if (activeDuels.length === 0) return;
+  if (activeDuels.length === 0) return { updated: false, opponentName: null };
+
+  let opponentName: string | null = null;
 
   for (const duel of activeDuels) {
     const field = duel.challengerId === userId ? "challengerScore" : "opponentScore";
@@ -305,7 +331,16 @@ export async function updateDuelScore(
       where: { id: duel.id },
       data: { [field]: { increment: 1 } },
     });
+    // İlk düellodaki rakip ismini al
+    if (!opponentName) {
+      opponentName =
+        duel.challengerId === userId
+          ? duel.opponent?.name ?? null
+          : duel.challenger?.name ?? null;
+    }
   }
+
+  return { updated: true, opponentName };
 }
 
 // ─── 4. Düello Durumu Kontrol & Finalize ─────────────────────────────────────
@@ -369,6 +404,9 @@ export async function checkAndFinalizeDuels(
         where: { id: duel.id },
         data: { status: "FINISHED", winnerId },
       });
+
+      // Ephemeral: Sohbet mesajlarını temizle
+      await tx.duelMessage.deleteMany({ where: { duelId: duel.id } });
 
       // currentDuelId temizle
       await tx.user.updateMany({
@@ -451,6 +489,292 @@ export async function getActiveDuelAction(): Promise<DuelEntry | null> {
     },
     select: DUEL_SELECT,
     orderBy: { startTime: "desc" },
+  });
+
+  if (!duel) return null;
+  return mapDuel(duel, userId);
+}
+
+// ─── 7. Özel Düello Oluştur (Private Duel) ──────────────────────────────────
+
+function generateInviteCode(): string {
+  return randomBytes(4).toString("hex").toUpperCase(); // 8 karakter, örn: "A3F1B2C4"
+}
+
+export async function createPrivateDuel(input: {
+  stake: number;
+}): Promise<{ success: boolean; error?: string; inviteCode?: string; duelId?: string }> {
+  const session = await requireAuth();
+  const userId = (session.user as any).id as string;
+  const { stake } = input;
+
+  // Stake sınır kontrolü
+  if (!Number.isInteger(stake) || stake < MIN_STAKE || stake > MAX_STAKE) {
+    return { success: false, error: "INVALID_STAKE" };
+  }
+
+  // Aktif düello limiti
+  const activeDuelCount = await prisma.duel.count({
+    where: {
+      OR: [{ challengerId: userId }, { opponentId: userId }],
+      status: { in: ["PENDING", "ACTIVE"] },
+    },
+  });
+
+  if (activeDuelCount >= MAX_ACTIVE_DUELS) {
+    return { success: false, error: "MAX_DUELS" };
+  }
+
+  // Benzersiz inviteCode üret (collision-safe)
+  let inviteCode = generateInviteCode();
+  let attempts = 0;
+  while (attempts < 5) {
+    const existing = await prisma.duel.findUnique({ where: { inviteCode } });
+    if (!existing) break;
+    inviteCode = generateInviteCode();
+    attempts++;
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { coins: true },
+    });
+
+    if (!user || user.coins < stake) {
+      return { success: false as const, error: "INSUFFICIENT_COINS" };
+    }
+
+    // Altını dondur
+    await tx.user.update({
+      where: { id: userId },
+      data: { coins: { decrement: stake } },
+    });
+
+    // Özel düello oluştur (opponent yok henüz)
+    const duel = await tx.duel.create({
+      data: {
+        challengerId: userId,
+        stake,
+        status: "PENDING",
+        isPrivate: true,
+        inviteCode,
+      },
+    });
+
+    return { success: true as const, duelId: duel.id, inviteCode };
+  });
+
+  return result;
+}
+
+// ─── 8. Davet Koduyla Düelloya Katıl ────────────────────────────────────────
+
+export async function joinDuelByCode(input: {
+  inviteCode: string;
+}): Promise<{ success: boolean; error?: string; duelId?: string }> {
+  const session = await requireAuth();
+  const userId = (session.user as any).id as string;
+  const userName = (session.user as any).name as string | null;
+  const { inviteCode } = input;
+
+  if (!inviteCode || inviteCode.trim().length === 0) {
+    return { success: false, error: "INVALID_CODE" };
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const duel = await tx.duel.findUnique({
+      where: { inviteCode: inviteCode.trim().toUpperCase() },
+      select: {
+        id: true,
+        challengerId: true,
+        opponentId: true,
+        status: true,
+        stake: true,
+        isPrivate: true,
+      },
+    });
+
+    if (!duel || !duel.isPrivate) {
+      return { success: false as const, error: "INVALID_CODE" };
+    }
+
+    if (duel.status !== "PENDING") {
+      return { success: false as const, error: "ALREADY_STARTED" };
+    }
+
+    if (duel.opponentId) {
+      return { success: false as const, error: "ALREADY_JOINED" };
+    }
+
+    // Kendine düello yapılamaz
+    if (duel.challengerId === userId) {
+      return { success: false as const, error: "SELF_DUEL" };
+    }
+
+    // Arkadaşlık kontrolü
+    const friendship = await tx.friendship.findFirst({
+      where: {
+        status: "ACCEPTED",
+        OR: [
+          { followerId: userId, followingId: duel.challengerId },
+          { followerId: duel.challengerId, followingId: userId },
+        ],
+      },
+    });
+
+    if (!friendship) {
+      return { success: false as const, error: "NOT_FRIENDS" };
+    }
+
+    // Aktif düello limiti
+    const activeDuelCount = await tx.duel.count({
+      where: {
+        OR: [{ challengerId: userId }, { opponentId: userId }],
+        status: { in: ["PENDING", "ACTIVE"] },
+      },
+    });
+
+    if (activeDuelCount >= MAX_ACTIVE_DUELS) {
+      return { success: false as const, error: "MAX_DUELS" };
+    }
+
+    // Coin bakiyesi kontrolü
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { coins: true },
+    });
+
+    if (!user || user.coins < duel.stake) {
+      return { success: false as const, error: "INSUFFICIENT_COINS" };
+    }
+
+    // Rakibin altınını dondur
+    await tx.user.update({
+      where: { id: userId },
+      data: { coins: { decrement: duel.stake } },
+    });
+
+    const now = new Date();
+    const endTime = new Date(now.getTime() + DUEL_DURATION_MS);
+
+    // Düelloyu aktifleştir
+    await tx.duel.update({
+      where: { id: duel.id },
+      data: {
+        opponentId: userId,
+        status: "ACTIVE",
+        startTime: now,
+        endTime,
+      },
+    });
+
+    // Her iki kullanıcının currentDuelId'sini güncelle
+    await tx.user.update({ where: { id: userId }, data: { currentDuelId: duel.id } });
+    await tx.user.update({ where: { id: duel.challengerId }, data: { currentDuelId: duel.id } });
+
+    return { success: true as const, duelId: duel.id, challengerId: duel.challengerId };
+  });
+
+  if (!result.success) return result;
+
+  // Challenger'a push bildirim
+  const challengerId = (result as any).challengerId;
+  await sendPushToUserAction(challengerId, {
+    title: "Düello Kabul Edildi! 🔥",
+    body: `${userName ?? "Birisi"} özel düellona katıldı! Savaş başladı! ⚔️`,
+    url: "/social",
+    tag: `duel-joined-${(result as any).duelId}`,
+  }).catch(() => {});
+
+  return { success: true, duelId: (result as any).duelId };
+}
+
+// ─── 9. Düello Kazananını Hesapla ────────────────────────────────────────────
+
+export async function calculateDuelWinner(
+  duelId: string
+): Promise<DuelResult | null> {
+  const result = await prisma.$transaction(async (tx) => {
+    const duel = await tx.duel.findUnique({
+      where: { id: duelId },
+    });
+
+    if (!duel || duel.status !== "ACTIVE") return null;
+    if (!duel.opponentId) return null;
+
+    // Süre dolmamışsa hesaplama yapma
+    if (duel.endTime && new Date(duel.endTime).getTime() > Date.now()) {
+      return null;
+    }
+
+    let winnerId: string | null = null;
+    const totalPot = duel.stake * 2;
+
+    if (duel.challengerScore > duel.opponentScore) {
+      winnerId = duel.challengerId;
+    } else if (duel.opponentScore > duel.challengerScore) {
+      winnerId = duel.opponentId;
+    }
+
+    if (winnerId) {
+      await tx.user.update({
+        where: { id: winnerId },
+        data: { coins: { increment: totalPot } },
+      });
+    } else {
+      // Berabere — altınları iade et
+      await tx.user.update({
+        where: { id: duel.challengerId },
+        data: { coins: { increment: duel.stake } },
+      });
+      await tx.user.update({
+        where: { id: duel.opponentId },
+        data: { coins: { increment: duel.stake } },
+      });
+    }
+
+    await tx.duel.update({
+      where: { id: duelId },
+      data: { status: "FINISHED", winnerId },
+    });
+
+    // Ephemeral: Sohbet mesajlarını temizle
+    await tx.duelMessage.deleteMany({ where: { duelId } });
+
+    await tx.user.updateMany({
+      where: { id: { in: [duel.challengerId, duel.opponentId] }, currentDuelId: duelId },
+      data: { currentDuelId: null },
+    });
+
+    return {
+      duelId: duel.id,
+      outcome: winnerId
+        ? "win" as const
+        : "draw" as const,
+      coinsWon: winnerId ? totalPot : duel.stake,
+    } satisfies DuelResult;
+  });
+
+  return result;
+}
+
+// ─── 10. Bekleyen Özel Düelloyu Getir ────────────────────────────────────────
+
+export async function getPendingPrivateDuel(): Promise<DuelEntry | null> {
+  const session = await getSession();
+  const userId = (session?.user as any)?.id as string | undefined;
+  if (!userId) return null;
+
+  const duel = await prisma.duel.findFirst({
+    where: {
+      challengerId: userId,
+      isPrivate: true,
+      status: "PENDING",
+      opponentId: null,
+    },
+    select: DUEL_SELECT,
+    orderBy: { createdAt: "desc" },
   });
 
   if (!duel) return null;

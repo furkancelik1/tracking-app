@@ -109,6 +109,7 @@ model User {
   sentDuels             Duel[]          @relation("DuelChallengerRelation")
   receivedDuels         Duel[]          @relation("DuelOpponentRelation")
   currentDuelId         String?
+  duelMessages          DuelMessage[]
 }
 
 model Account {
@@ -395,7 +396,7 @@ model Purchase {
 model Duel {
   id            String     @id @default(cuid())
   challengerId  String
-  opponentId    String
+  opponentId    String?    // Özel düellolarda başlangıçta null olabilir
   stake         Int        // Ortaya konan altın miktarı
   status        DuelStatus @default(PENDING)
   startTime     DateTime?
@@ -403,13 +404,31 @@ model Duel {
   winnerId      String?
   challengerScore Int      @default(0)
   opponentScore   Int      @default(0)
+  inviteCode    String?    @unique  // Özel düello davet kodu
+  isPrivate     Boolean    @default(false)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
   challenger    User       @relation("DuelChallengerRelation", fields: [challengerId], references: [id], onDelete: Cascade)
-  opponent      User       @relation("DuelOpponentRelation", fields: [opponentId], references: [id], onDelete: Cascade)
+  opponent      User?      @relation("DuelOpponentRelation", fields: [opponentId], references: [id], onDelete: Cascade)
+  messages      DuelMessage[]
 
   @@index([challengerId])
   @@index([opponentId])
   @@index([status])
+  @@index([inviteCode])
+}
+
+model DuelMessage {
+  id        String   @id @default(cuid())
+  duelId    String
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  duel      Duel     @relation(fields: [duelId], references: [id], onDelete: Cascade)
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([duelId, createdAt])
+  @@index([senderId])
 }

@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import { QueryProvider } from "@/components/query-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
@@ -125,6 +126,7 @@ export default async function LocaleLayout({ children, params }: Props) {
                 disableTransitionOnChange
               >
                 {children}
+                <Toaster />
               </ThemeProvider>
             </AuthProvider>
           </QueryProvider>

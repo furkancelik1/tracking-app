@@ -183,13 +183,24 @@ export async function completeRoutineAction(
     await updateChallengeScoresFromLog(userId, routine.title).catch(() => {});
 
     // Disiplin düellosu skor güncelle
-    await updateDuelScore(userId).catch(() => {});
+    const duelResult = await updateDuelScore(userId).catch(() => ({
+      updated: false,
+      opponentName: null,
+    }));
 
     // AI haftalık görev ilerlemesini güncelle
     await updateAIChallengeProgress(userId, routine.category).catch(() => {});
 
     revalidatePath("/dashboard");
-    return { xpGain, totalXp: updatedUser?.xp ?? 0, coinGain, totalCoins: updatedUser?.coins ?? 0, newBadges };
+    return {
+      xpGain,
+      totalXp: updatedUser?.xp ?? 0,
+      coinGain,
+      totalCoins: updatedUser?.coins ?? 0,
+      newBadges,
+      duelScoreUpdated: duelResult?.updated ?? false,
+      duelOpponentName: duelResult?.opponentName ?? null,
+    };
   } catch (error) {
     console.error("[completeRoutineAction] Hata:", error);
     throw error;

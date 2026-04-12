@@ -1,6 +1,6 @@
 import { getFollowersAction, getFollowingAction, getPendingRequestsAction } from "@/actions/social.actions";
 import { getChallengesAction, getCompletedChallengesAction, distributeChallengeRewards } from "@/actions/challenge.actions";
-import { getActiveDuelAction, checkAndFinalizeDuels } from "@/actions/duel.actions";
+import { getActiveDuelAction, checkAndFinalizeDuels, getPendingPrivateDuel } from "@/actions/duel.actions";
 import { getFriendsAction } from "@/actions/social.actions";
 import { UserSearch } from "@/components/dashboard/UserSearch";
 import { SocialTabs } from "@/components/dashboard/SocialTabs";
@@ -10,6 +10,8 @@ import { ChallengeHistory } from "@/components/dashboard/ChallengeHistory";
 import ChallengeRewardToast from "@/components/dashboard/ChallengeRewardToast";
 import { DuelArena } from "@/components/dashboard/DuelArena";
 import { DuelInviteDialog } from "@/components/dashboard/DuelInviteDialog";
+import { CreateDuel } from "@/components/dashboard/CreateDuel";
+import { DuelLiveStatus } from "@/components/dashboard/DuelLiveStatus";
 import { Users } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/lib/auth";
@@ -41,7 +43,7 @@ export default async function SocialPage({
   // Disiplin düellolarını finalize et
   const duelResults = await checkAndFinalizeDuels(userId).catch(() => []);
 
-  const [followers, following, pendingRequests, friends, challenges, completedChallenges, activeDuel] = await Promise.all([
+  const [followers, following, pendingRequests, friends, challenges, completedChallenges, activeDuel, pendingPrivateDuel] = await Promise.all([
     getFollowersAction().catch(() => []),
     getFollowingAction().catch(() => []),
     getPendingRequestsAction().catch(() => []),
@@ -49,6 +51,7 @@ export default async function SocialPage({
     getChallengesAction().catch(() => []),
     getCompletedChallengesAction().catch(() => []),
     getActiveDuelAction().catch(() => null),
+    getPendingPrivateDuel().catch(() => null),
   ]);
 
   return (
@@ -90,8 +93,16 @@ export default async function SocialPage({
       <section>
         <div className="flex items-center justify-between mb-4">
           <div />
-          <DuelInviteDialog friends={friends} />
+          <div className="flex items-center gap-2">
+            <CreateDuel />
+            <DuelInviteDialog friends={friends} />
+          </div>
         </div>
+        {activeDuel && activeDuel.isPrivate && activeDuel.opponent && (
+          <div className="mb-4">
+            <DuelLiveStatus duel={activeDuel} />
+          </div>
+        )}
         <DuelArena duel={activeDuel} />
       </section>
 

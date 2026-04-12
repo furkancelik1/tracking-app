@@ -19,6 +19,7 @@ import {
 } from "@/actions/routine.actions";
 import { fireAllDoneConfetti, fireLevelUpConfetti, hapticSuccess } from "@/lib/celebrations";
 import { calculateLevel, didLevelUp } from "@/lib/level";
+import { fireDuelToast } from "@/lib/duel-notifications";
 import { ShareCardModal } from "@/components/dashboard/ShareCardModal";
 import type { ShareCardProps } from "@/components/dashboard/ShareCard";
 
@@ -74,6 +75,7 @@ const ALL = "__all__";
 export function RoutineList({ initialRoutines }: Props) {
   const t = useTranslations("dashboard.routineList");
   const tc = useTranslations("common");
+  const td = useTranslations("duel");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(ALL);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -164,6 +166,16 @@ export function RoutineList({ initialRoutines }: Props) {
           toast.success(t("completed"));
           // Navbar coin göstergesini güncelle
           window.dispatchEvent(new CustomEvent("coins-updated"));
+
+          // ── Düello skor bildirimi ──────────────────────────────────
+          if (result?.duelScoreUpdated && result.duelOpponentName) {
+            fireDuelToast("score", {
+              title: td("notifOpponentScored"),
+              description: td("notifOpponentScoredDesc", { name: result.duelOpponentName }),
+              actionLabel: td("notifViewDuel"),
+              onAction: () => window.dispatchEvent(new CustomEvent("navigate-social")),
+            });
+          }
 
           // ── Level-up algıla ────────────────────────────────────────
           if (result && didLevelUp(result.totalXp - result.xpGain, result.totalXp)) {

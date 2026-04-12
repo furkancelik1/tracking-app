@@ -75,7 +75,7 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
             <Skeleton className="h-full w-full rounded-md" />
           </div>
         ) : (
-          <div className="h-[260px] min-h-0 w-full">
+          <div className="h-[260px] min-h-0 w-full" style={{ touchAction: "manipulation" }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie

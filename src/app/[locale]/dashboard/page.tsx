@@ -17,11 +17,13 @@ import { getSubscriptionTier } from "@/lib/stripe";
 import { getDashboardData } from "@/actions/dashboard.actions";
 import { getYearlyActivityData } from "@/actions/dashboard.actions";
 import { getWeeklyInsightAction } from "@/actions/ai.actions";
-import { getDisciplineTrend } from "@/actions/stats.actions";
+import { getDisciplineTrend, getTodayDisciplineScoreAction } from "@/actions/stats.actions";
 import { getChallengeLeaderboard } from "@/actions/challenge.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
 import { DisciplineTrendChart } from "@/components/dashboard/DisciplineTrendChart";
+import { DailyDisciplineGauge } from "@/components/dashboard/DailyDisciplineGauge";
+import { BottomNav } from "@/components/shared/BottomNav";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
@@ -118,7 +120,7 @@ export default async function DashboardPage({
     const thirtyDaysAgo = new Date(todayStart);
     thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
 
-    const [dashboardData, analytics, raw, userXpData, yearlyData] = await Promise.all([
+    const [dashboardData, analytics, raw, userXpData, yearlyData, gaugeData] = await Promise.all([
       getDashboardData().catch(() => ({
         stats: {
           todayProgress: { completed: 0, total: 0, percentage: 0 },
@@ -150,6 +152,7 @@ export default async function DashboardPage({
         .findUnique({ where: { id: userId }, select: { xp: true } })
         .catch(() => null),
       getYearlyActivityData().catch(() => []),
+      getTodayDisciplineScoreAction().catch(() => ({ completed: 0, total: 0, score: 0 })),
     ]);
 
     // AI insight (PRO kullanıcılar için — hata yutulur)
@@ -209,13 +212,28 @@ export default async function DashboardPage({
     return (
       <>
         <DashboardNav />
-        <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
-          <LevelProgressBar xp={userXp} />
-          <AICoachBriefing xp={userXp} initialInsight={weeklyInsight} isPro={isPro} />
+        <main className="mx-auto max-w-6xl px-4 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8 pb-20 md:pb-8">
+          {/* ── Neon Gauge + Level (mobile: gauge hero, desktop: row) ── */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="md:col-span-1 flex justify-center">
+              <div className="w-full max-w-[260px] md:max-w-none">
+                <DailyDisciplineGauge
+                  score={gaugeData.score}
+                  completed={gaugeData.completed}
+                  total={gaugeData.total}
+                />
+              </div>
+            </div>
+            <div className="md:col-span-2 space-y-4">
+              <LevelProgressBar xp={userXp} />
+              <AICoachBriefing xp={userXp} initialInsight={weeklyInsight} isPro={isPro} />
+            </div>
+          </div>
+
           <StreakAlert routines={routines} />
 
           {/* ── 4 Stat Cards ─────────────────────────────────────────── */}
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
             <StatsCard
               title={t("stats.todayProgress")}
               value={`${stats.todayProgress.completed}/${stats.todayProgress.total}`}
@@ -251,20 +269,20 @@ export default async function DashboardPage({
           {/* ── Challenge Leaderboard ───────────────────────────── */}
           <ChallengeLeaderboard data={challengeLeaderboard} />
 
-          {/* ── Charts ───────────────────────────────────────────────── */}
+          {/* ── Charts (mobile: stacked, desktop: 2/3 + 1/3) ──────── */}
           <Suspense
             fallback={
-              <section className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 h-[350px] rounded-xl border bg-card animate-pulse" />
-                <div className="lg:col-span-1 h-[350px] rounded-xl border bg-card animate-pulse" />
+              <section className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
+                <div className="md:col-span-2 h-[250px] md:h-[350px] rounded-xl border bg-card animate-pulse" />
+                <div className="md:col-span-1 h-[280px] md:h-[350px] rounded-xl border bg-card animate-pulse" />
               </section>
             }
           >
-            <section className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
+            <section className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
+              <div className="md:col-span-2">
                 <WeeklyProgressChart data={weeklyChart} />
               </div>
-              <div className="lg:col-span-1">
+              <div className="md:col-span-1">
                 <CategoryPieChart data={analytics.categoryDistribution ?? []} />
               </div>
             </section>
@@ -294,6 +312,7 @@ export default async function DashboardPage({
             <YearlyActivityHeatmap data={yearlyData} />
           </Suspense>
         </main>
+        <BottomNav />
       </>
     );
   } catch (error) {

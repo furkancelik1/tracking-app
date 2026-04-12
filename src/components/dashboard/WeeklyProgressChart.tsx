@@ -24,8 +24,21 @@ type Props = {
   data: WeeklyChartPoint[];
 };
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
+
 export function WeeklyProgressChart({ data }: Props) {
   const [mounted, setMounted] = useState(false);
+  const isMobile = useIsMobile();
   useEffect(() => setMounted(true), []);
 
   const safeData = data ?? [];
@@ -68,7 +81,7 @@ export function WeeklyProgressChart({ data }: Props) {
       </CardHeader>
 
       <CardContent className="pb-6">
-        <div className="h-[240px] min-h-0 w-full">
+        <div className="h-[200px] md:h-[240px] min-h-0 w-full" style={{ touchAction: "manipulation" }}>
           {!mounted ? (
             <Skeleton className="h-full w-full rounded-md" />
           ) : (
@@ -103,6 +116,7 @@ export function WeeklyProgressChart({ data }: Props) {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                  tickFormatter={(val: string) => isMobile ? val.charAt(0) : val}
                 />
                 <YAxis
                   allowDecimals={false}

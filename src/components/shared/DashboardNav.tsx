@@ -76,8 +76,8 @@ export function DashboardNav() {
           {t("logo")}
         </Link>
 
-        {/* Nav links */}
-        <nav className="flex items-center gap-1">
+        {/* Nav links — hidden on mobile, BottomNav handles it */}
+        <nav className="hidden md:flex items-center gap-1">
           {NAV_KEYS.map((item) => (
             <Link
               key={item.href}

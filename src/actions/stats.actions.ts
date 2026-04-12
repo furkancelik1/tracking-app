@@ -225,3 +225,36 @@ export async function getDayDetail(
     })),
   };
 }
+
+// ─── Bugünkü Disiplin Skoru ─────────────────────────────────────────────────
+
+export type TodayDisciplineScore = {
+  completed: number;
+  total: number;
+  score: number; // 0-100
+};
+
+export async function getTodayDisciplineScoreAction(): Promise<TodayDisciplineScore> {
+  const session = await requireAuth();
+  const userId = (session.user as any).id as string;
+
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const tomorrowStart = new Date(todayStart);
+  tomorrowStart.setUTCDate(tomorrowStart.getUTCDate() + 1);
+
+  const [totalRoutines, completedLogs] = await Promise.all([
+    prisma.routine.count({
+      where: { userId, isActive: true, frequency: "DAILY" },
+    }),
+    prisma.routineLog.count({
+      where: { userId, completedAt: { gte: todayStart, lt: tomorrowStart } },
+    }),
+  ]);
+
+  const total = totalRoutines;
+  const completed = Math.min(completedLogs, total); // can't exceed total
+  const score = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  return { completed, total, score };
+}

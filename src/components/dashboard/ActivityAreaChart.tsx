@@ -32,7 +32,15 @@ type Props = {
 
 export function ActivityAreaChart({ data, rangeDays }: Props) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    const mql = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   const safeData = data ?? [];
   const total = safeData.reduce((s, d) => s + (d.count ?? 0), 0);
@@ -77,7 +85,7 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
         </div>
       </CardHeader>
       <CardContent className="pb-6">
-        <div className="h-[260px] min-h-0 w-full">
+        <div className="h-[220px] md:h-[260px] min-h-0 w-full" style={{ touchAction: "manipulation" }}>
           {!mounted ? (
             <Skeleton className="h-full w-full rounded-md" />
           ) : (
@@ -114,6 +122,7 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
               tickLine={false}
               interval={tickInterval}
               tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+              tickFormatter={(val: string) => isMobile && rangeDays <= 7 ? val.charAt(0) : val}
             />
             <YAxis
               allowDecimals={false}

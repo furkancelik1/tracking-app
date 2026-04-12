@@ -80,8 +80,16 @@ function NeonActiveDot(props: any) {
 export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
   const t = useTranslations("disciplineTrend");
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    const mql = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   const { points, avgScore, trend, streakDays, biggestDrop, biggestSurge } = data;
 
@@ -162,8 +170,9 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
 
         <CardContent className="pb-4 relative">
           <div
-            className="h-[200px] min-h-0 w-full"
+            className="h-[170px] md:h-[200px] min-h-0 w-full"
             style={{
+              touchAction: "manipulation",
               filter: "drop-shadow(0 0 8px rgba(34,211,238,0.15)) drop-shadow(0 0 16px rgba(167,139,250,0.1))",
             }}
           >
@@ -204,6 +213,7 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                       fontSize: 12,
                       fill: "hsl(var(--muted-foreground))",
                     }}
+                    tickFormatter={(val: string) => isMobile ? val.charAt(0) : val}
                   />
                   <YAxis
                     domain={[0, 100]}

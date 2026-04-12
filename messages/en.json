@@ -927,5 +927,16 @@
     "installTitle": "Install Routine Tracker",
     "installDescription": "Add to your home screen for the best experience.",
     "installButton": "Install"
+  },
+
+  "gauge": {
+    "title": "Today's Discipline",
+    "status_fire": "On fire bro! \uD83D\uDD25",
+    "status_storm": "Killing it bro! ⚡",
+    "status_decent": "Decent, bro \uD83D\uDCAA",
+    "status_push": "Step it up bro \uD83D\uDC4A",
+    "status_sleepy": "Wake up call, bro \uD83D\uDE34",
+    "status_alarm": "Set that alarm, bro ⏰",
+    "completedOf": "{completed}/{total} completed"
   }
 }

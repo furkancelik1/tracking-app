@@ -26,6 +26,7 @@ import { getUserCoins } from "@/actions/shop.actions";
 
 const NAV_KEYS = [
   { href: "/dashboard" as Route, key: "routines" },
+  { href: "/marketplace" as Route, key: "marketplace" },
   { href: "/social" as Route, key: "social" },
   { href: "/leaderboard" as Route, key: "leaderboard" },
   { href: "/settings" as Route, key: "settings" },

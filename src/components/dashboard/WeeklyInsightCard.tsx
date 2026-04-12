@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain, Sparkles, RefreshCw, Lock, Target, CheckCircle2, Share2 } from "lucide-react";
+import { Brain, Sparkles, RefreshCw, Lock, Target, CheckCircle2, Share2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { getWeeklyInsightAction, type WeeklyInsightPayload } from "@/actions/ai.actions";
@@ -175,6 +175,24 @@ export function WeeklyInsightCard({ initialData, isPro }: WeeklyInsightCardProps
                   </p>
                 ))}
               </div>
+
+              {/* ── AI Success Highlight ── */}
+              {data!.successHighlight && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.15, duration: 0.3 }}
+                  className="mt-3 flex items-center gap-2 px-3 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 w-fit"
+                >
+                  <Trophy className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span className="text-xs font-medium text-emerald-400">
+                    {t("successHighlight.label")}:
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-300">
+                    {data!.successHighlight}
+                  </span>
+                </motion.div>
+              )}
 
               {/* ── AI Challenge Section ── */}
               {data!.challengeTitle && (

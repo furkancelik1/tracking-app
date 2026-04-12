@@ -24,27 +24,34 @@ const RANK_EN: Record<string, string> = {
   Efsane: "Legend",
 };
 
-// ─── Font Cache ──────────────────────────────────────────────────────────────
+// ─── Font Cache (Bold 700, karakter alt kümesi) ─────────────────────────────
 
 let _fontCache: ArrayBuffer | null = null;
+
+// ASCII yazdırılabilir + Türkçe özel karakterler — küçültülmüş font (~8 KB)
+const FONT_CHARS =
+  " !\"#$%&'()*+,-./0123456789:;<=>?@" +
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`" +
+  "abcdefghijklmnopqrstuvwxyz{|}~" +
+  "ÇçĞğİıÖöŞşÜü·—–…\u201C\u201D\u2018\u2019«»";
 
 async function loadInterFont(): Promise<ArrayBuffer> {
   if (_fontCache) return _fontCache;
 
   const css = await fetch(
-    "https://fonts.googleapis.com/css2?family=Inter:wght@400;700",
+    `https://fonts.googleapis.com/css2?family=Inter:wght@700&text=${encodeURIComponent(FONT_CHARS)}`,
     {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
       },
     }
-  ).then((res) => res.text());
+  ).then((r) => r.text());
 
   const match = css.match(/src:\s*url\(([^)]+)\)\s*format\('woff2'\)/);
   if (!match?.[1]) throw new Error("Could not extract Inter font URL");
 
-  _fontCache = await fetch(match[1]).then((res) => res.arrayBuffer());
+  _fontCache = await fetch(match[1]).then((r) => r.arrayBuffer());
   return _fontCache;
 }
 
@@ -61,8 +68,7 @@ function buildFallbackImage(isTr: boolean, fontData: ArrayBuffer) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background:
-            "linear-gradient(145deg, #0f0a2e 0%, #1e1565 35%, #312e81 65%, #1e1b4b 100%)",
+          background: "#0f0a2e",
           fontFamily: "Inter, sans-serif",
           color: "white",
         }}
@@ -75,35 +81,16 @@ function buildFallbackImage(isTr: boolean, fontData: ArrayBuffer) {
             marginBottom: "24px",
           }}
         >
-          <div
-            style={{
-              width: "56px",
-              height: "56px",
-              borderRadius: "16px",
-              background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "28px",
-            }}
-          >
-            🧠
-          </div>
+          <span style={{ fontSize: 28 }}>🧠</span>
           <span style={{ fontSize: 32, fontWeight: 700, color: "#e0e7ff" }}>
             Gönen Tracking App
           </span>
         </div>
         <span style={{ fontSize: 20, color: "#818cf8" }}>
-          {isTr
-            ? "AI Haftalık Koç Raporu"
-            : "AI Weekly Coach Report"}
+          {isTr ? "AI Haftalık Koç Raporu" : "AI Weekly Coach Report"}
         </span>
         <span
-          style={{
-            fontSize: 13,
-            color: "rgba(165,180,252,0.5)",
-            marginTop: "20px",
-          }}
+          style={{ fontSize: 13, color: "rgba(165,180,252,0.5)", marginTop: "20px" }}
         >
           furkancelik.online
         </span>
@@ -117,6 +104,24 @@ function buildFallbackImage(isTr: boolean, fontData: ArrayBuffer) {
   );
 }
 
+// ─── Avatar / Harici Görsel Ön-yükleme ───────────────────────────────────────
+// Satori render sırasında dışarıya HTTP isteği atmasın diye
+// harici görselleri (avatar vb.) önceden ArrayBuffer olarak çekiyoruz.
+
+async function prefetchImage(url: string | null | undefined): Promise<string | null> {
+  if (!url) return null;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    const contentType = res.headers.get("content-type") ?? "image/png";
+    const base64 = Buffer.from(buf).toString("base64");
+    return `data:${contentType};base64,${base64}`;
+  } catch {
+    return null;
+  }
+}
+
 // ─── GET Handler ─────────────────────────────────────────────────────────────
 
 export async function GET(
@@ -128,78 +133,83 @@ export async function GET(
   const isTr = locale === "tr";
   const isTest = request.nextUrl.searchParams.get("test") === "true";
 
-  // ── Font yükleme ──
-  const fontData = await loadInterFont();
-  const tFont = performance.now();
+  try {
+    // ── Font yükleme ──
+    const fontData = await loadInterFont();
+    const tFont = performance.now();
 
-  // ── Parametre & güvenlik kontrolü ──
-  const id = request.nextUrl.searchParams.get("id");
-  if (!id || typeof id !== "string" || id.length > 50) {
-    return buildFallbackImage(isTr, fontData);
-  }
+    // ── Parametre & güvenlik kontrolü ──
+    const id = request.nextUrl.searchParams.get("id");
+    if (!id || typeof id !== "string" || id.length > 50) {
+      return buildFallbackImage(isTr, fontData);
+    }
 
-  // ── DB Fetch (checkpoint: dbFetch) ──
-  const insight = await prisma.weeklyInsight.findUnique({
-    where: { id },
-    include: { user: { select: { xp: true, name: true } } },
-  });
+    // ── DB Fetch ──
+    const insight = await prisma.weeklyInsight.findUnique({
+      where: { id },
+      include: { user: { select: { xp: true, name: true, image: true } } },
+    });
 
-  if (!insight) {
-    return buildFallbackImage(isTr, fontData);
-  }
+    if (!insight) {
+      return buildFallbackImage(isTr, fontData);
+    }
 
-  // ── Level & Rank ──
-  const levelInfo = calculateLevel(insight.user.xp);
-  const rankLabel = isTr
-    ? levelInfo.rank
-    : (RANK_EN[levelInfo.rank] ?? levelInfo.rank);
-  const rankEmoji = RANK_EMOJI[levelInfo.rank] ?? "🌱";
+    // ── Level & Rank ──
+    const levelInfo = calculateLevel(insight.user.xp);
+    const rankLabel = isTr
+      ? levelInfo.rank
+      : (RANK_EN[levelInfo.rank] ?? levelInfo.rank);
+    const rankEmoji = RANK_EMOJI[levelInfo.rank] ?? "🌱";
 
-  // ── Haftalık tamamlanma oranı + Longest Streak ──
-  const weekAgo = subDays(startOfDay(insight.createdAt), 6);
-  const [dailyRoutineCount, logCount, longestStreakRoutine] = await Promise.all([
-    prisma.routine.count({
-      where: { userId: insight.userId, isActive: true, frequency: "DAILY" },
-    }),
-    prisma.routineLog.count({
-      where: { userId: insight.userId, completedAt: { gte: weekAgo } },
-    }),
-    prisma.routine.findFirst({
-      where: { userId: insight.userId, isActive: true },
-      orderBy: { longestStreak: "desc" },
-      select: { longestStreak: true },
-    }),
-  ]);
-  const possible = dailyRoutineCount * 7;
-  const completionRate =
-    possible > 0 ? Math.min(100, Math.round((logCount / possible) * 100)) : 0;
-  const longestStreak = longestStreakRoutine?.longestStreak ?? 0;
+    // ── Paralel: İstatistikler + Avatar ön-yükleme ──
+    const weekAgo = subDays(startOfDay(insight.createdAt), 6);
+    const [dailyRoutineCount, logCount, longestStreakRoutine, avatarSrc] =
+      await Promise.all([
+        prisma.routine.count({
+          where: { userId: insight.userId, isActive: true, frequency: "DAILY" },
+        }),
+        prisma.routineLog.count({
+          where: { userId: insight.userId, completedAt: { gte: weekAgo } },
+        }),
+        prisma.routine.findFirst({
+          where: { userId: insight.userId, isActive: true },
+          orderBy: { longestStreak: "desc" },
+          select: { longestStreak: true },
+        }),
+        prefetchImage(insight.user.image),
+      ]);
+    const possible = dailyRoutineCount * 7;
+    const completionRate =
+      possible > 0 ? Math.min(100, Math.round((logCount / possible) * 100)) : 0;
+    const longestStreak = longestStreakRoutine?.longestStreak ?? 0;
 
-  const tDb = performance.now();
+    const tDb = performance.now();
 
-  // ── En vurucu cümle ──
-  const sentences = insight.summary
-    .split(/[.!?]\s+/)
-    .filter((s) => s.trim().length > 20);
-  const quote =
-    sentences.length > 0
-      ? sentences[0].length > 140
-        ? sentences[0].slice(0, 137) + "…"
-        : sentences[0] + "."
-      : insight.summary.slice(0, 140);
+    // ── En vurucu cümle ──
+    const sentences = insight.summary
+      .split(/[.!?]\s+/)
+      .filter((s) => s.trim().length > 20);
+    const quote =
+      sentences.length > 0
+        ? sentences[0].length > 140
+          ? sentences[0].slice(0, 137) + "…"
+          : sentences[0] + "."
+        : insight.summary.slice(0, 140);
 
-  // ── Lokalize metinler ──
-  const disciplineText = isTr
-    ? `Bu hafta %${completionRate} disiplin sağlandı`
-    : `Achieved ${completionRate}% discipline this week`;
-  const streakText = isTr
-    ? `${longestStreak} Günlük Seri`
-    : `${longestStreak} Day Streak`;
-  const weekLabel = insight.weekKey.replace("-W", " · W");
-  const brandName = "Gönen Tracking App";
+    // ── Lokalize metinler ──
+    const disciplineText = isTr
+      ? `Bu hafta %${completionRate} disiplin sağlandı`
+      : `Achieved ${completionRate}% discipline this week`;
+    const streakText = isTr
+      ? `${longestStreak} Günlük Seri`
+      : `${longestStreak} Day Streak`;
+    const highlightLabel = isTr ? "Haftanın Başarısı" : "Achievement of the Week";
+    const successHighlight = insight.successHighlight ?? null;
+    const weekLabel = insight.weekKey.replace("-W", " · W");
+    const brandName = "Gönen Tracking App";
 
-  // ── Image Response (checkpoint: imgRender) ──
-  const imgResponse = new ImageResponse(
+    // ── Image Response ──
+    const imgResponse = new ImageResponse(
     (
       <div
         style={{
@@ -210,72 +220,17 @@ export async function GET(
           justifyContent: "space-between",
           padding: "48px 56px",
           background:
-            "linear-gradient(145deg, #0f0a2e 0%, #1e1565 35%, #312e81 65%, #1e1b4b 100%)",
+            "radial-gradient(ellipse at 30% 20%, #1e1565 0%, #0f0a2e 70%)",
           fontFamily: "Inter, sans-serif",
           color: "white",
-          position: "relative",
-          overflow: "hidden",
         }}
       >
-        {/* ── Glow efektleri ── */}
-        <div
-          style={{
-            position: "absolute",
-            top: "-80px",
-            right: "-60px",
-            width: "400px",
-            height: "400px",
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-100px",
-            left: "-80px",
-            width: "350px",
-            height: "350px",
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "600px",
-            height: "300px",
-            borderRadius: "50%",
-            background:
-              "radial-gradient(ellipse, rgba(139,92,246,0.08) 0%, transparent 70%)",
-          }}
-        />
-        {/* Amber glow — sağ alt streak bölgesi */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-40px",
-            right: "20px",
-            width: "300px",
-            height: "250px",
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%)",
-          }}
-        />
-
         {/* ── Header ── */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            position: "relative",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
@@ -284,7 +239,7 @@ export async function GET(
                 width: "44px",
                 height: "44px",
                 borderRadius: "12px",
-                background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+                background: "#7c3aed",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -305,18 +260,33 @@ export async function GET(
             </div>
           </div>
 
-          {/* Rank badge */}
+          {/* Rank badge + Avatar */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-              padding: "8px 16px",
-              borderRadius: "9999px",
-              background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.12)",
+              gap: "10px",
             }}
           >
+            {avatarSrc && (
+              <img
+                src={avatarSrc}
+                width={36}
+                height={36}
+                style={{ borderRadius: "50%", border: "2px solid rgba(255,255,255,0.15)" }}
+              />
+            )}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 16px",
+                borderRadius: "9999px",
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.12)",
+              }}
+            >
             <span style={{ fontSize: 20 }}>{rankEmoji}</span>
             <span
               style={{
@@ -330,6 +300,7 @@ export async function GET(
             <span style={{ fontSize: 13, color: "#a5b4fc" }}>
               Lv.{levelInfo.level}
             </span>
+            </div>
           </div>
         </div>
 
@@ -342,19 +313,8 @@ export async function GET(
             justifyContent: "center",
             flex: 1,
             padding: "20px 0",
-            position: "relative",
           }}
         >
-          <span
-            style={{
-              fontSize: 64,
-              color: "rgba(139,92,246,0.3)",
-              lineHeight: 1,
-              marginBottom: "-8px",
-            }}
-          >
-            &ldquo;
-          </span>
           <p
             style={{
               fontSize: 28,
@@ -366,7 +326,7 @@ export async function GET(
               margin: 0,
             }}
           >
-            {quote}
+            &ldquo;{quote}&rdquo;
           </p>
           <span
             style={{
@@ -379,13 +339,43 @@ export async function GET(
           </span>
         </div>
 
+        {/* ── Success Highlight Badge ── */}
+        {successHighlight && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "0 0 8px 0",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 20px",
+                borderRadius: "9999px",
+                background: "rgba(16,185,129,0.12)",
+                border: "1px solid rgba(16,185,129,0.3)",
+              }}
+            >
+              <span style={{ fontSize: 18 }}>🏆</span>
+              <span style={{ fontSize: 13, color: "#34d399", fontWeight: 700 }}>
+                {highlightLabel}:
+              </span>
+              <span style={{ fontSize: 14, color: "#6ee7b7", fontWeight: 700 }}>
+                {successHighlight}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* ── Alt kısım: İki sütunlu istatistikler ── */}
         <div
           style={{
             display: "flex",
             gap: "32px",
             alignItems: "flex-end",
-            position: "relative",
           }}
         >
           {/* Sol: Progress Bar */}
@@ -434,8 +424,7 @@ export async function GET(
                   width: `${completionRate}%`,
                   height: "100%",
                   borderRadius: "6px",
-                  background:
-                    "linear-gradient(90deg, #8b5cf6, #6366f1, #818cf8)",
+                  background: "#7c3aed",
                 }}
               />
             </div>
@@ -450,29 +439,16 @@ export async function GET(
               justifyContent: "center",
               padding: "14px 28px",
               borderRadius: "16px",
-              background:
-                "linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(251,191,36,0.06) 100%)",
+              background: "rgba(245,158,11,0.1)",
               border: "1px solid rgba(245,158,11,0.25)",
-              position: "relative",
               minWidth: "200px",
             }}
           >
-            {/* Amber glow */}
-            <div
-              style={{
-                position: "absolute",
-                inset: "-12px",
-                borderRadius: "28px",
-                background:
-                  "radial-gradient(ellipse, rgba(245,158,11,0.15) 0%, transparent 70%)",
-              }}
-            />
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                position: "relative",
               }}
             >
               <span style={{ fontSize: 32 }}>🔥</span>
@@ -492,7 +468,6 @@ export async function GET(
                 fontSize: 13,
                 color: "#fcd34d",
                 marginTop: "4px",
-                position: "relative",
               }}
             >
               {streakText}
@@ -506,12 +481,9 @@ export async function GET(
             display: "flex",
             justifyContent: "center",
             marginTop: "8px",
-            position: "relative",
           }}
         >
-          <span
-            style={{ fontSize: 12, color: "rgba(165,180,252,0.5)" }}
-          >
+          <span style={{ fontSize: 12, color: "rgba(165,180,252,0.4)" }}>
             furkancelik.online
           </span>
         </div>
@@ -531,39 +503,51 @@ export async function GET(
     }
   );
 
-  const tImg = performance.now();
+    const tImg = performance.now();
 
-  // ── Performance Metrics ──
-  const timings = {
-    "font (ms)": +(tFont - t0).toFixed(1),
-    "dbFetch (ms)": +(tDb - tFont).toFixed(1),
-    "imgRender (ms)": +(tImg - tDb).toFixed(1),
-    "total (ms)": +(tImg - t0).toFixed(1),
-  };
+    // ── Server-Timing (tarayıcı DevTools → Network → Timing) ──
+    const serverTiming = [
+      `font_load;desc="Font Load";dur=${(tFont - t0).toFixed(1)}`,
+      `db_fetch;desc="DB Fetch";dur=${(tDb - tFont).toFixed(1)}`,
+      `image_render;desc="Image Render";dur=${(tImg - tDb).toFixed(1)}`,
+      `total;desc="Total";dur=${(tImg - t0).toFixed(1)}`,
+    ].join(", ");
 
-  // Dev + prod: terminale yazdır
-  console.table(timings);
+    console.table({
+      "font_load (ms)": +(tFont - t0).toFixed(1),
+      "db_fetch (ms)": +(tDb - tFont).toFixed(1),
+      "image_render (ms)": +(tImg - tDb).toFixed(1),
+      "total (ms)": +(tImg - t0).toFixed(1),
+    });
 
-  // ── Server-Timing header ──
-  const serverTiming = [
-    `font;desc="Font Load";dur=${(tFont - t0).toFixed(1)}`,
-    `db;desc="DB Fetch";dur=${(tDb - tFont).toFixed(1)}`,
-    `img;desc="Image Render";dur=${(tImg - tDb).toFixed(1)}`,
-    `total;desc="Total";dur=${(tImg - t0).toFixed(1)}`,
-  ].join(", ");
+    // ── Response with headers ──
+    const headers = new Headers(imgResponse.headers);
+    headers.set("Server-Timing", serverTiming);
 
-  // ── Response with headers ──
-  const headers = new Headers(imgResponse.headers);
-  headers.set("Server-Timing", serverTiming);
+    if (isTest) {
+      headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    } else {
+      headers.set(
+        "Cache-Control",
+        "public, max-age=604800, s-maxage=604800, immutable"
+      );
+    }
 
-  if (isTest) {
-    headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
-  } else {
-    headers.set("Cache-Control", "public, max-age=604800, s-maxage=604800, immutable");
+    return new Response(imgResponse.body, { status: 200, headers });
+  } catch (error) {
+    // ── Hata Yönetimi ──
+    console.error("[OG] Image generation failed:", error);
+
+    // 1. Önce dinamik fallback dene (font cache varsa hızlı)
+    try {
+      const fontData = _fontCache ?? (await loadInterFont());
+      return buildFallbackImage(isTr, fontData);
+    } catch {
+      // 2. Hiçbir şey çalışmıyorsa → statik görsele 302 redirect
+      return new Response(null, {
+        status: 302,
+        headers: { Location: "/images/fallback-og.png" },
+      });
+    }
   }
-
-  return new Response(imgResponse.body, {
-    status: 200,
-    headers,
-  });
 }

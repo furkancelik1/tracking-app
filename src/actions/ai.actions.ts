@@ -48,6 +48,7 @@ export type WeeklyInsightPayload = {
   challengeTarget: number;
   challengeProgress: number;
   challengeCompleted: boolean;
+  successHighlight: string | null;
 };
 
 // ─── Hafta anahtarı ──────────────────────────────────────────────────────────
@@ -191,7 +192,7 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
 async function generateInsightWithAI(
   data: WeeklySummaryData,
   locale: string
-): Promise<{ insight: string; challenge: AIChallengeData }> {
+): Promise<{ insight: string; challenge: AIChallengeData; successHighlight: string | null }> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not set");
@@ -244,6 +245,12 @@ USER WEEKLY DATA:
 - Top routine: ${data.topRoutine ? `${data.topRoutine.title} (${data.topRoutine.completions}/7)` : "N/A"}
 - Weakest routine: ${data.weakestRoutine ? `${data.weakestRoutine.title} (${data.weakestRoutine.completions}/7, missed ${data.weakestRoutine.missed} days)` : "N/A"}
 
+RULES FOR SUCCESS HIGHLIGHT:
+- Identify the single most impressive achievement of the week from the data.
+- Examples: "Best: Tuesday 8/8" or "Health %100" or "5 Day Streak" or "Gym 7/7 Perfect".
+- MUST be max 30 characters. This is a short badge text, not a sentence.
+- ${locale === "tr" ? "Write in Turkish." : "Write in English."}
+
 RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 {
   "insight": "Your weekly summary text here...",
@@ -252,7 +259,8 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     "description": "1-2 sentence description of the challenge.",
     "category": "${weakestCategory?.category || "HEALTH"}",
     "target": 5
-  }
+  },
+  "successHighlight": "Short badge text (max 30 chars)"
 }`;
 
   const result = await model.generateContent(prompt);
@@ -270,6 +278,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     if (!parsed.insight || !parsed.challenge) {
       throw new Error("Missing required fields in AI response");
     }
+    const rawHighlight = String(parsed.successHighlight || "").trim();
     return {
       insight: String(parsed.insight).trim(),
       challenge: {
@@ -278,6 +287,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
         category: String(parsed.challenge.category || weakestCategory?.category || "HEALTH").trim(),
         target: Math.min(7, Math.max(1, Number(parsed.challenge.target) || 5)),
       },
+      successHighlight: rawHighlight.length > 30 ? rawHighlight.slice(0, 30) : rawHighlight || null,
     };
   } catch {
     // Fallback: treat entire text as insight, generate default challenge
@@ -291,6 +301,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
         category: weakestCategory?.category || "HEALTH",
         target: 5,
       },
+      successHighlight: null,
     };
   }
 }
@@ -320,6 +331,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
       challengeTarget: cached.challengeTarget,
       challengeProgress: cached.challengeProgress,
       challengeCompleted: cached.challengeCompleted,
+      successHighlight: cached.successHighlight ?? null,
     };
   }
 
@@ -336,13 +348,14 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
       id: null, insight: null, weekKey, generatedAt: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
       challengeTarget: 0, challengeProgress: 0, challengeCompleted: false,
+      successHighlight: null,
     };
   }
 
   // 3) Veri topla + AI'dan insight al
   try {
     const data = await collectWeeklyData(userId);
-    const { insight, challenge } = await generateInsightWithAI(data, locale);
+    const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale);
 
     // 4) Cache'e kaydet (upsert — race condition koruması)
     const saved = await prisma.weeklyInsight.upsert({
@@ -353,6 +366,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
         challengeDescription: challenge.description,
         challengeCategory: challenge.category,
         challengeTarget: challenge.target,
+        successHighlight,
       },
       update: {
         summary: insight, locale,
@@ -360,6 +374,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
         challengeDescription: challenge.description,
         challengeCategory: challenge.category,
         challengeTarget: challenge.target,
+        successHighlight,
       },
     });
 
@@ -374,6 +389,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
       challengeTarget: challenge.target,
       challengeProgress: 0,
       challengeCompleted: false,
+      successHighlight,
     };
   } catch (error) {
     console.error("[AI Insight] Error generating insight:", error);
@@ -381,6 +397,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
       id: null, insight: null, weekKey, generatedAt: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
       challengeTarget: 0, challengeProgress: 0, challengeCompleted: false,
+      successHighlight: null,
     };
   }
 }
@@ -430,7 +447,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
     try {
       const data = await collectWeeklyData(user.id);
       const locale = user.language === "tr" ? "tr" : "en";
-      const { insight, challenge } = await generateInsightWithAI(data, locale);
+      const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale);
 
       await prisma.weeklyInsight.upsert({
         where: { userId_weekKey: { userId: user.id, weekKey } },
@@ -440,6 +457,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
           challengeDescription: challenge.description,
           challengeCategory: challenge.category,
           challengeTarget: challenge.target,
+          successHighlight,
         },
         update: {
           summary: insight, locale,
@@ -447,6 +465,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
           challengeDescription: challenge.description,
           challengeCategory: challenge.category,
           challengeTarget: challenge.target,
+          successHighlight,
         },
       });
 

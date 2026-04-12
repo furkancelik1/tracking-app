@@ -45,6 +45,12 @@ enum ChallengeStatus {
   EXPIRED
 }
 
+enum ShopItemCategory {
+  THEME
+  FRAME
+  BOOSTER
+}
+
 model User {
   id                    String           @id @default(cuid())
   name                  String?
@@ -70,6 +76,9 @@ model User {
   hasSeenTour             Boolean          @default(false)
   language                String           @default("en")
 
+  equippedTheme           String?          // ShopItem.id referansı
+  equippedFrame           String?          // ShopItem.id referansı
+
   accounts              Account[]
   sessions              Session[]
   routines              Routine[]
@@ -85,6 +94,7 @@ model User {
   receivedChallenges    Challenge[]     @relation("OpponentRelation")
   challengeLogs         ChallengeLog[]
   weeklyInsights        WeeklyInsight[]
+  purchases             Purchase[]
 }
 
 model Account {
@@ -309,10 +319,42 @@ model WeeklyInsight {
   challengeTarget      Int      @default(0)
   challengeProgress    Int      @default(0)
   challengeCompleted   Boolean  @default(false)
+  successHighlight     String?
   createdAt          DateTime @default(now())
 
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, weekKey])
+  @@index([userId])
+}
+
+// ─── Shop & Marketplace ──────────────────────────────────────────────────────
+
+model ShopItem {
+  id          String           @id @default(cuid())
+  name        String
+  description String
+  price       Int
+  category    ShopItemCategory
+  imageUrl    String?
+  metadata    Json?            // örn. { "primary": "#6C63FF", "secondary": "#3B3299" }
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+
+  purchases   Purchase[]
+
+  @@index([category])
+}
+
+model Purchase {
+  id         String   @id @default(cuid())
+  userId     String
+  shopItemId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopItem ShopItem @relation(fields: [shopItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, shopItemId])
   @@index([userId])
 }

@@ -114,3 +114,21 @@ export function fireLevelUpConfetti() {
     });
   }, 200);
 }
+
+// ─── Satın alma kutlaması — altın coin efekti ───────────────────────────────
+
+export function firePurchaseConfetti() {
+  confetti({
+    particleCount: 80,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: GOLD_COLORS,
+    ticks: 150,
+    gravity: 1,
+    scalar: 1,
+    shapes: ["circle"],
+    disableForReducedMotion: true,
+  });
+
+  hapticSuccess();
+}

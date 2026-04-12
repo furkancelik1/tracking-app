@@ -1,4 +1,5 @@
 import { DashboardNav } from "@/components/shared/DashboardNav";
+import { ThemeOverlay } from "@/components/shared/ThemeOverlay";
 
 export default async function DashboardLayout({
   children,
@@ -8,6 +9,7 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen bg-background">
       <DashboardNav />
+      <ThemeOverlay />
       <main className="mx-auto max-w-6xl">{children}</main>
     </div>
   );

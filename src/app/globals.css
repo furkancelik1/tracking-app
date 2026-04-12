@@ -112,3 +112,22 @@
     transform: translateY(-1px);
   }
 }
+
+/* ─── Shop Theme Override ─────────────────────────────────────────────────── */
+/* When a user equips a theme, --shop-primary/secondary/accent are set via JS. */
+
+[data-shop-theme="true"] .border-primary {
+  border-color: var(--shop-primary);
+}
+
+[data-shop-theme="true"] .ring-primary {
+  --tw-ring-color: var(--shop-primary);
+}
+
+[data-shop-theme="true"] .bg-primary {
+  background-color: var(--shop-primary);
+}
+
+[data-shop-theme="true"] .text-primary {
+  color: var(--shop-primary);
+}

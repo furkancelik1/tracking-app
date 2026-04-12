@@ -3,6 +3,7 @@
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import type { ShopItemCategory } from "@prisma/client";
 
 async function requireUser() {
   const session = await getSession();
@@ -112,4 +113,153 @@ export async function useStreakFreeze(userId: string): Promise<boolean> {
   });
 
   return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Marketplace — Themes, Frames & Boosters
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Marketplace ürünlerini getir (kategori bazlı filtreleme + sahiplik durumu) */
+export async function getMarketplaceItems(category?: ShopItemCategory) {
+  const userId = await requireUser();
+
+  const [user, shopItems, purchases] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { coins: true, equippedTheme: true, equippedFrame: true },
+    }),
+    prisma.shopItem.findMany({
+      where: { isActive: true, ...(category ? { category } : {}) },
+      orderBy: { price: "asc" },
+    }),
+    prisma.purchase.findMany({
+      where: { userId },
+      select: { shopItemId: true },
+    }),
+  ]);
+
+  const ownedIds = new Set(purchases.map((p) => p.shopItemId));
+
+  return {
+    coins: user?.coins ?? 0,
+    equippedTheme: user?.equippedTheme ?? null,
+    equippedFrame: user?.equippedFrame ?? null,
+    items: shopItems.map((item) => ({
+      ...item,
+      metadata: item.metadata as Record<string, string> | null,
+      owned: ownedIds.has(item.id),
+      equipped:
+        item.id === user?.equippedTheme || item.id === user?.equippedFrame,
+    })),
+  };
+}
+
+/** Marketplace ürünü satın al */
+export async function buyShopItem(
+  shopItemId: string
+): Promise<{ success: boolean; message: string; coins: number }> {
+  const userId = await requireUser();
+
+  const [user, shopItem, existingPurchase] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { coins: true } }),
+    prisma.shopItem.findUnique({ where: { id: shopItemId } }),
+    prisma.purchase.findUnique({
+      where: { userId_shopItemId: { userId, shopItemId } },
+    }),
+  ]);
+
+  if (!shopItem)
+    return { success: false, message: "ITEM_NOT_FOUND", coins: user?.coins ?? 0 };
+  if (existingPurchase)
+    return { success: false, message: "ALREADY_OWNED", coins: user?.coins ?? 0 };
+  if (!user || user.coins < shopItem.price)
+    return { success: false, message: "NOT_ENOUGH_COINS", coins: user?.coins ?? 0 };
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { coins: { decrement: shopItem.price } },
+    }),
+    prisma.purchase.create({
+      data: { userId, shopItemId },
+    }),
+  ]);
+
+  const updatedUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { coins: true },
+  });
+
+  revalidatePath("/dashboard");
+  return { success: true, message: "PURCHASE_SUCCESS", coins: updatedUser?.coins ?? 0 };
+}
+
+/** Tema veya çerçeve kuşan */
+export async function equipItem(
+  shopItemId: string
+): Promise<{ success: boolean; message: string }> {
+  const userId = await requireUser();
+
+  const purchase = await prisma.purchase.findUnique({
+    where: { userId_shopItemId: { userId, shopItemId } },
+    include: { shopItem: true },
+  });
+
+  if (!purchase)
+    return { success: false, message: "NOT_OWNED" };
+
+  const { category } = purchase.shopItem;
+
+  if (category === "THEME") {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { equippedTheme: shopItemId },
+    });
+  } else if (category === "FRAME") {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { equippedFrame: shopItemId },
+    });
+  } else {
+    return { success: false, message: "NOT_EQUIPPABLE" };
+  }
+
+  revalidatePath("/dashboard");
+  return { success: true, message: "EQUIPPED" };
+}
+
+/** Kuşanılmış temayı veya çerçeveyi çıkar */
+export async function unequipItem(
+  type: "THEME" | "FRAME"
+): Promise<{ success: boolean }> {
+  const userId = await requireUser();
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: type === "THEME" ? { equippedTheme: null } : { equippedFrame: null },
+  });
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+/** Kullanıcının kuşanılmış tema verisini getir (CSS değişkenleri için) */
+export async function getEquippedTheme() {
+  const userId = await requireUser();
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { equippedTheme: true },
+  });
+
+  if (!user?.equippedTheme) return null;
+
+  const item = await prisma.shopItem.findUnique({
+    where: { id: user.equippedTheme },
+    select: { metadata: true, name: true },
+  });
+
+  return item
+    ? { name: item.name, metadata: item.metadata as Record<string, string> }
+    : null;
 }

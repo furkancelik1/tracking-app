@@ -25,6 +25,7 @@
     "social": "Social",
     "settings": "Settings",
     "shop": "Shop",
+    "marketplace": "Marketplace",
     "badges": "Badges",
     "logo": "Routine Tracker",
     "lightMode": "Switch to Light Mode",
@@ -357,6 +358,10 @@
       "reward": "+75 XP & +30 Coins earned!",
       "categoryFocus": "Focus: {category}",
       "noChallenge": "No active challenge this week."
+    },
+    "successHighlight": {
+      "label": "Achievement of the Week",
+      "noHighlight": "No highlight this week."
     }
   },
 
@@ -665,6 +670,34 @@
         "description": "Protects your streak for one missed day. Automatically used when your streak is about to break."
       }
     }
+  },
+
+  "marketplace": {
+    "title": "Marketplace",
+    "subtitle": "Customize your experience with themes, frames & boosters.",
+    "metadata": {
+      "title": "Marketplace",
+      "description": "Spend your coins on themes, frames and boosters."
+    },
+    "tabs": {
+      "all": "All",
+      "themes": "Themes",
+      "frames": "Frames",
+      "boosters": "Boosters"
+    },
+    "equip": "Equip",
+    "equipped": "Equipped",
+    "unequip": "Unequip",
+    "owned": "Owned",
+    "alreadyOwned": "You already own this item.",
+    "equipSuccess": "Item equipped! ✨",
+    "equipFailed": "Could not equip item.",
+    "unequipSuccess": "Item unequipped.",
+    "notEquippable": "This item cannot be equipped.",
+    "notOwned": "You don't own this item.",
+    "empty": "No items in this category yet.",
+    "buyAndEquip": "Buy & Equip",
+    "viewShop": "Browse Marketplace"
   },
 
   "badges": {

@@ -35,7 +35,7 @@ export async function middleware(req: NextRequest) {
       ? "/" + segments.slice(2).join("/")
       : pathname;
 
-  const protectedPaths = ["/dashboard", "/settings", "/admin"];
+  const protectedPaths = ["/dashboard", "/settings", "/admin", "/marketplace", "/social", "/leaderboard", "/stats", "/basket"];
   const isProtected = protectedPaths.some((p) =>
     pathWithoutLocale.startsWith(p)
   );

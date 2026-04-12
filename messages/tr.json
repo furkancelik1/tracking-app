@@ -25,6 +25,7 @@
     "social": "Sosyal",
     "settings": "Ayarlar",
     "shop": "Dükkan",
+    "marketplace": "Pazar Yeri",
     "badges": "Rozetler",
     "logo": "Rutin Takip",
     "lightMode": "Açık Moda Geç",
@@ -357,6 +358,10 @@
       "reward": "+75 XP & +30 Coin kazanıldı!",
       "categoryFocus": "Odak: {category}",
       "noChallenge": "Bu hafta aktif görev yok."
+    },
+    "successHighlight": {
+      "label": "Haftanın Başarısı",
+      "noHighlight": "Bu hafta öne çıkan başarı yok."
     }
   },
 
@@ -665,6 +670,34 @@
         "description": "Kaçırdığın bir gün için serini korur. Serin kırılmak üzereyken otomatik olarak kullanılır."
       }
     }
+  },
+
+  "marketplace": {
+    "title": "Pazar Yeri",
+    "subtitle": "Temalar, çerçeveler ve güçlendiricilerle deneyimini kişiselleştir.",
+    "metadata": {
+      "title": "Pazar Yeri",
+      "description": "Altınlarını temalar, çerçeveler ve güçlendiricilere harca."
+    },
+    "tabs": {
+      "all": "Tümü",
+      "themes": "Temalar",
+      "frames": "Çerçeveler",
+      "boosters": "Güçlendiriciler"
+    },
+    "equip": "Kuşan",
+    "equipped": "Kuşanıldı",
+    "unequip": "Çıkar",
+    "owned": "Sahip",
+    "alreadyOwned": "Bu eşyaya zaten sahipsin.",
+    "equipSuccess": "Eşya kuşanıldı! ✨",
+    "equipFailed": "Eşya kuşanılamadı.",
+    "unequipSuccess": "Eşya çıkarıldı.",
+    "notEquippable": "Bu eşya kuşanılamaz.",
+    "notOwned": "Bu eşyaya sahip değilsin.",
+    "empty": "Bu kategoride henüz ürün yok.",
+    "buyAndEquip": "Satın Al ve Kuşan",
+    "viewShop": "Pazar Yerine Göz At"
   },
 
   "badges": {

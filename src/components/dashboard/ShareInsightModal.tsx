@@ -12,7 +12,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { WeeklyInsightPayload } from "@/actions/ai.actions";
 
 // ─── Social Icons (inline SVG) ──────────────────────────────────────────────
@@ -57,14 +57,13 @@ export function ShareInsightModal({
   data,
 }: ShareInsightModalProps) {
   const t = useTranslations("aiInsight");
-  const locale = useLocale();
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
   const [ogLoaded, setOgLoaded] = useState(false);
 
   const ogImageUrl =
     typeof window !== "undefined" && data.id
-      ? `${window.location.origin}/api/${locale}/og/weekly-insight?id=${data.id}`
+      ? `${window.location.origin}/api/og/weekly-insight?id=${data.id}`
       : "";
 
   const shareUrl =

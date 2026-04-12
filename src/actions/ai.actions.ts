@@ -579,7 +579,7 @@ export async function getWeeklyInsightAction(
     console.error("[AI Insight] Error name:", error?.name);
     console.error("[AI Insight] Error message:", error?.message);
     console.error("[AI Insight] Error stack:", error?.stack?.slice(0, 500));
-    if (error?.status) console.error("[AI Insight] HTTP status:", error.status);
+    if (error?.status) console.error(`[AI Insight] HTTP status: ${error.status} — requested URL: ${error?.url ?? error?.requestUrl ?? "unknown"}`);
     if (error?.errorDetails) console.error("[AI Insight] Error details:", JSON.stringify(error.errorDetails));
 
     // Dummy data fallback — kullanıcıya statik mesaj dön

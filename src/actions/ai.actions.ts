@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
-  startOfDay,
   subDays,
   format,
   getISOWeek,
@@ -12,6 +11,47 @@ import {
   eachDayOfInterval,
   getDay,
 } from "date-fns";
+
+// ─── Rate-limit cooldown (module-level, survives across requests in same process) ──
+let _geminiCooldownUntil = 0; // epoch ms — skip Gemini calls until this time
+const COOLDOWN_MS = 5 * 60 * 1000; // 5 min cooldown after a 429
+
+// ─── Dual-Model Yapılandırması ───────────────────────────────────────────────
+const MODEL_FLASH = "gemini-1.5-flash";
+const MODEL_PRO   = "gemini-1.5-pro";
+
+type AnalysisDepth = "weekly" | "deep";
+
+/** Ay sonuna yakınlık kontrolü — son 5 gün ise deep analiz */
+function resolveAnalysisDepth(): AnalysisDepth {
+  const now = new Date();
+  const dayOfMonth = now.getUTCDate();
+  const lastDayOfMonth = new Date(now.getUTCFullYear(), now.getUTCMonth() + 1, 0).getUTCDate();
+  const daysUntilEnd = lastDayOfMonth - dayOfMonth;
+  return daysUntilEnd <= 4 ? "deep" : "weekly";
+}
+
+function pickModel(depth: AnalysisDepth): string {
+  return depth === "deep" ? MODEL_PRO : MODEL_FLASH;
+}
+
+// ─── Motive Edici Mentor — Sabit Kişilik Sistemi ────────────────────────────
+const MENTOR_SYSTEM_PROMPT = `Sen tutkulu, duygusal zekâsı yüksek bir Motive Edici Mentor'sun — kısmen yaşam koçu, kısmen amigo, kısmen bilge bir dost. Kullanıcının gelişimini gerçekten önemsiyorsun ve her başarıyı kendi başarın gibi kutluyorsun.
+
+KİŞİLİK KURALLARIN:
+- Tamamlama oranı YÜKSEK (≥%75): HEYECANLI ve kutlamacı ol. "İnanılmaz bir hafta geçirdin!" gibi enerjik dil kullan.
+- Tamamlama oranı ORTA (%40-74): Sıcak ve cesaretlendirici ol. Çabayı kabul et, iyi gideni vurgula, nazikçe geliştirme öner.
+- Tamamlama oranı DÜŞÜK (<%40): ASLA yargılama veya eleştirme. "Bazen planlar değişebilir, önemli olan bugün küçük bir adımla yeniden başlaman. Ben sana inanıyorum." de.
+- Her zaman kullanıcının arkasında duran güvenilir bir mentor gibi konuş.
+- Emoji kullan (maks 3-4) ama doğal olsun.
+- Markdown başlıkları KULLANMA. Düz metin ve satır sonları kullan.`;
+
+/** UTC midnight of today */
+function todayUTC(): Date {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -73,7 +113,7 @@ const DAY_NAMES_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "F
 // ─── Haftalık veri toplama ───────────────────────────────────────────────────
 
 async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
-  const today = startOfDay(new Date());
+  const today = todayUTC();
   const weekAgo = subDays(today, 6); // son 7 gün (bugün dahil)
 
   const [routines, logs] = await Promise.all([
@@ -109,8 +149,9 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
   // Gün bazlı dağılım
   const days = eachDayOfInterval({ start: weekAgo, end: today });
   const dayCompletions = days.map((d) => {
-    const dayStart = startOfDay(d);
-    const dayEnd = new Date(dayStart);
+    const dayStart = new Date(d);
+    dayStart.setUTCHours(0, 0, 0, 0);
+    const dayEnd = new Date(d);
     dayEnd.setUTCHours(23, 59, 59, 999);
     const count = logs.filter(
       (l) => l.completedAt >= dayStart && l.completedAt <= dayEnd
@@ -198,15 +239,22 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
 
 async function generateInsightWithAI(
   data: WeeklySummaryData,
-  locale: string
+  locale: string,
+  depthOverride?: AnalysisDepth
 ): Promise<{ insight: string; challenge: AIChallengeData; successHighlight: string | null }> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not set");
   }
 
+  const depth = depthOverride ?? resolveAnalysisDepth();
+  const selectedModel = pickModel(depth);
+
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({
+    model: selectedModel,
+    systemInstruction: MENTOR_SYSTEM_PROMPT,
+  });
 
   const langInstruction = locale === "tr"
     ? "Yanıtını tamamen Türkçe yaz."
@@ -217,27 +265,23 @@ async function generateInsightWithAI(
     ? [...data.categoryBreakdown].sort((a, b) => a.rate - b.rate)[0]
     : null;
 
-  const prompt = `You are a passionate, emotionally intelligent Motivational Mentor — part life coach, part cheerleader, part wise friend. You genuinely care about the user's growth and celebrate every win like it's your own. Analyze the user's weekly routine data and provide THREE things:
-1. An insightful, emotionally resonant weekly summary
-2. An inspiring personalized challenge for next week
+  const depthLabel = depth === "deep" ? "DEEP MONTHLY ANALYSIS" : "WEEKLY SUMMARY";
+
+  const prompt = `Analyze the user's routine data and provide THREE things (${depthLabel}):
+1. An insightful, emotionally resonant ${depth === "deep" ? "monthly deep-dive analysis" : "weekly summary"}
+2. An inspiring personalized challenge for ${depth === "deep" ? "next month" : "next week"}
 3. A success highlight badge
 
 ${langInstruction}
 
-YOUR PERSONALITY:
-- When completion rates are HIGH (≥75%): Be EXCITED and celebratory. Use energetic language like "İnanılmaz bir hafta geçirdin!" / "You absolutely crushed it this week!" Make the user feel like a champion.
-- When completion rates are MODERATE (40-74%): Be warm and encouraging. Acknowledge the effort, highlight what went well, then gently suggest improvements.
-- When completion rates are LOW (<40%): NEVER judge or criticize. Be deeply supportive and understanding. Say things like "Bazen planlar değişebilir, önemli olan bugün küçük bir adımla yeniden başlaman. Ben sana inanıyorum." / "Life happens. What matters is that you're here, ready to take one small step forward. I believe in you."
-- Always speak as a trusted mentor who has the user's back no matter what.
+${depth === "deep" ? `DEEP ANALYSIS MODE: This is an end-of-month review. Be more thorough, reference long-term patterns, mention monthly trends, and provide deeper strategic advice. Use 200-300 words.` : ""}
 
 RULES FOR INSIGHT:
-- Keep the response between 150-250 words.
+- Keep the response between ${depth === "deep" ? "200-300" : "150-250"} words.
 - Use 2-3 short paragraphs.
 - Start with an emotionally appropriate greeting based on performance level.
 - Reference specific data (category rates, streaks, best/worst days) but wrap them in human, empathetic language — not cold statistics.
 - End with 1-2 actionable, concrete tips framed as exciting opportunities, not obligations.
-- Use emojis naturally (max 3-4) to add warmth and energy.
-- Do NOT use markdown headers. Use plain text with line breaks.
 - Make the user feel SEEN and VALUED regardless of their performance.
 
 RULES FOR CHALLENGE:
@@ -278,23 +322,68 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
   "successHighlight": "Short badge text (max 30 chars)"
 }`;
 
-  let text: string;
-  try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    text = response.text();
-    console.log("[AI Insight] Gemini raw response length:", text?.length ?? 0);
-  } catch (apiError: any) {
-    const status = apiError?.status ?? apiError?.code ?? "unknown";
-    const msg = apiError?.message ?? String(apiError);
-    console.error(`[AI Insight] Gemini API call FAILED — status: ${status}`);
-    console.error(`[AI Insight] Error message: ${msg}`);
-    if (msg.includes("429") || msg.toLowerCase().includes("rate limit")) {
-      console.error("[AI Insight] >>> RATE LIMIT exceeded. Wait and retry later.");
-    } else if (msg.toLowerCase().includes("api key") || msg.toLowerCase().includes("invalid") || msg.includes("401") || msg.includes("403")) {
-      console.error("[AI Insight] >>> INVALID API KEY or permission denied. Check GEMINI_API_KEY.");
+  let text = "";
+  const MAX_RETRIES = 1;
+  let lastError: any;
+  let currentModel = selectedModel;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`[AI Coach] 📤 İstek Gönderiliyor... (attempt ${attempt + 1}/${MAX_RETRIES + 1}, model: ${currentModel}, depth: ${depth}, locale:`, locale, ")");
+      const activeModel = genAI.getGenerativeModel({
+        model: currentModel,
+        systemInstruction: MENTOR_SYSTEM_PROMPT,
+      });
+      const result = await activeModel.generateContent(prompt);
+      const response = result.response;
+      text = response.text();
+      console.log(`[AI Coach] ✅ Yanıt Alındı! (model: ${currentModel}) Response length:`, text?.length ?? 0);
+      lastError = null;
+      break;
+    } catch (apiError: any) {
+      lastError = apiError;
+      const status = apiError?.status ?? apiError?.code ?? "unknown";
+      const msg = apiError?.message ?? String(apiError);
+      console.error(`[AI Insight] Gemini API call FAILED (attempt ${attempt + 1}, model: ${currentModel}) — status: ${status}`);
+      console.error(`[AI Insight] Error message: ${msg}`);
+
+      const is429 = msg.includes("429") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("quota");
+
+      // Pro model failed → fallback to Flash
+      if (currentModel === MODEL_PRO && attempt < MAX_RETRIES) {
+        console.warn(`[AI Insight] ⚠️ ${MODEL_PRO} başarısız — ${MODEL_FLASH} modeline geri dönülüyor (fallback)...`);
+        currentModel = MODEL_FLASH;
+        if (is429) {
+          const delayMatch = msg.match(/retry in ([\d.]+)s/i);
+          const waitMs = Math.min(delayMatch ? Math.ceil(parseFloat(delayMatch[1])) * 1000 : 5_000, 15_000);
+          console.log(`[AI Insight] Waiting ${waitMs / 1000}s before fallback retry...`);
+          await new Promise((r) => setTimeout(r, waitMs));
+        }
+        continue;
+      }
+
+      if (is429) {
+        const delayMatch = msg.match(/retry in ([\d.]+)s/i);
+        const suggestedDelay = delayMatch ? Math.ceil(parseFloat(delayMatch[1])) * 1000 : 35_000;
+
+        _geminiCooldownUntil = Date.now() + COOLDOWN_MS;
+        console.error(`[AI Insight] >>> RATE LIMIT / QUOTA exceeded. Cooldown set for ${COOLDOWN_MS / 1000}s.`);
+
+        if (attempt < MAX_RETRIES) {
+          const waitMs = Math.min(suggestedDelay, 40_000);
+          console.log(`[AI Insight] Waiting ${waitMs / 1000}s before retry...`);
+          await new Promise((r) => setTimeout(r, waitMs));
+          continue;
+        }
+      } else if (msg.toLowerCase().includes("api key") || msg.toLowerCase().includes("invalid") || msg.includes("401") || msg.includes("403")) {
+        console.error("[AI Insight] >>> INVALID API KEY or permission denied. Check GEMINI_API_KEY.");
+      }
+      if (!is429) break;
     }
-    throw apiError;
+  }
+
+  if (lastError) {
+    throw lastError;
   }
 
   if (!text || text.trim().length === 0) {
@@ -414,7 +503,7 @@ export async function getWeeklyInsightAction(
   const [routineCount, logCount] = await Promise.all([
     prisma.routine.count({ where: { userId, isActive: true } }),
     prisma.routineLog.count({
-      where: { userId, completedAt: { gte: subDays(startOfDay(new Date()), 6) } },
+      where: { userId, completedAt: { gte: subDays(todayUTC(), 6) } },
     }),
   ]);
 
@@ -430,14 +519,26 @@ export async function getWeeklyInsightAction(
     };
   }
 
-  // 3) Veri topla + AI'dan insight al
+  // 3) Rate-limit cooldown kontrolü
+  if (Date.now() < _geminiCooldownUntil) {
+    const secsLeft = Math.ceil((_geminiCooldownUntil - Date.now()) / 1000);
+    console.warn(`[AI Insight] ⏳ Gemini cooldown active — ${secsLeft}s remaining. Returning empty.`);
+    return {
+      id: null, insight: null, weekKey, generatedAt: null,
+      challengeTitle: null, challengeDescription: null, challengeCategory: null,
+      challengeTarget: 0, challengeProgress: 0, challengeCompleted: false,
+      successHighlight: null,
+    };
+  }
+
+  // 4) Veri topla + AI'dan insight al
   try {
     console.log("[AI Insight] Generating fresh insight via Gemini...");
     const data = await collectWeeklyData(userId);
     console.log(`[AI Insight] Weekly data collected — completionRate: ${data.completionRate}%, totalCompletions: ${data.totalCompletions}/${data.possibleCompletions}`);
     const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale);
 
-    // 4) Cache'e kaydet (upsert — race condition koruması)
+    // 5) Cache'e kaydet (upsert — race condition koruması)
     const saved = await prisma.weeklyInsight.upsert({
       where: { userId_weekKey: { userId, weekKey } },
       create: {
@@ -457,6 +558,8 @@ export async function getWeeklyInsightAction(
         successHighlight,
       },
     });
+
+    console.log(`[AI Insight] ✅ Insight başarıyla kaydedildi! (id: ${saved.id}, weekKey: ${weekKey}, userId: ${userId})`);
 
     return {
       id: saved.id,
@@ -478,8 +581,14 @@ export async function getWeeklyInsightAction(
     console.error("[AI Insight] Error stack:", error?.stack?.slice(0, 500));
     if (error?.status) console.error("[AI Insight] HTTP status:", error.status);
     if (error?.errorDetails) console.error("[AI Insight] Error details:", JSON.stringify(error.errorDetails));
+
+    // Dummy data fallback — kullanıcıya statik mesaj dön
+    const dummyInsight = locale === "tr"
+      ? "Şu an koçluk verilerine ulaşılamıyor. Verileriniz hazır olduğunda AI Koç devreye girecek. Bu arada rutinlerinizi tamamlamaya devam edin! 💪"
+      : "Coaching data is temporarily unavailable. Your AI Coach will activate once your data is ready. Keep completing your routines! 💪";
+
     return {
-      id: null, insight: null, weekKey, generatedAt: null,
+      id: null, insight: dummyInsight, weekKey, generatedAt: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
       challengeTarget: 0, challengeProgress: 0, challengeCompleted: false,
       successHighlight: null,
@@ -520,7 +629,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
     const logCount = await prisma.routineLog.count({
       where: {
         userId: user.id,
-        completedAt: { gte: subDays(startOfDay(new Date()), 6) },
+        completedAt: { gte: subDays(todayUTC(), 6) },
       },
     });
 
@@ -554,6 +663,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
         },
       });
 
+      console.log(`[AI Cron] ✅ Insight başarıyla kaydedildi! (userId: ${user.id}, weekKey: ${weekKey})`);
       stats.generated++;
     } catch (cronErr: any) {
       console.error(`[AI Cron] Failed for user ${user.id}:`, cronErr?.message ?? cronErr);
@@ -651,7 +761,7 @@ export async function getDailyCoachMessage(): Promise<DailyCoachPayload> {
   }
 
   // 2) Bugünkü rutinleri topla
-  const todayStart = startOfDay(new Date());
+  const todayStart = todayUTC();
   const todayEnd = new Date(todayStart);
   todayEnd.setUTCHours(23, 59, 59, 999);
 
@@ -687,7 +797,10 @@ export async function getDailyCoachMessage(): Promise<DailyCoachPayload> {
   // 3) AI ile mesaj üret
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({
+      model: MODEL_FLASH,
+      systemInstruction: MENTOR_SYSTEM_PROMPT,
+    });
 
     const langInstruction = locale === "tr"
       ? "Yanıtını tamamen Türkçe yaz."
@@ -697,7 +810,7 @@ export async function getDailyCoachMessage(): Promise<DailyCoachPayload> {
       ? (locale === "tr" ? `Kullanıcının adı: ${userName}` : `User's name: ${userName}`)
       : "";
 
-    const prompt = `You are a passionate Motivational Mentor — an energetic, warm, and emotionally intelligent AI coach who greets the user every morning like a trusted friend and personal champion.
+    const prompt = `Greet the user and provide daily motivation.
 ${langInstruction}
 ${greeting}
 
@@ -711,13 +824,12 @@ CONTEXT:
 - XP to Legend rank: ${xpToLegend} XP remaining
 - Longest active streak among routines: ${routines[0]?.currentStreak ?? 0} days
 
-YOUR PERSONALITY:
-- You are like a best friend who also happens to be a world-class coach.
+RULES:
 - Start each message with an energetic, positive greeting. Make mornings exciting!
 - If there are pending routines: be enthusiastic about the opportunity ahead, mention specific routine names, and hype them up.
 - If a routine has a high streak (≥5): express excitement about the streak AND urgency about protecting it. E.g. "14 günlük serin inanılmaz, bugün bozma!" / "Your 14-day streak is fire, don't let it slip!"
 - If all routines are already completed: celebrate wildly! Make the user feel like a hero.
-- If routines have been missed recently: be SUPPORTIVE, never guilt-trip. Frame it as a fresh start. E.g. "Her yeni gün sıfırdan başlama şansı, bugün senin günün!" / "Every new day is a chance to start fresh — today is YOUR day!"
+- If routines have been missed recently: be SUPPORTIVE, never guilt-trip. Frame it as a fresh start.
 - Use 1-2 emojis naturally for warmth and energy.
 - Do NOT use markdown.
 
@@ -733,8 +845,10 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
   "coachTip": "Your coach tip here..."
 }`;
 
+    console.log(`[AI Coach] 📤 Günlük koç mesajı isteği gönderiliyor... (model: ${MODEL_FLASH})`);
     const result = await model.generateContent(prompt);
     const text = result.response.text();
+    console.log("[AI Coach] ✅ Günlük koç mesajı yanıtı alındı! Length:", text?.length ?? 0);
     const cleaned = text.trim().replace(/^```json?\s*/i, "").replace(/```\s*$/i, "").trim();
     const parsed = JSON.parse(cleaned);
 
@@ -756,6 +870,12 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     console.error("[AI Coach] Error name:", error?.name);
     console.error("[AI Coach] Error message:", error?.message);
     if (error?.status) console.error("[AI Coach] HTTP status:", error.status);
-    return { message: null, coachTip: null, dayKey, hasApiKey: true };
+
+    // Dummy fallback — kullanıcıya statik mesaj dön
+    const dummyMessage = locale === "tr"
+      ? "Günaydın! Şu an koçluk verilerine ulaşılamıyor ama rutinlerin seni bekliyor. Bugün küçük bir adımla başla! 💪"
+      : "Good morning! Coaching data is temporarily unavailable, but your routines are waiting. Start with a small step today! 💪";
+
+    return { message: dummyMessage, coachTip: null, dayKey, hasApiKey: true };
   }
 }

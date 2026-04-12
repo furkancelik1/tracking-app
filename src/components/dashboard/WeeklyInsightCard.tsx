@@ -1,16 +1,66 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
+import { useState, useTransition, useEffect, useRef, Component, type ReactNode, type ErrorInfo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain, Sparkles, RefreshCw, Lock, Target, CheckCircle2, Share2, Trophy, Zap } from "lucide-react";
+import { Brain, Sparkles, RefreshCw, Lock, Target, CheckCircle2, Share2, Trophy, Zap, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { getWeeklyInsightAction, type WeeklyInsightPayload } from "@/actions/ai.actions";
 import { fireAllDoneConfetti } from "@/lib/celebrations";
 import { ShareInsightModal } from "@/components/dashboard/ShareInsightModal";
+
+// ─── Error Boundary ──────────────────────────────────────────────────────────
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class WeeklyInsightErrorBoundary extends Component<
+  { children: ReactNode; fallback?: ReactNode },
+  ErrorBoundaryState
+> {
+  constructor(props: { children: ReactNode; fallback?: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("[WeeklyInsightCard] Render error caught by ErrorBoundary:", error.message);
+    console.error("[WeeklyInsightCard] Component stack:", errorInfo.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      if (this.props.fallback) return this.props.fallback;
+      return (
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+            <AlertTriangle className="h-8 w-8 text-destructive/60" />
+            <p className="text-sm text-muted-foreground max-w-xs">
+              AI Koç bileşeni yüklenemedi. Dashboard çalışmaya devam ediyor.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => this.setState({ hasError: false, error: null })}
+            >
+              Tekrar Dene
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ─── Analiz Animasyonu ───────────────────────────────────────────────────────
 
@@ -66,6 +116,14 @@ interface WeeklyInsightCardProps {
 }
 
 export function WeeklyInsightCard({ initialData, isPro }: WeeklyInsightCardProps) {
+  return (
+    <WeeklyInsightErrorBoundary>
+      <WeeklyInsightCardInner initialData={initialData} isPro={isPro} />
+    </WeeklyInsightErrorBoundary>
+  );
+}
+
+function WeeklyInsightCardInner({ initialData, isPro }: WeeklyInsightCardProps) {
   const t = useTranslations("aiInsight");
   const [data, setData] = useState<WeeklyInsightPayload | null>(initialData);
   const [isPending, startTransition] = useTransition();

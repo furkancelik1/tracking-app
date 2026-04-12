@@ -246,10 +246,73 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
 
 // ─── LLM Insight Oluşturma ──────────────────────────────────────────────────
 
+type TrendContext = {
+  dailyScores: { day: string; score: number }[];
+  avgScore: number;
+  trend: "up" | "down" | "stable";
+  streakDays: number;
+  biggestDrop: { from: string; to: string; delta: number } | null;
+  biggestSurge: { from: string; to: string; delta: number } | null;
+};
+
+/** Inline trend context hesapla (stats.actions bağımlılığı olmadan) */
+async function buildTrendContext(userId: string, locale: string): Promise<TrendContext> {
+  const SHORT_DAYS_TR = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+  const SHORT_DAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dayNames = locale === "tr" ? SHORT_DAYS_TR : SHORT_DAYS_EN;
+
+  const today = todayUTC();
+  const weekAgo = subDays(today, 6);
+
+  const [dailyRoutines, logs] = await Promise.all([
+    prisma.routine.count({ where: { userId, isActive: true, frequency: "DAILY" } }),
+    prisma.routineLog.findMany({
+      where: { userId, completedAt: { gte: weekAgo } },
+      select: { completedAt: true },
+    }),
+  ]);
+
+  const days = eachDayOfInterval({ start: weekAgo, end: today });
+  const scores = days.map((d) => {
+    const dayStart = new Date(d); dayStart.setUTCHours(0, 0, 0, 0);
+    const dayEnd = new Date(d); dayEnd.setUTCHours(23, 59, 59, 999);
+    const completed = logs.filter((l) => l.completedAt >= dayStart && l.completedAt <= dayEnd).length;
+    const score = dailyRoutines > 0 ? Math.round((completed / dailyRoutines) * 100) : 0;
+    return { day: dayNames[getDay(d)] ?? "", score };
+  });
+
+  const avgScore = scores.length > 0 ? Math.round(scores.reduce((s, p) => s + p.score, 0) / scores.length) : 0;
+
+  const mid = Math.floor(scores.length / 2);
+  const avgFirst = scores.slice(0, mid).reduce((s, p) => s + p.score, 0) / Math.max(1, mid);
+  const avgSecond = scores.slice(mid).reduce((s, p) => s + p.score, 0) / Math.max(1, scores.length - mid);
+  const diff = avgSecond - avgFirst;
+  const trend: TrendContext["trend"] = diff > 10 ? "up" : diff < -10 ? "down" : "stable";
+
+  let streakDays = 0;
+  for (let i = scores.length - 1; i >= 0; i--) {
+    if (scores[i]!.score >= 50) streakDays++;
+    else break;
+  }
+
+  let biggestDrop: TrendContext["biggestDrop"] = null;
+  let biggestSurge: TrendContext["biggestSurge"] = null;
+  for (let i = 1; i < scores.length; i++) {
+    const delta = scores[i]!.score - scores[i - 1]!.score;
+    if (delta < 0 && (!biggestDrop || delta < biggestDrop.delta))
+      biggestDrop = { from: scores[i - 1]!.day, to: scores[i]!.day, delta };
+    if (delta > 0 && (!biggestSurge || delta > biggestSurge.delta))
+      biggestSurge = { from: scores[i - 1]!.day, to: scores[i]!.day, delta };
+  }
+
+  return { dailyScores: scores, avgScore, trend, streakDays, biggestDrop, biggestSurge };
+}
+
 async function generateInsightWithAI(
   data: WeeklySummaryData,
   locale: string,
-  depthOverride?: AnalysisDepth
+  depthOverride?: AnalysisDepth,
+  trendCtx?: TrendContext | null
 ): Promise<{ insight: string; challenge: AIChallengeData; successHighlight: string | null }> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -312,6 +375,16 @@ USER WEEKLY DATA:
 - Categories: ${data.categoryBreakdown.map((c) => `${c.category}: ${c.rate}%`).join(", ") || "N/A"}
 - Top routine: ${data.topRoutine ? `${data.topRoutine.title} (${data.topRoutine.completions}/7)` : "N/A"}
 - Weakest routine: ${data.weakestRoutine ? `${data.weakestRoutine.title} (${data.weakestRoutine.completions}/7, missed ${data.weakestRoutine.missed} days)` : "N/A"}
+
+DAILY DISCIPLINE TREND (chart data):
+${trendCtx ? `- Daily scores: ${trendCtx.dailyScores.map((d) => `${d.day}: ${d.score}%`).join(" → ")}
+- Week average: ${trendCtx.avgScore}%
+- Trend direction: ${trendCtx.trend === "up" ? "📈 IMPROVING" : trendCtx.trend === "down" ? "📉 DECLINING" : "➡️ STABLE"}
+- Consecutive days ≥50%: ${trendCtx.streakDays}
+${trendCtx.biggestDrop ? `- ⚠️ Biggest drop: ${trendCtx.biggestDrop.from} → ${trendCtx.biggestDrop.to} (${trendCtx.biggestDrop.delta}%)` : "- No significant drops"}
+${trendCtx.biggestSurge ? `- 🚀 Biggest surge: ${trendCtx.biggestSurge.from} → ${trendCtx.biggestSurge.to} (+${trendCtx.biggestSurge.delta}%)` : "- No significant surges"}` : "- Trend data not available"}
+
+IMPORTANT: If there is a big drop in the daily scores, acknowledge it empathetically and suggest how to prevent it. If there is a surge, celebrate it enthusiastically!
 
 RULES FOR SUCCESS HIGHLIGHT:
 - Identify the single most impressive achievement of the week from the data.
@@ -556,8 +629,9 @@ export async function getWeeklyInsightAction(
   try {
     console.log("[AI Insight] Generating fresh insight via Gemini...");
     const data = await collectWeeklyData(userId);
-    console.log(`[AI Insight] Weekly data collected — completionRate: ${data.completionRate}%, totalCompletions: ${data.totalCompletions}/${data.possibleCompletions}`);
-    const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale);
+    const trendCtx = await buildTrendContext(userId, locale);
+    console.log(`[AI Insight] Weekly data collected — completionRate: ${data.completionRate}%, totalCompletions: ${data.totalCompletions}/${data.possibleCompletions}, trend: ${trendCtx.trend}`);
+    const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale, undefined, trendCtx);
 
     // 5) Cache'e kaydet (upsert — race condition koruması)
     const saved = await prisma.weeklyInsight.upsert({
@@ -662,7 +736,8 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
     try {
       const data = await collectWeeklyData(user.id);
       const locale = user.language === "tr" ? "tr" : "en";
-      const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale);
+      const trendCtx = await buildTrendContext(user.id, locale);
+      const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale, undefined, trendCtx);
 
       await prisma.weeklyInsight.upsert({
         where: { userId_weekKey: { userId: user.id, weekKey } },

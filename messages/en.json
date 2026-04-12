@@ -367,6 +367,17 @@
     }
   },
 
+  "disciplineTrend": {
+    "title": "Discipline Trend",
+    "subtitle": "Daily completion scores over the last 7 days",
+    "avg": "Avg",
+    "streakDays": "Streak",
+    "score": "Score",
+    "trendUp": "Rising",
+    "trendDown": "Falling",
+    "trendStable": "Stable"
+  },
+
   "leaderboard": {
     "metadata": { "title": "Leaderboard", "description": "See how you rank among other users. Earn XP by completing routines and climb the leaderboard." },
     "title": "Leaderboard",

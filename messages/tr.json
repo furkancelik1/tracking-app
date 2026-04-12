@@ -367,6 +367,17 @@
     }
   },
 
+  "disciplineTrend": {
+    "title": "Disiplin Trendi",
+    "subtitle": "Son 7 günün günlük tamamlanma skorları",
+    "avg": "Ort",
+    "streakDays": "Seri",
+    "score": "Skor",
+    "trendUp": "Yükseliyor",
+    "trendDown": "Düşüş",
+    "trendStable": "Sabit"
+  },
+
   "leaderboard": {
     "metadata": { "title": "Liderlik Tablosu", "description": "Diğer kullanıcılar arasındaki sıralamana bak. Rutinlerini tamamlayarak XP kazan ve zirveye çık." },
     "title": "Liderlik Tablosu",

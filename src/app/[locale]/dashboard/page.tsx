@@ -17,9 +17,11 @@ import { getSubscriptionTier } from "@/lib/stripe";
 import { getDashboardData } from "@/actions/dashboard.actions";
 import { getYearlyActivityData } from "@/actions/dashboard.actions";
 import { getWeeklyInsightAction } from "@/actions/ai.actions";
+import { getDisciplineTrend } from "@/actions/stats.actions";
 import { getChallengeLeaderboard } from "@/actions/challenge.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
+import { DisciplineTrendChart } from "@/components/dashboard/DisciplineTrendChart";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
@@ -145,6 +147,9 @@ export default async function DashboardPage({
       ? await getWeeklyInsightAction().catch(() => null)
       : null;
 
+    // Discipline trend (chart verisi — hata yutulur)
+    const disciplineTrend = await getDisciplineTrend(locale).catch(() => null);
+
     // Challenge Leaderboard (1 saatlik cache — hata yutulur)
     const challengeLeaderboard = await getChallengeLeaderboard().catch(() => ({
       entries: [],
@@ -257,6 +262,11 @@ export default async function DashboardPage({
 
           {/* ── AI Weekly Insight ─────────────────────────────────── */}
           <WeeklyInsightCard initialData={weeklyInsight} isPro={isPro} />
+
+          {/* ── Discipline Trend Chart ────────────────────────────── */}
+          {disciplineTrend && (
+            <DisciplineTrendChart data={disciplineTrend} />
+          )}
 
           <PushNotificationButton />
           <TestEmailButton />

@@ -431,8 +431,8 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
         systemInstruction: MENTOR_SYSTEM_PROMPT,
       });
       const result = await activeModel.generateContent(prompt);
-      const response = result.response;
-      text = response.text();
+      const response = result?.response;
+      text = response?.text() ?? "";
       console.log(`[AI Coach] ✅ Yanıt Alındı! (model: ${currentModel}) Response length:`, text?.length ?? 0);
       lastError = null;
       break;
@@ -503,7 +503,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
   const cleaned = text.trim().replace(/^```json?\s*/i, "").replace(/```\s*$/i, "").trim();
   try {
     const parsed = JSON.parse(cleaned);
-    if (!parsed.insight || !parsed.challenge) {
+    if (!parsed?.insight || !parsed?.challenge) {
       console.error("[AI Insight] Parsed JSON missing required fields. Keys found:", Object.keys(parsed));
       throw new Error("Missing required fields in AI response");
     }
@@ -512,10 +512,10 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     return {
       insight: String(parsed.insight).trim(),
       challenge: {
-        title: String(parsed.challenge.title || "Weekly Challenge").trim(),
-        description: String(parsed.challenge.description || "").trim(),
-        category: String(parsed.challenge.category || weakestCategory?.category || "HEALTH").trim(),
-        target: Math.min(7, Math.max(1, Number(parsed.challenge.target) || 5)),
+        title: String(parsed.challenge?.title || "Weekly Challenge").trim(),
+        description: String(parsed.challenge?.description || "").trim(),
+        category: String(parsed.challenge?.category || weakestCategory?.category || "HEALTH").trim(),
+        target: Math.min(7, Math.max(1, Number(parsed.challenge?.target) || 5)),
       },
       successHighlight: rawHighlight.length > 30 ? rawHighlight.slice(0, 30) : rawHighlight || null,
       chartAnalysis: rawChartAnalysis || null,
@@ -975,13 +975,14 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 
     console.log(`[AI Coach] 📤 Günlük koç mesajı isteği gönderiliyor... (model: ${MODEL_FLASH})`);
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = result?.response?.text() ?? "";
     console.log("[AI Coach] ✅ Günlük koç mesajı yanıtı alındı! Length:", text?.length ?? 0);
     const cleaned = text.trim().replace(/^```json?\s*/i, "").replace(/```\s*$/i, "").trim();
+    if (!cleaned) throw new Error("Empty AI response");
     const parsed = JSON.parse(cleaned);
 
-    const message = String(parsed.message || "").trim();
-    const coachTip = String(parsed.coachTip || "").trim();
+    const message = String(parsed?.message || "").trim();
+    const coachTip = String(parsed?.coachTip || "").trim();
 
     if (!message) throw new Error("Empty message");
 

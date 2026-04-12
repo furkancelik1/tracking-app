@@ -119,7 +119,17 @@ export default async function DashboardPage({
     thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
 
     const [dashboardData, analytics, raw, userXpData, yearlyData] = await Promise.all([
-      getDashboardData(),
+      getDashboardData().catch(() => ({
+        stats: {
+          todayProgress: { completed: 0, total: 0, percentage: 0 },
+          activeStreak: 0,
+          weeklyProductivity: 0,
+          totalCompletions: 0,
+          trends: { todayVsYesterday: 0, thisWeekVsLastWeek: 0, streakChange: 0 },
+        },
+        weeklyChart: [],
+        isEmpty: true,
+      } as import("@/actions/dashboard.actions").DashboardPayload)),
       getUserAnalytics(userId, 30).catch(() => emptyAnalytics()),
       prisma.routine
         .findMany({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,21 +46,34 @@ export function UserSearch() {
   const [isPending, startTransition] = useTransition();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Search ──────────────────────────────────────────────────
-  const handleSearch = (query: string) => {
+  // ── Debounced Search (400ms) ────────────────────────────────
+  const handleInputChange = useCallback((query: string) => {
     setSearchQuery(query);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
     if (query.trim().length < 2) {
       setSearchResults([]);
+      setDebouncedQuery("");
       return;
     }
+
+    debounceRef.current = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 400);
+  }, []);
+
+  useEffect(() => {
+    if (!debouncedQuery || debouncedQuery.trim().length < 2) return;
 
     setIsSearching(true);
     startTransition(async () => {
       try {
-        const results = await searchUsersAction(query);
+        const results = await searchUsersAction(debouncedQuery);
         setSearchResults(results);
       } catch {
         setSearchResults([]);
@@ -68,7 +81,13 @@ export function UserSearch() {
         setIsSearching(false);
       }
     });
-  };
+  }, [debouncedQuery]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   // ── Follow ──────────────────────────────────────────────────
   const handleFollow = (targetId: string) => {
@@ -90,7 +109,7 @@ export function UserSearch() {
           <Input
             placeholder={t("searchPlaceholder")}
             value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => handleInputChange(e.target.value)}
             className="pl-10"
           />
         </div>

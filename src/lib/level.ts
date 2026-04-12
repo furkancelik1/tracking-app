@@ -71,3 +71,60 @@ export function calculateLevel(xp: number): LevelInfo {
 export function didLevelUp(oldXp: number, newXp: number): boolean {
   return calculateLevel(oldXp).level < calculateLevel(newXp).level;
 }
+
+// ─── Avatar Çerçeve Sistemi ──────────────────────────────────────────────────
+
+export type AvatarFrameConfig = {
+  /** Tailwind ring sınıfları */
+  ring: string;
+  /** Glow shadow sınıfları */
+  glow: string;
+  /** Efsane seviyesi animasyon bayrağı */
+  isLegend: boolean;
+};
+
+/**
+ * XP'ye göre avatar çerçeve stillerini döner.
+ *
+ * Çırak (1-5)       → ince gri çerçeve
+ * Disiplinli (6-15)  → cyan çerçeve + hafif glow
+ * Rutin Canavarı (16-30) → mor çerçeve + orta glow
+ * Üstat (31-50)      → altın çerçeve + güçlü glow
+ * Efsane (51+)       → kızıl çerçeve + pulsing glow animasyonu
+ */
+export function getAvatarFrame(xp: number): AvatarFrameConfig {
+  const { rank } = calculateLevel(xp);
+
+  switch (rank) {
+    case "Disiplinli":
+      return {
+        ring: "ring-2 ring-cyan-400/70",
+        glow: "shadow-[0_0_10px_rgba(34,211,238,0.25)]",
+        isLegend: false,
+      };
+    case "Rutin Canavarı":
+      return {
+        ring: "ring-2 ring-purple-500/80",
+        glow: "shadow-[0_0_12px_rgba(168,85,247,0.35)]",
+        isLegend: false,
+      };
+    case "Üstat":
+      return {
+        ring: "ring-[3px] ring-amber-400/90",
+        glow: "shadow-[0_0_16px_rgba(245,158,11,0.4)]",
+        isLegend: false,
+      };
+    case "Efsane":
+      return {
+        ring: "ring-[3px] ring-red-500",
+        glow: "shadow-[0_0_20px_rgba(239,68,68,0.5)]",
+        isLegend: true,
+      };
+    default: // Çırak
+      return {
+        ring: "ring-2 ring-slate-400/40",
+        glow: "",
+        isLegend: false,
+      };
+  }
+}

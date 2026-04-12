@@ -198,7 +198,7 @@ export async function GET(req: NextRequest) {
         batch.flatMap((user) => {
           const pendingCount = user.pending.length;
           const body =
-            pendingCount === 1
+            pendingCount === 1 && user.pending[0]
               ? `"${user.pending[0].title}" rutinini henüz tamamlamadın!`
               : `${pendingCount} tamamlanmamış rutinin var. Serini bozma!`;
 

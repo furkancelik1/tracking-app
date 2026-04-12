@@ -84,6 +84,7 @@ model User {
   sentChallenges        Challenge[]     @relation("ChallengerRelation")
   receivedChallenges    Challenge[]     @relation("OpponentRelation")
   challengeLogs         ChallengeLog[]
+  weeklyInsights        WeeklyInsight[]
 }
 
 model Account {
@@ -258,17 +259,18 @@ model Friendship {
 // ─── Social: Challenge (Düello) ──────────────────────────────────────────────
 
 model Challenge {
-  id            String          @id @default(cuid())
-  challengerId  String
-  opponentId    String
-  routineTitle  String
-  durationDays  Int             @default(7)
-  status        ChallengeStatus @default(PENDING)
-  startDate     DateTime?
-  endDate       DateTime?
-  winnerId      String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id                String          @id @default(cuid())
+  challengerId      String
+  opponentId        String
+  routineTitle      String
+  durationDays      Int             @default(7)
+  status            ChallengeStatus @default(PENDING)
+  startDate         DateTime?
+  endDate           DateTime?
+  winnerId          String?
+  rewardDistributed Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   challenger    User            @relation("ChallengerRelation", fields: [challengerId], references: [id], onDelete: Cascade)
   opponent      User            @relation("OpponentRelation", fields: [opponentId], references: [id], onDelete: Cascade)
@@ -290,5 +292,27 @@ model ChallengeLog {
 
   @@unique([challengeId, userId, completedAt])
   @@index([challengeId])
+  @@index([userId])
+}
+
+// ─── AI Weekly Insight Cache ─────────────────────────────────────────────────
+
+model WeeklyInsight {
+  id                 String   @id @default(cuid())
+  userId             String
+  weekKey            String   // "2026-W15" formatında (ISO hafta)
+  locale             String   @default("en")
+  summary            String   @db.Text
+  challengeTitle       String?
+  challengeDescription String?
+  challengeCategory    String?
+  challengeTarget      Int      @default(0)
+  challengeProgress    Int      @default(0)
+  challengeCompleted   Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekKey])
   @@index([userId])
 }

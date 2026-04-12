@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import * as React from "react";
 import { HabitReminder, type PendingRoutine } from "@/components/emails/HabitReminder";
+import { WeeklyInsightEmail } from "@/components/emails/WeeklyInsightEmail";
 import en from "../../messages/en.json";
 import tr from "../../messages/tr.json";
 
@@ -74,6 +75,56 @@ export async function sendRoutineReminderEmail({
     return data;
   } catch (error) {
     console.error("Resend Error:", error);
+    throw error;
+  }
+}
+
+// ─── Haftalık AI Insight E-postası ────────────────────────────────────────────
+
+export async function sendWeeklyInsightEmail({
+  to,
+  userName,
+  insight,
+  language = "en",
+}: {
+  to: string;
+  userName: string;
+  insight: string;
+  language?: string;
+}) {
+  const lang = (language in dictionaries ? language : "en") as Lang;
+  const firstName = userName.split(" ")[0] || userName;
+  const d = (dictionaries[lang] as any)?.aiInsight ?? (dictionaries.en as any).aiInsight;
+
+  const texts = {
+    badge: "🧠 AI Coach",
+    headerTitle: d.emailTitle,
+    greeting: d.emailGreeting.replace("{name}", firstName),
+    intro: d.emailIntro,
+    cta: d.emailCta,
+    footerText: d.emailFooter,
+    unsubscribe: dictionaries[lang]?.email?.reminder?.unsubscribe ?? "Unsubscribe",
+    copyright: `© ${new Date().getFullYear()} ${dictionaries[lang]?.common?.appName ?? "Routine Tracker"}`,
+  };
+
+  const subject = d.emailSubject;
+
+  try {
+    const data = await resend.emails.send({
+      from: getFromName(lang),
+      to,
+      subject,
+      react: React.createElement(WeeklyInsightEmail, {
+        insight,
+        dashboardUrl: `${APP_URL}/dashboard`,
+        settingsUrl: `${APP_URL}/settings`,
+        texts,
+      }),
+    });
+
+    return data;
+  } catch (error) {
+    console.error("Resend Weekly Insight Error:", error);
     throw error;
   }
 }

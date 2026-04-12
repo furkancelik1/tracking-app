@@ -1,9 +1,12 @@
 import { getFollowersAction, getFollowingAction, getPendingRequestsAction } from "@/actions/social.actions";
-import { getChallengesAction } from "@/actions/challenge.actions";
+import { getChallengesAction, getCompletedChallengesAction, distributeChallengeRewards } from "@/actions/challenge.actions";
 import { getFriendsAction } from "@/actions/social.actions";
 import { UserSearch } from "@/components/dashboard/UserSearch";
 import { SocialTabs } from "@/components/dashboard/SocialTabs";
+import { ConnectionList } from "@/components/dashboard/ConnectionList";
 import { ActiveChallenges } from "@/components/dashboard/ActiveChallenges";
+import { ChallengeHistory } from "@/components/dashboard/ChallengeHistory";
+import ChallengeRewardToast from "@/components/dashboard/ChallengeRewardToast";
 import { Users } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/lib/auth";
@@ -27,12 +30,18 @@ export default async function SocialPage({
   const session = await getSession();
   if (!session?.user) redirect({ href: "/", locale });
 
-  const [followers, following, pendingRequests, friends, challenges] = await Promise.all([
+  const userId = (session.user as any).id as string;
+
+  // Süresi dolmuş düelloları finalize et & ödülleri dağıt (sayfa yüklendiğinde)
+  const pendingRewards = await distributeChallengeRewards(userId).catch(() => []);
+
+  const [followers, following, pendingRequests, friends, challenges, completedChallenges] = await Promise.all([
     getFollowersAction().catch(() => []),
     getFollowingAction().catch(() => []),
     getPendingRequestsAction().catch(() => []),
     getFriendsAction().catch(() => []),
     getChallengesAction().catch(() => []),
+    getCompletedChallengesAction().catch(() => []),
   ]);
 
   return (
@@ -48,6 +57,9 @@ export default async function SocialPage({
         </div>
       </div>
 
+      {/* Ödül toastları */}
+      {pendingRewards.length > 0 && <ChallengeRewardToast rewards={pendingRewards} />}
+
       {/* User Search */}
       <section>
         <UserSearch />
@@ -62,10 +74,22 @@ export default async function SocialPage({
         />
       </section>
 
+      {/* Connection List — Takip Edilenler */}
+      <section>
+        <ConnectionList following={following} />
+      </section>
+
       {/* Active Challenges */}
       <section>
         <ActiveChallenges challenges={challenges} friends={friends} />
       </section>
+
+      {/* Completed Challenges History */}
+      {completedChallenges.length > 0 && (
+        <section>
+          <ChallengeHistory challenges={completedChallenges} />
+        </section>
+      )}
     </div>
   );
 }

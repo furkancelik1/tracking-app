@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { useStreakFreeze } from "@/actions/shop.actions";
 import { checkBadges } from "@/actions/badge.actions";
+import { updateChallengeScoresFromLog } from "@/actions/challenge.actions";
+import { updateAIChallengeProgress } from "@/actions/ai.actions";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Yardımcı: periyot başlangıcı (Route Handler ile aynı mantık)
@@ -122,7 +124,7 @@ export async function completeRoutineAction(
   try {
     const routine = await prisma.routine.findFirst({
       where: { id: routineId, userId, isActive: true },
-      select: { id: true, frequency: true, currentStreak: true, longestStreak: true, lastCompletedAt: true },
+      select: { id: true, title: true, category: true, frequency: true, currentStreak: true, longestStreak: true, lastCompletedAt: true },
     });
     if (!routine) throw new Error("Rutin bulunamadı.");
 
@@ -175,6 +177,12 @@ export async function completeRoutineAction(
 
     // Rozet kontrolü
     const newBadges = await checkBadges(userId);
+
+    // Aktif düellolarda skor güncelle
+    await updateChallengeScoresFromLog(userId, routine.title).catch(() => {});
+
+    // AI haftalık görev ilerlemesini güncelle
+    await updateAIChallengeProgress(userId, routine.category).catch(() => {});
 
     revalidatePath("/dashboard");
     return { xpGain, totalXp: updatedUser?.xp ?? 0, coinGain, totalCoins: updatedUser?.coins ?? 0, newBadges };

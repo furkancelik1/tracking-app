@@ -9,9 +9,11 @@ import { StreakAlert } from "@/components/dashboard/StreakAlert";
 import { DashboardEmptyState } from "@/components/dashboard/DashboardEmptyState";
 import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
 import { TestEmailButton } from "@/components/dashboard/TestEmailButton";
+import { WeeklyInsightCard } from "@/components/dashboard/WeeklyInsightCard";
 import { getSubscriptionTier } from "@/lib/stripe";
 import { getDashboardData } from "@/actions/dashboard.actions";
 import { getYearlyActivityData } from "@/actions/dashboard.actions";
+import { getWeeklyInsightAction } from "@/actions/ai.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
@@ -134,6 +136,11 @@ export default async function DashboardPage({
       getYearlyActivityData().catch(() => []),
     ]);
 
+    // AI insight (PRO kullanıcılar için — hata yutulur)
+    const weeklyInsight = isPro
+      ? await getWeeklyInsightAction().catch(() => null)
+      : null;
+
     const userXp = userXpData?.xp ?? 0;
 
     const routines: RoutineWithMeta[] = (raw ?? []).map((r) => ({
@@ -229,6 +236,9 @@ export default async function DashboardPage({
               </div>
             </section>
           </Suspense>
+
+          {/* ── AI Weekly Insight ─────────────────────────────────── */}
+          <WeeklyInsightCard initialData={weeklyInsight} isPro={isPro} />
 
           <PushNotificationButton />
           <TestEmailButton />

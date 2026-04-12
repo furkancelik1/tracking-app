@@ -20,6 +20,15 @@ export type ChallengeEntry = {
   opponentCount: number;
   isChallenger: boolean;
   daysLeft: number;
+  rewardDistributed?: boolean;
+};
+
+export type ChallengeRewardResult = {
+  challengeId: string;
+  routineTitle: string;
+  outcome: "win" | "loss" | "draw";
+  xp: number;
+  coins: number;
 };
 
 // ─── Düello Gönder ──────────────────────────────────────────────────────────
@@ -208,14 +217,82 @@ export async function getChallengesAction(): Promise<ChallengeEntry[]> {
   });
 }
 
-// ─── Biten Düelloları Finalize Et ────────────────────────────────────────────
+// ─── Tamamlanan Düelloları Getir ─────────────────────────────────────────────
 
-export async function finalizeExpiredChallengesAction() {
+export async function getCompletedChallengesAction(): Promise<ChallengeEntry[]> {
+  const session = await requireAuth();
+  const userId = (session.user as any).id as string;
+
+  const challenges = await prisma.challenge.findMany({
+    where: {
+      status: "COMPLETED",
+      OR: [{ challengerId: userId }, { opponentId: userId }],
+    },
+    include: {
+      challenger: { select: { id: true, name: true, image: true } },
+      opponent: { select: { id: true, name: true, image: true } },
+      logs: { select: { userId: true } },
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 10,
+  });
+
+  return challenges.map((c) => {
+    const challengerCount = c.logs.filter((l) => l.userId === c.challengerId).length;
+    const opponentCount = c.logs.filter((l) => l.userId === c.opponentId).length;
+
+    return {
+      id: c.id,
+      routineTitle: c.routineTitle,
+      durationDays: c.durationDays,
+      status: c.status,
+      startDate: c.startDate?.toISOString() ?? null,
+      endDate: c.endDate?.toISOString() ?? null,
+      winnerId: c.winnerId,
+      challenger: c.challenger,
+      opponent: c.opponent,
+      challengerCount,
+      opponentCount,
+      isChallenger: c.challengerId === userId,
+      daysLeft: 0,
+    };
+  });
+}
+
+// ─── Ödül Sabitleri ──────────────────────────────────────────────────────────
+
+const REWARD_WIN   = { xp: 100, coins: 50 } as const;
+const REWARD_DRAW  = { xp: 40,  coins: 20 } as const;
+const REWARD_LOSS  = { xp: 10,  coins: 0  } as const;
+
+// ─── Biten Düelloları Finalize Et & Ödül Dağıt ──────────────────────────────
+
+/**
+ * Süresi dolmuş ACTIVE düelloları bulur, skorları karşılaştırır,
+ * kazanan/berabere belirler, atomik transaction ile XP/Coin dağıtır,
+ * challenge'ı COMPLETED + rewardDistributed olarak işaretler.
+ *
+ * Kullanıcının kazandığı ödülleri ChallengeRewardResult[] olarak döner.
+ */
+export async function distributeChallengeRewards(
+  userId: string
+): Promise<ChallengeRewardResult[]> {
   const now = new Date();
+  const rewards: ChallengeRewardResult[] = [];
 
+  // 1) Süresi dolmuş, henüz ödül dağıtılmamış ACTIVE düellolar
   const expired = await prisma.challenge.findMany({
-    where: { status: "ACTIVE", endDate: { lte: now } },
-    include: { logs: { select: { userId: true } } },
+    where: {
+      status: "ACTIVE",
+      endDate: { lte: now },
+      rewardDistributed: false,
+      OR: [{ challengerId: userId }, { opponentId: userId }],
+    },
+    include: {
+      logs: { select: { userId: true } },
+      challenger: { select: { id: true, name: true } },
+      opponent: { select: { id: true, name: true } },
+    },
   });
 
   for (const c of expired) {
@@ -223,37 +300,193 @@ export async function finalizeExpiredChallengesAction() {
     const opponentCount = c.logs.filter((l) => l.userId === c.opponentId).length;
 
     let winnerId: string | null = null;
-    if (challengerCount > opponentCount) winnerId = c.challengerId;
-    else if (opponentCount > challengerCount) winnerId = c.opponentId;
-    // Berabere → winnerId null
+    let loserId: string | null = null;
+    const isDraw = challengerCount === opponentCount;
 
-    await prisma.challenge.update({
-      where: { id: c.id },
-      data: { status: "COMPLETED", winnerId },
-    });
+    if (!isDraw) {
+      winnerId = challengerCount > opponentCount ? c.challengerId : c.opponentId;
+      loserId = winnerId === c.challengerId ? c.opponentId : c.challengerId;
+    }
 
-    // Kazanana XP ödülü
-    if (winnerId) {
-      await prisma.user.update({
-        where: { id: winnerId },
-        data: { xp: { increment: 50 }, coins: { increment: 25 } },
+    try {
+      // Atomik transaction: durum + ödüller aynı anda
+      await prisma.$transaction(async (tx) => {
+        // Double-spending koruması: tekrar kontrol
+        const fresh = await tx.challenge.findUnique({
+          where: { id: c.id },
+          select: { rewardDistributed: true, status: true },
+        });
+        if (!fresh || fresh.rewardDistributed || fresh.status === "COMPLETED") {
+          return; // Zaten ödül dağıtılmış
+        }
+
+        // Challenge'ı güncelle
+        await tx.challenge.update({
+          where: { id: c.id },
+          data: {
+            status: "COMPLETED",
+            winnerId,
+            rewardDistributed: true,
+          },
+        });
+
+        if (isDraw) {
+          // Berabere: her iki taraf 40 XP + 20 Coin
+          await tx.user.update({
+            where: { id: c.challengerId },
+            data: { xp: { increment: REWARD_DRAW.xp }, coins: { increment: REWARD_DRAW.coins } },
+          });
+          await tx.user.update({
+            where: { id: c.opponentId },
+            data: { xp: { increment: REWARD_DRAW.xp }, coins: { increment: REWARD_DRAW.coins } },
+          });
+        } else {
+          // Kazanan: 100 XP + 50 Coin
+          await tx.user.update({
+            where: { id: winnerId! },
+            data: { xp: { increment: REWARD_WIN.xp }, coins: { increment: REWARD_WIN.coins } },
+          });
+          // Kaybeden: 10 XP teselli ödülü
+          await tx.user.update({
+            where: { id: loserId! },
+            data: { xp: { increment: REWARD_LOSS.xp } },
+          });
+        }
       });
 
-      await sendPushToUserAction(winnerId, {
-        title: "Düello Kazandın! 🏆",
-        body: `"${c.routineTitle}" düellosunu kazandın! +50 XP, +25 Coin`,
-        url: "/leaderboard",
-        tag: `challenge-win-${c.id}`,
-      }).catch(() => {});
+      // Kullanıcı için sonuç belirle
+      const isUserChallenger = c.challengerId === userId;
+      const userWon = winnerId === userId;
+      const outcome: "win" | "loss" | "draw" = isDraw
+        ? "draw"
+        : userWon
+          ? "win"
+          : "loss";
+
+      const rewardForUser = isDraw
+        ? REWARD_DRAW
+        : userWon
+          ? REWARD_WIN
+          : REWARD_LOSS;
+
+      rewards.push({
+        challengeId: c.id,
+        routineTitle: c.routineTitle,
+        outcome,
+        xp: rewardForUser.xp,
+        coins: rewardForUser.coins,
+      });
+
+      // Push bildirimler (fire & forget)
+      const winnerName = winnerId === c.challengerId
+        ? c.challenger.name
+        : c.opponent.name;
+
+      if (isDraw) {
+        // Berabere bildirim her iki tarafa
+        for (const uid of [c.challengerId, c.opponentId]) {
+          await sendPushToUserAction(uid, {
+            title: "Düello Berabere! 🤝",
+            body: `"${c.routineTitle}" düellosu berabere bitti. +${REWARD_DRAW.xp} XP, +${REWARD_DRAW.coins} Coin`,
+            url: "/social",
+            tag: `challenge-draw-${c.id}`,
+          }).catch(() => {});
+        }
+      } else {
+        // Kazanana bildirim
+        await sendPushToUserAction(winnerId!, {
+          title: "Düello Kazandın! 🏆",
+          body: `"${c.routineTitle}" düellosunu kazandın! +${REWARD_WIN.xp} XP, +${REWARD_WIN.coins} Coin`,
+          url: "/social",
+          tag: `challenge-win-${c.id}`,
+        }).catch(() => {});
+        // Kaybedene bildirim
+        await sendPushToUserAction(loserId!, {
+          title: "Düello Bitti ⚔️",
+          body: `"${c.routineTitle}" düellosunu ${winnerName ?? "Rakip"} kazandı. +${REWARD_LOSS.xp} XP teselli ödülü`,
+          url: "/social",
+          tag: `challenge-loss-${c.id}`,
+        }).catch(() => {});
+      }
+    } catch (error) {
+      console.error(`[distributeChallengeRewards] Challenge ${c.id} error:`, error);
+      // Hatalı challenge'ı atla, diğerlerine devam et
     }
   }
 
-  // Süresi dolmuş PENDING olanları expire et
+  // Süresi dolmuş PENDING olanları expire et (3 gün yanıt yok)
   const stale = new Date(now);
-  stale.setDate(stale.getDate() - 3); // 3 gün cevap vermezse expire
+  stale.setDate(stale.getDate() - 3);
 
   await prisma.challenge.updateMany({
     where: { status: "PENDING", createdAt: { lte: stale } },
     data: { status: "EXPIRED" },
+  }).catch(() => {});
+
+  return rewards;
+}
+
+// ─── Eski uyumluluk wrapper'ı ────────────────────────────────────────────────
+
+export async function finalizeExpiredChallengesAction() {
+  const session = await requireAuth();
+  const userId = (session.user as any).id as string;
+  return distributeChallengeRewards(userId);
+}
+
+// ─── Rutin Tamamlandığında Düello Skorunu Güncelle ───────────────────────────
+
+/**
+ * Bir kullanıcı rutin tamamladığında, eğer aynı rutin başlığına sahip
+ * aktif bir düellosu varsa otomatik olarak check-in yapılır.
+ */
+export async function updateChallengeScoresFromLog(
+  userId: string,
+  routineTitle: string
+) {
+  const activeChallenges = await prisma.challenge.findMany({
+    where: {
+      status: "ACTIVE",
+      routineTitle: { equals: routineTitle, mode: "insensitive" },
+      endDate: { gt: new Date() },
+      OR: [{ challengerId: userId }, { opponentId: userId }],
+    },
+    select: { id: true, challengerId: true, opponentId: true, routineTitle: true },
   });
+
+  if (activeChallenges.length === 0) return;
+
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const todayEnd = new Date(todayStart);
+  todayEnd.setUTCDate(todayEnd.getUTCDate() + 1);
+
+  for (const challenge of activeChallenges) {
+    // Bugün zaten check-in yaptı mı?
+    const existing = await prisma.challengeLog.findFirst({
+      where: {
+        challengeId: challenge.id,
+        userId,
+        completedAt: { gte: todayStart, lt: todayEnd },
+      },
+    });
+    if (existing) continue;
+
+    await prisma.challengeLog.create({
+      data: { challengeId: challenge.id, userId },
+    });
+
+    // Rakibe bildirim gönder
+    const opponentId =
+      challenge.challengerId === userId
+        ? challenge.opponentId
+        : challenge.challengerId;
+
+    await sendPushToUserAction(opponentId, {
+      title: "Düello Güncellemesi ⚔️",
+      body: `Rakibin "${challenge.routineTitle}" rutinini tamamladı!`,
+      url: "/social",
+      tag: `challenge-score-${challenge.id}`,
+    }).catch(() => {});
+  }
 }

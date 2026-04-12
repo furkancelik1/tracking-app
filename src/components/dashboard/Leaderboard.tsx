@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import type { LeaderboardEntry, LeaderboardPayload } from "@/actions/leaderboard.actions";
 import { Trophy, Medal, Flame, Crown, Sparkles, Users, Globe } from "lucide-react";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
+import { getAvatarFrame } from "@/lib/level";
+import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { getFriendsLeaderboardAction } from "@/actions/social.actions";
 
@@ -34,6 +36,68 @@ function formatXp(xp: number): string {
   return String(xp);
 }
 
+// ─── Seviye Bazlı Avatar Çerçevesi ──────────────────────────────────────────
+
+function FramedAvatar({
+  xp,
+  src,
+  fallback,
+  className,
+  fallbackClassName,
+  ringOverride,
+}: {
+  xp: number;
+  src?: string;
+  fallback: string;
+  className?: string;
+  fallbackClassName?: string;
+  /** Podium gibi özel ring sınıfı kullanmak için */
+  ringOverride?: string;
+}) {
+  const frame = getAvatarFrame(xp);
+  const ringClass = ringOverride ?? frame.ring;
+
+  const avatar = (
+    <Avatar
+      className={cn(
+        ringClass,
+        frame.glow,
+        "transition-all",
+        className
+      )}
+    >
+      <AvatarImage src={src} alt={fallback} />
+      <AvatarFallback className={cn("font-semibold", fallbackClassName)}>
+        {fallback}
+      </AvatarFallback>
+    </Avatar>
+  );
+
+  if (frame.isLegend) {
+    return (
+      <motion.div
+        className="inline-flex rounded-full"
+        animate={{
+          boxShadow: [
+            "0 0 6px 2px rgba(239,68,68,0.15)",
+            "0 0 24px 8px rgba(239,68,68,0.45)",
+            "0 0 6px 2px rgba(239,68,68,0.15)",
+          ],
+        }}
+        transition={{
+          duration: 2.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      >
+        {avatar}
+      </motion.div>
+    );
+  }
+
+  return avatar;
+}
+
 // ─── Podium Bileşeni (Top 3) ────────────────────────────────────────────────
 
 function Podium({ entries }: { entries: LeaderboardEntry[] }) {
@@ -58,18 +122,14 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
             className={cn("flex flex-col items-center gap-2", heights[i])}
           >
             <div className="relative">
-              <Avatar
-                className={cn(
-                  "ring-2 transition-all",
-                  style.ring,
-                  actualRank === 0 ? "size-16 sm:size-20" : "size-12 sm:size-16"
-                )}
-              >
-                <AvatarImage src={entry.image ?? undefined} alt={entry.name ?? ""} />
-                <AvatarFallback className="text-sm font-semibold">
-                  {getInitials(entry.name)}
-                </AvatarFallback>
-              </Avatar>
+              <FramedAvatar
+                xp={entry.xp}
+                src={entry.image ?? undefined}
+                fallback={getInitials(entry.name)}
+                className={actualRank === 0 ? "size-16 sm:size-20" : "size-12 sm:size-16"}
+                fallbackClassName="text-sm"
+                ringOverride={cn("ring-2", style.ring)}
+              />
               <span
                 className={cn(
                   "absolute -bottom-1 -right-1 rounded-full p-1",
@@ -132,10 +192,13 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
           <span className="w-6 text-center text-sm font-bold tabular-nums text-muted-foreground">
             {entry.rank}
           </span>
-          <Avatar className="size-8">
-            <AvatarImage src={entry.image ?? undefined} alt={entry.name ?? ""} />
-            <AvatarFallback className="text-xs">{getInitials(entry.name)}</AvatarFallback>
-          </Avatar>
+          <FramedAvatar
+            xp={entry.xp}
+            src={entry.image ?? undefined}
+            fallback={getInitials(entry.name)}
+            className="size-8"
+            fallbackClassName="text-xs"
+          />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">
               {entry.name ?? t("anonymous")}
@@ -175,10 +238,12 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
         <span className="text-lg font-bold tabular-nums text-indigo-400">
           #{entry.rank}
         </span>
-        <Avatar className="size-10 ring-2 ring-indigo-500/50">
-          <AvatarImage src={entry.image ?? undefined} alt={entry.name ?? ""} />
-          <AvatarFallback>{getInitials(entry.name)}</AvatarFallback>
-        </Avatar>
+        <FramedAvatar
+          xp={entry.xp}
+          src={entry.image ?? undefined}
+          fallback={getInitials(entry.name)}
+          className="size-10"
+        />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate">{entry.name ?? t("anonymous")}</p>
           <p className="text-xs text-muted-foreground">

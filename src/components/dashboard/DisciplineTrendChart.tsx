@@ -230,7 +230,7 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                       boxShadow: "0 0 20px rgba(34,211,238,0.1), 0 4px 16px rgba(0,0,0,.25)",
                     }}
                     labelStyle={{ fontWeight: 600, marginBottom: 2 }}
-                    formatter={(value: number) => [`${value}%`, t("score")]}
+                    formatter={(value) => [`${Number(value)}%`, t("score")]}
                   />
 
                   <Area
@@ -305,7 +305,5 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
         onClose={() => setSelectedDate(null)}
       />
     </>
-  );
-}
   );
 }

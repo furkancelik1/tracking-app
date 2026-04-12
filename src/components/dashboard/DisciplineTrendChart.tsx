@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   AreaChart,
   Area,
@@ -19,18 +19,68 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { motion, AnimatePresence } from "framer-motion";
 import type { DisciplineTrendData } from "@/actions/stats.actions";
+import { DayDetailModal } from "./DayDetailModal";
 
 type Props = {
   data: DisciplineTrendData;
+  chartAnalysis?: string | null;
 };
 
-export function DisciplineTrendChart({ data }: Props) {
+// ─── Status → Neon Renk Mapping ─────────────────────────────────────────────
+
+const STATUS_COLORS: Record<string, string> = {
+  fire: "#22d3ee",  // cyan-400
+  good: "#a78bfa",  // violet-400
+  low: "#fbbf24",   // amber-400
+  miss: "#f87171",  // red-400
+};
+
+// ─── Custom Dot (Neon Glow) ─────────────────────────────────────────────────
+
+function NeonDot(props: any) {
+  const { cx, cy, payload, onClick } = props;
+  if (cx == null || cy == null) return null;
+  const color = STATUS_COLORS[payload.status] ?? "#a78bfa";
+  return (
+    <g
+      onClick={() => onClick?.(payload)}
+      style={{ cursor: "pointer" }}
+    >
+      {/* Outer glow */}
+      <circle cx={cx} cy={cy} r={10} fill={color} opacity={0.15} />
+      {/* Mid glow */}
+      <circle cx={cx} cy={cy} r={6} fill={color} opacity={0.3} />
+      {/* Inner dot */}
+      <circle cx={cx} cy={cy} r={3.5} fill={color} stroke="#0f172a" strokeWidth={1.5} />
+    </g>
+  );
+}
+
+function NeonActiveDot(props: any) {
+  const { cx, cy, payload, onClick } = props;
+  if (cx == null || cy == null) return null;
+  const color = STATUS_COLORS[payload.status] ?? "#a78bfa";
+  return (
+    <g
+      onClick={() => onClick?.(payload)}
+      style={{ cursor: "pointer" }}
+    >
+      <circle cx={cx} cy={cy} r={14} fill={color} opacity={0.12} />
+      <circle cx={cx} cy={cy} r={9} fill={color} opacity={0.25} />
+      <circle cx={cx} cy={cy} r={5} fill={color} stroke="#0f172a" strokeWidth={2} />
+    </g>
+  );
+}
+
+export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
   const t = useTranslations("disciplineTrend");
   const [mounted, setMounted] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   useEffect(() => setMounted(true), []);
 
   const { points, avgScore, trend, streakDays, biggestDrop, biggestSurge } = data;
@@ -52,164 +102,210 @@ export function DisciplineTrendChart({ data }: Props) {
         ? t("trendDown")
         : t("trendStable");
 
+  const handleDotClick = useCallback((payload: any) => {
+    if (payload?.date) setSelectedDate(payload.date);
+  }, []);
+
   return (
-    <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm overflow-hidden">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <CardTitle className="text-base">{t("title")}</CardTitle>
-            <CardDescription className="mt-0.5">
-              {t("subtitle")}
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Ortalama skor */}
-            <div className="text-right">
-              <p className="text-lg font-semibold tabular-nums">
-                %{avgScore}
-              </p>
-              <p className="text-[11px] text-muted-foreground">{t("avg")}</p>
+    <>
+      <Card className="relative border-zinc-800/50 bg-card/70 backdrop-blur-sm overflow-hidden">
+        {/* Neon ambient glow behind the card */}
+        <div
+          className="pointer-events-none absolute -inset-px rounded-xl opacity-[0.07]"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 0%, #22d3ee 0%, transparent 60%), radial-gradient(ellipse at 50% 100%, #a78bfa 0%, transparent 60%)",
+          }}
+        />
+
+        <CardHeader className="pb-3 relative">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="text-base">{t("title")}</CardTitle>
+              <CardDescription className="mt-0.5">
+                {t("subtitle")}
+              </CardDescription>
             </div>
-            {/* Streak */}
-            {streakDays > 0 && (
+            <div className="flex items-center gap-3 shrink-0">
+              {/* Ortalama skor */}
               <div className="text-right">
-                <p className="text-lg font-semibold tabular-nums text-amber-400">
-                  {streakDays}
+                <p className="text-lg font-semibold tabular-nums">
+                  %{avgScore}
                 </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {t("streakDays")}
-                </p>
+                <p className="text-[11px] text-muted-foreground">{t("avg")}</p>
               </div>
-            )}
-            {/* Trend badge */}
-            <Badge
-              variant="outline"
-              className={cn(
-                "gap-1 text-[11px] px-2 py-0.5 border-zinc-700",
-                trendColor
+              {/* Streak */}
+              {streakDays > 0 && (
+                <div className="text-right">
+                  <p className="text-lg font-semibold tabular-nums text-amber-400">
+                    {streakDays}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {t("streakDays")}
+                  </p>
+                </div>
               )}
-            >
-              <TrendIcon className="h-3 w-3" />
-              {trendLabel}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="pb-4">
-        <div className="h-[200px] min-h-0 w-full">
-          {!mounted ? (
-            <Skeleton className="h-full w-full rounded-md" />
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={points}
-                margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
+              {/* Trend badge */}
+              <Badge
+                variant="outline"
+                className={cn(
+                  "gap-1 text-[11px] px-2 py-0.5 border-zinc-700",
+                  trendColor
+                )}
               >
-                <defs>
-                  <linearGradient
-                    id="disciplineTrendGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.4} />
-                    <stop offset="40%" stopColor="#7c3aed" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#5b21b6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
+                <TrendIcon className="h-3 w-3" />
+                {trendLabel}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
 
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="hsl(var(--border))"
-                  strokeOpacity={0.4}
-                />
+        <CardContent className="pb-4 relative">
+          <div
+            className="h-[200px] min-h-0 w-full"
+            style={{
+              filter: "drop-shadow(0 0 8px rgba(34,211,238,0.15)) drop-shadow(0 0 16px rgba(167,139,250,0.1))",
+            }}
+          >
+            {!mounted ? (
+              <Skeleton className="h-full w-full rounded-md" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={points}
+                  margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="neonTrendGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.35} />
+                      <stop offset="35%" stopColor="#a78bfa" stopOpacity={0.15} />
+                      <stop offset="100%" stopColor="#7c3aed" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
 
-                <XAxis
-                  dataKey="day"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{
-                    fontSize: 12,
-                    fill: "hsl(var(--muted-foreground))",
-                  }}
-                />
-                <YAxis
-                  domain={[0, 100]}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{
-                    fontSize: 11,
-                    fill: "hsl(var(--muted-foreground))",
-                  }}
-                  tickFormatter={(v: number) => `${v}%`}
-                  width={40}
-                />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="hsl(var(--border))"
+                    strokeOpacity={0.3}
+                  />
 
-                <Tooltip
-                  cursor={{
-                    stroke: "rgba(167,139,250,0.3)",
-                    strokeWidth: 1,
-                  }}
-                  contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    fontSize: "13px",
-                    boxShadow: "0 4px 16px rgba(0,0,0,.25)",
-                  }}
-                  labelStyle={{ fontWeight: 600, marginBottom: 2 }}
-                  formatter={(value: number) => [`${value}%`, t("score")]}
-                />
+                  <XAxis
+                    dataKey="day"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fontSize: 12,
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fontSize: 11,
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
+                    tickFormatter={(v: number) => `${v}%`}
+                    width={40}
+                  />
 
-                <Area
-                  type="monotone"
-                  dataKey="score"
-                  stroke="#a78bfa"
-                  strokeWidth={2.5}
-                  fill="url(#disciplineTrendGradient)"
-                  dot={{
-                    r: 4,
-                    fill: "#7c3aed",
-                    stroke: "#4c1d95",
-                    strokeWidth: 2,
-                  }}
-                  activeDot={{
-                    r: 6,
-                    fill: "#a78bfa",
-                    stroke: "#4c1d95",
-                    strokeWidth: 2,
-                  }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+                  <Tooltip
+                    cursor={{
+                      stroke: "rgba(34,211,238,0.25)",
+                      strokeWidth: 1,
+                    }}
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      fontSize: "13px",
+                      boxShadow: "0 0 20px rgba(34,211,238,0.1), 0 4px 16px rgba(0,0,0,.25)",
+                    }}
+                    labelStyle={{ fontWeight: 600, marginBottom: 2 }}
+                    formatter={(value: number) => [`${value}%`, t("score")]}
+                  />
+
+                  <Area
+                    type="monotone"
+                    dataKey="score"
+                    stroke="url(#neonStroke)"
+                    strokeWidth={2.5}
+                    fill="url(#neonTrendGradient)"
+                    dot={<NeonDot onClick={handleDotClick} />}
+                    activeDot={<NeonActiveDot onClick={handleDotClick} />}
+                    style={{
+                      stroke: "#22d3ee",
+                      filter: "drop-shadow(0 0 4px rgba(34,211,238,0.4))",
+                    }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Highlight pills */}
+          {(biggestDrop || biggestSurge) && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {biggestSurge && (
+                <Badge
+                  variant="outline"
+                  className="border-emerald-500/30 text-emerald-400 bg-emerald-500/5 text-[11px]"
+                >
+                  🚀 {biggestSurge.from} → {biggestSurge.to} +{biggestSurge.delta}%
+                </Badge>
+              )}
+              {biggestDrop && (
+                <Badge
+                  variant="outline"
+                  className="border-red-500/30 text-red-400 bg-red-500/5 text-[11px]"
+                >
+                  ⚠️ {biggestDrop.from} → {biggestDrop.to} {biggestDrop.delta}%
+                </Badge>
+              )}
+            </div>
           )}
-        </div>
 
-        {/* Highlight pills */}
-        {(biggestDrop || biggestSurge) && (
-          <div className="flex flex-wrap gap-2 mt-3">
-            {biggestSurge && (
-              <Badge
-                variant="outline"
-                className="border-emerald-500/30 text-emerald-400 bg-emerald-500/5 text-[11px]"
+          {/* AI Chart Analysis */}
+          <AnimatePresence>
+            {chartAnalysis && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4 rounded-lg border border-cyan-500/20 bg-cyan-500/5 px-3 py-2.5"
               >
-                🚀 {biggestSurge.from} → {biggestSurge.to} +{biggestSurge.delta}%
-              </Badge>
+                <div className="flex items-start gap-2">
+                  <BarChart3 className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[11px] font-medium text-cyan-400 mb-1">
+                      {t("chartAnalysisTitle")}
+                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {chartAnalysis}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
             )}
-            {biggestDrop && (
-              <Badge
-                variant="outline"
-                className="border-red-500/30 text-red-400 bg-red-500/5 text-[11px]"
-              >
-                ⚠️ {biggestDrop.from} → {biggestDrop.to} {biggestDrop.delta}%
-              </Badge>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </AnimatePresence>
+        </CardContent>
+      </Card>
+
+      {/* Day Detail Modal */}
+      <DayDetailModal
+        date={selectedDate}
+        onClose={() => setSelectedDate(null)}
+      />
+    </>
+  );
+}
   );
 }

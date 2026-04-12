@@ -44,7 +44,9 @@ KİŞİLİK KURALLARIN:
 - Tamamlama oranı DÜŞÜK (<%40): ASLA yargılama veya eleştirme. "Bazen planlar değişebilir, önemli olan bugün küçük bir adımla yeniden başlaman. Ben sana inanıyorum." de.
 - Her zaman kullanıcının arkasında duran güvenilir bir mentor gibi konuş.
 - Emoji kullan (maks 3-4) ama doğal olsun.
-- Markdown başlıkları KULLANMA. Düz metin ve satır sonları kullan.`;
+- Markdown başlıkları KULLANMA. Düz metin ve satır sonları kullan.
+
+IMPORTANT: You MUST provide ALL analysis, feedback, messages, challenges, and every piece of text in the language requested by the user. If the user requests locale "tr", respond ENTIRELY in Turkish. If locale is "en", respond ENTIRELY in English. This is a STRICT requirement — never mix languages. Turkish responses must use proper Turkish characters (ğ, ş, ı, ö, ç, ü, İ, Ğ, Ş, Ç, Ö, Ü).`;
 
 /** UTC midnight of today */
 function todayUTC(): Date {
@@ -82,6 +84,7 @@ export type WeeklyInsightPayload = {
   weekKey: string;
   generatedAt: string | null;
   isLoading?: boolean;
+  chartAnalysis: string | null;
   challengeTitle: string | null;
   challengeDescription: string | null;
   challengeCategory: string | null;
@@ -313,7 +316,7 @@ async function generateInsightWithAI(
   locale: string,
   depthOverride?: AnalysisDepth,
   trendCtx?: TrendContext | null
-): Promise<{ insight: string; challenge: AIChallengeData; successHighlight: string | null }> {
+): Promise<{ insight: string; challenge: AIChallengeData; successHighlight: string | null; chartAnalysis: string | null }> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not set");
@@ -329,8 +332,8 @@ async function generateInsightWithAI(
   });
 
   const langInstruction = locale === "tr"
-    ? "Yanıtını tamamen Türkçe yaz."
-    : "Write your response entirely in English.";
+    ? "LANGUAGE: Yanıtını tamamen Türkçe yaz. Tüm JSON değerleri Türkçe olmalı. İngilizce kelime kullanma."
+    : "LANGUAGE: Write your response entirely in English. All JSON values must be in English.";
 
   // Find weakest category for challenge targeting
   const weakestCategory = data.categoryBreakdown.length > 0
@@ -345,6 +348,7 @@ async function generateInsightWithAI(
 3. A success highlight badge
 
 ${langInstruction}
+ACTIVE LOCALE: "${locale}"
 
 ${depth === "deep" ? `DEEP ANALYSIS MODE: This is an end-of-month review. Be more thorough, reference long-term patterns, mention monthly trends, and provide deeper strategic advice. Use 200-300 words.` : ""}
 
@@ -390,7 +394,16 @@ RULES FOR SUCCESS HIGHLIGHT:
 - Identify the single most impressive achievement of the week from the data.
 - Examples: "Best: Tuesday 8/8" or "Health %100" or "5 Day Streak" or "Gym 7/7 Perfect".
 - MUST be max 30 characters. This is a short badge text, not a sentence.
-- ${locale === "tr" ? "Write in Turkish." : "Write in English."}
+- ${locale === "tr" ? "Türkçe yaz. Örnek: \"Salı 8/8 Mükemmel\" veya \"Sağlık %100\"" : "Write in English."}
+
+RULES FOR CHART ANALYSIS (Grafik Analizi):
+- Write 2-3 concise sentences analyzing the daily discipline trend chart pattern.
+- Reference specific days and score changes visible in the chart data.
+- Identify patterns: consistency, mid-week dips, weekend drops, recovery arcs, etc.
+- Make it feel like a coach observing the graph and giving visual commentary.
+- ${locale === "tr" ? "Tamamen Türkçe yaz." : "Write in English."}
+
+CRITICAL REMINDER: ALL values in the JSON response (insight, challenge title, challenge description, successHighlight, chartAnalysis) MUST be in ${locale === "tr" ? "TURKISH (Türkçe)" : "ENGLISH"}. Locale="${locale}".
 
 RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 {
@@ -401,7 +414,8 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     "category": "${weakestCategory?.category || "HEALTH"}",
     "target": 5
   },
-  "successHighlight": "Short badge text (max 30 chars)"
+  "successHighlight": "Short badge text (max 30 chars)",
+  "chartAnalysis": "2-3 sentences analyzing the trend chart pattern..."
 }`;
 
   let text = "";
@@ -494,6 +508,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
       throw new Error("Missing required fields in AI response");
     }
     const rawHighlight = String(parsed.successHighlight || "").trim();
+    const rawChartAnalysis = String(parsed.chartAnalysis || "").trim();
     return {
       insight: String(parsed.insight).trim(),
       challenge: {
@@ -503,6 +518,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
         target: Math.min(7, Math.max(1, Number(parsed.challenge.target) || 5)),
       },
       successHighlight: rawHighlight.length > 30 ? rawHighlight.slice(0, 30) : rawHighlight || null,
+      chartAnalysis: rawChartAnalysis || null,
     };
   } catch (parseError) {
     console.error("[AI Insight] JSON parse failed. Raw text (first 500 chars):", cleaned.slice(0, 500));
@@ -519,6 +535,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
         target: 5,
       },
       successHighlight: null,
+      chartAnalysis: null,
     };
   }
 }
@@ -526,11 +543,11 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 // ─── Ana Action: Haftalık Insight Al (Cached) ───────────────────────────────
 
 export async function getWeeklyInsightAction(
-  options?: { force?: boolean }
+  options?: { force?: boolean; locale?: string }
 ): Promise<WeeklyInsightPayload> {
   const session = await requireAuth();
   const userId = (session.user as any).id as string;
-  const locale = (session.user as any).language ?? "en";
+  const locale = options?.locale ?? (session.user as any).language ?? "en";
   const weekKey = getCurrentWeekKey();
   const force = options?.force ?? false;
 
@@ -543,7 +560,7 @@ export async function getWeeklyInsightAction(
 
   console.log(`[AI Insight] Cache lookup result: ${cached ? `FOUND (id: ${cached.id}, summary length: ${cached.summary?.length})` : "NOT FOUND"}`);
 
-  if (cached && !force) {
+  if (cached && !force && cached.locale === locale) {
     // Challenge yoksa — AI ile oluştur ve kaydet
     if (!cached.challengeTitle && !cached.challengeCompleted) {
       try {
@@ -564,6 +581,7 @@ export async function getWeeklyInsightAction(
           insight: cached.summary,
           weekKey: cached.weekKey,
           generatedAt: cached.createdAt.toISOString(),
+          chartAnalysis: cached.chartAnalysis ?? null,
           challengeTitle: challenge.title,
           challengeDescription: challenge.description,
           challengeCategory: challenge.category,
@@ -583,6 +601,7 @@ export async function getWeeklyInsightAction(
       insight: cached.summary,
       weekKey: cached.weekKey,
       generatedAt: cached.createdAt.toISOString(),
+      chartAnalysis: cached.chartAnalysis ?? null,
       challengeTitle: cached.challengeTitle,
       challengeDescription: cached.challengeDescription,
       challengeCategory: cached.challengeCategory,
@@ -607,6 +626,7 @@ export async function getWeeklyInsightAction(
     console.log("[AI Insight] Insufficient data — returning empty payload.");
     return {
       id: null, insight: null, weekKey, generatedAt: null,
+      chartAnalysis: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
       challengeTarget: 0, challengeProgress: 0, challengeCompleted: false,
       successHighlight: null,
@@ -619,6 +639,7 @@ export async function getWeeklyInsightAction(
     console.warn(`[AI Insight] ⏳ Gemini cooldown active — ${secsLeft}s remaining. Returning empty.`);
     return {
       id: null, insight: null, weekKey, generatedAt: null,
+      chartAnalysis: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
       challengeTarget: 0, challengeProgress: 0, challengeCompleted: false,
       successHighlight: null,
@@ -631,13 +652,14 @@ export async function getWeeklyInsightAction(
     const data = await collectWeeklyData(userId);
     const trendCtx = await buildTrendContext(userId, locale);
     console.log(`[AI Insight] Weekly data collected — completionRate: ${data.completionRate}%, totalCompletions: ${data.totalCompletions}/${data.possibleCompletions}, trend: ${trendCtx.trend}`);
-    const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale, undefined, trendCtx);
+    const { insight, challenge, successHighlight, chartAnalysis } = await generateInsightWithAI(data, locale, undefined, trendCtx);
 
     // 5) Cache'e kaydet (upsert — race condition koruması)
     const saved = await prisma.weeklyInsight.upsert({
       where: { userId_weekKey: { userId, weekKey } },
       create: {
         userId, weekKey, locale, summary: insight,
+        chartAnalysis,
         challengeTitle: challenge.title,
         challengeDescription: challenge.description,
         challengeCategory: challenge.category,
@@ -646,6 +668,7 @@ export async function getWeeklyInsightAction(
       },
       update: {
         summary: insight, locale,
+        chartAnalysis,
         challengeTitle: challenge.title,
         challengeDescription: challenge.description,
         challengeCategory: challenge.category,
@@ -661,6 +684,7 @@ export async function getWeeklyInsightAction(
       insight,
       weekKey,
       generatedAt: new Date().toISOString(),
+      chartAnalysis,
       challengeTitle: challenge.title,
       challengeDescription: challenge.description,
       challengeCategory: challenge.category,
@@ -684,6 +708,7 @@ export async function getWeeklyInsightAction(
 
     return {
       id: null, insight: dummyInsight, weekKey, generatedAt: null,
+      chartAnalysis: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
       challengeTarget: 0, challengeProgress: 0, challengeCompleted: false,
       successHighlight: null,
@@ -737,12 +762,13 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
       const data = await collectWeeklyData(user.id);
       const locale = user.language === "tr" ? "tr" : "en";
       const trendCtx = await buildTrendContext(user.id, locale);
-      const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale, undefined, trendCtx);
+      const { insight, challenge, successHighlight, chartAnalysis } = await generateInsightWithAI(data, locale, undefined, trendCtx);
 
       await prisma.weeklyInsight.upsert({
         where: { userId_weekKey: { userId: user.id, weekKey } },
         create: {
           userId: user.id, weekKey, locale, summary: insight,
+          chartAnalysis,
           challengeTitle: challenge.title,
           challengeDescription: challenge.description,
           challengeCategory: challenge.category,
@@ -751,6 +777,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
         },
         update: {
           summary: insight, locale,
+          chartAnalysis,
           challengeTitle: challenge.title,
           challengeDescription: challenge.description,
           challengeCategory: challenge.category,
@@ -829,7 +856,9 @@ function getTodayKey(): string {
   return format(new Date(), "yyyy-MM-dd");
 }
 
-export async function getDailyCoachMessage(): Promise<DailyCoachPayload> {
+export async function getDailyCoachMessage(
+  requestLocale?: string
+): Promise<DailyCoachPayload> {
   const apiKey = process.env.GEMINI_API_KEY;
   const dayKey = getTodayKey();
 
@@ -840,14 +869,14 @@ export async function getDailyCoachMessage(): Promise<DailyCoachPayload> {
   const session = await requireAuth();
   const userId = (session.user as any).id as string;
   const userName = (session.user as any).name as string | null;
-  const locale = (session.user as any).language ?? "en";
+  const locale = requestLocale ?? (session.user as any).language ?? "en";
 
   // 1) Cache kontrol
   const cached = await prisma.dailyCoachMessage.findUnique({
     where: { userId_dayKey: { userId, dayKey } },
   });
 
-  if (cached) {
+  if (cached && cached.locale === locale) {
     return {
       message: cached.message,
       coachTip: cached.coachTip,
@@ -899,8 +928,8 @@ export async function getDailyCoachMessage(): Promise<DailyCoachPayload> {
     });
 
     const langInstruction = locale === "tr"
-      ? "Yanıtını tamamen Türkçe yaz."
-      : "Write your response entirely in English.";
+      ? "LANGUAGE: Yanıtını tamamen Türkçe yaz. Tüm JSON değerleri Türkçe olmalı. İngilizce kelime kullanma."
+      : "LANGUAGE: Write your response entirely in English. All JSON values must be in English.";
 
     const greeting = userName
       ? (locale === "tr" ? `Kullanıcının adı: ${userName}` : `User's name: ${userName}`)
@@ -908,6 +937,7 @@ export async function getDailyCoachMessage(): Promise<DailyCoachPayload> {
 
     const prompt = `Greet the user and provide daily motivation.
 ${langInstruction}
+ACTIVE LOCALE: "${locale}"
 ${greeting}
 
 Generate TWO things:
@@ -934,6 +964,8 @@ RULES FOR COACH TIP:
 - Frame it as an exciting journey, not a grind. E.g. "Her rutin seni Efsane'ye bir adım yaklaştırıyor!" / "Every routine completed brings you one step closer to Legend!"
 - Mention XP remaining if relevant.
 - Keep it actionable and motivating. 1 emoji max.
+
+CRITICAL REMINDER: ALL values in the JSON response (message, coachTip) MUST be in ${locale === "tr" ? "TURKISH (Türkçe). Türkçe karakterler kullan: ğ, ş, ı, ö, ç, ü" : "ENGLISH"}. Locale="${locale}".
 
 RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 {

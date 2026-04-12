@@ -375,7 +375,13 @@
     "score": "Score",
     "trendUp": "Rising",
     "trendDown": "Falling",
-    "trendStable": "Stable"
+    "trendStable": "Stable",
+    "chartAnalysisTitle": "Chart Analysis",
+    "completed": "completed",
+    "status_fire": "On Fire!",
+    "status_good": "Solid Day",
+    "status_low": "Needs Work",
+    "status_miss": "Missed Day"
   },
 
   "leaderboard": {

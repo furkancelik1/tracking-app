@@ -6,12 +6,40 @@ import { subDays, format, eachDayOfInterval, getDay } from "date-fns";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+export type DisciplineTrendStatus = "fire" | "good" | "low" | "miss";
+
 export type DisciplineTrendPoint = {
   day: string;       // "Mon", "Tue", ... veya "Pzt", "Sal", ...
   date: string;      // "2026-04-06"
   completed: number;
   total: number;
   score: number;     // 0-100 tamamlanma yüzdesi
+  status: DisciplineTrendStatus;
+};
+
+function resolveStatus(score: number): DisciplineTrendStatus {
+  if (score >= 80) return "fire";
+  if (score >= 50) return "good";
+  if (score > 0) return "low";
+  return "miss";
+}
+
+// ─── Gün Detay Türleri ──────────────────────────────────────────────────────
+
+export type DayRoutineDetail = {
+  id: string;
+  title: string;
+  emoji: string;
+  category: string;
+  completed: boolean;
+};
+
+export type DayDetailData = {
+  date: string;
+  day: string;
+  score: number;
+  status: DisciplineTrendStatus;
+  routines: DayRoutineDetail[];
 };
 
 export type DisciplineTrendData = {
@@ -87,6 +115,7 @@ export async function getDisciplineTrend(
       completed,
       total,
       score,
+      status: resolveStatus(score),
     };
   });
 
@@ -149,5 +178,50 @@ export async function getDisciplineTrend(
     streakDays,
     biggestDrop,
     biggestSurge,
+  };
+}
+
+// ─── Gün Detay Action ───────────────────────────────────────────────────────
+
+export async function getDayDetail(
+  date: string,
+  locale?: string
+): Promise<DayDetailData> {
+  const session = await requireAuth();
+  const userId = (session.user as any).id as string;
+  const lang = locale ?? (session.user as any).language ?? "en";
+
+  const dayStart = new Date(date + "T00:00:00.000Z");
+  const dayEnd = new Date(date + "T23:59:59.999Z");
+  const dayNames = lang === "tr" ? SHORT_DAYS_TR : SHORT_DAYS_EN;
+
+  const [routines, logs] = await Promise.all([
+    prisma.routine.findMany({
+      where: { userId, isActive: true, frequency: "DAILY" },
+      select: { id: true, title: true, emoji: true, category: true },
+    }),
+    prisma.routineLog.findMany({
+      where: { userId, completedAt: { gte: dayStart, lte: dayEnd } },
+      select: { routineId: true },
+    }),
+  ]);
+
+  const completedIds = new Set(logs.map((l) => l.routineId));
+  const total = routines.length;
+  const completed = routines.filter((r) => completedIds.has(r.id)).length;
+  const score = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  return {
+    date,
+    day: dayNames[new Date(date + "T12:00:00Z").getUTCDay()] ?? "",
+    score,
+    status: resolveStatus(score),
+    routines: routines.map((r) => ({
+      id: r.id,
+      title: r.title,
+      emoji: r.emoji ?? "📋",
+      category: r.category,
+      completed: completedIds.has(r.id),
+    })),
   };
 }

@@ -144,7 +144,7 @@ export default async function DashboardPage({
 
     // AI insight (PRO kullanıcılar için — hata yutulur)
     const weeklyInsight = isPro
-      ? await getWeeklyInsightAction().catch(() => null)
+      ? await getWeeklyInsightAction({ locale }).catch(() => null)
       : null;
 
     // Discipline trend (chart verisi — hata yutulur)
@@ -265,7 +265,10 @@ export default async function DashboardPage({
 
           {/* ── Discipline Trend Chart ────────────────────────────── */}
           {disciplineTrend && (
-            <DisciplineTrendChart data={disciplineTrend} />
+            <DisciplineTrendChart
+              data={disciplineTrend}
+              chartAnalysis={weeklyInsight?.chartAnalysis}
+            />
           )}
 
           <PushNotificationButton />

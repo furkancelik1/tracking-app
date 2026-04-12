@@ -375,7 +375,13 @@
     "score": "Skor",
     "trendUp": "Yükseliyor",
     "trendDown": "Düşüş",
-    "trendStable": "Sabit"
+    "trendStable": "Sabit",
+    "chartAnalysisTitle": "Grafik Analizi",
+    "completed": "tamamlandı",
+    "status_fire": "Ateşte!",
+    "status_good": "İyi Gün",
+    "status_low": "İyileştirilebilir",
+    "status_miss": "Kaçırılan Gün"
   },
 
   "leaderboard": {

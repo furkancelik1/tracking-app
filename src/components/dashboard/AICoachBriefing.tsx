@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Bot,
   Sparkles,
@@ -31,6 +31,7 @@ const LEGEND_XP = LEGEND_LEVEL * XP_PER_LEVEL; // 5100
 export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
   const t = useTranslations("coach");
   const tLevels = useTranslations("levels");
+  const locale = useLocale();
 
   const [coach, setCoach] = useState<DailyCoachPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,14 +39,14 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
   const fetchCoach = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getDailyCoachMessage();
+      const data = await getDailyCoachMessage(locale);
       setCoach(data);
     } catch {
       setCoach(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     fetchCoach();

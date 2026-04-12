@@ -328,6 +328,7 @@ model WeeklyInsight {
   weekKey            String   // "2026-W15" formatında (ISO hafta)
   locale             String   @default("en")
   summary            String   @db.Text
+  chartAnalysis      String?  @db.Text
   challengeTitle       String?
   challengeDescription String?
   challengeCategory    String?

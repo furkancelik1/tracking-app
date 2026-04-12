@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brain, Sparkles, RefreshCw, Lock, Target, CheckCircle2, Share2, Trophy, Zap, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getWeeklyInsightAction, type WeeklyInsightPayload } from "@/actions/ai.actions";
 import { fireAllDoneConfetti } from "@/lib/celebrations";
 import { ShareInsightModal } from "@/components/dashboard/ShareInsightModal";
@@ -125,6 +125,7 @@ export function WeeklyInsightCard({ initialData, isPro }: WeeklyInsightCardProps
 
 function WeeklyInsightCardInner({ initialData, isPro }: WeeklyInsightCardProps) {
   const t = useTranslations("aiInsight");
+  const locale = useLocale();
   const [data, setData] = useState<WeeklyInsightPayload | null>(initialData);
   const [isPending, startTransition] = useTransition();
   const [shareOpen, setShareOpen] = useState(false);
@@ -143,7 +144,7 @@ function WeeklyInsightCardInner({ initialData, isPro }: WeeklyInsightCardProps) 
     setError(null);
     startTransition(async () => {
       try {
-        const result = await getWeeklyInsightAction();
+        const result = await getWeeklyInsightAction({ locale });
         setData(result);
         if (!result.insight) {
           setError(t("analyzing"));
@@ -159,7 +160,7 @@ function WeeklyInsightCardInner({ initialData, isPro }: WeeklyInsightCardProps) 
     setError(null);
     startTransition(async () => {
       try {
-        const result = await getWeeklyInsightAction({ force: true });
+        const result = await getWeeklyInsightAction({ force: true, locale });
         setData(result);
         if (!result.insight) {
           setError(t("analyzing"));

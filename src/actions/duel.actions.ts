@@ -780,3 +780,118 @@ export async function getPendingPrivateDuel(): Promise<DuelEntry | null> {
   if (!duel) return null;
   return mapDuel(duel, userId);
 }
+
+// ─── 11. Düello Mesajlarını Getir ────────────────────────────────────────────
+
+const MESSAGE_LIMIT = 50;
+
+export async function getDuelMessages(input: {
+  duelId: string;
+}): Promise<DuelMessageEntry[]> {
+  const session = await getSession();
+  const userId = (session?.user as any)?.id as string | undefined;
+  if (!userId) return [];
+
+  // Kullanıcı bu düelloda taraf mı kontrol et
+  const duel = await prisma.duel.findFirst({
+    where: {
+      id: input.duelId,
+      OR: [{ challengerId: userId }, { opponentId: userId }],
+    },
+    select: { id: true },
+  });
+
+  if (!duel) return [];
+
+  const messages = await prisma.duelMessage.findMany({
+    where: { duelId: input.duelId },
+    orderBy: { createdAt: "asc" },
+    take: MESSAGE_LIMIT,
+    select: {
+      id: true,
+      senderId: true,
+      content: true,
+      createdAt: true,
+      sender: { select: { name: true, image: true } },
+    },
+  });
+
+  return messages.map((m) => ({
+    id: m.id,
+    senderId: m.senderId,
+    senderName: m.sender.name,
+    senderImage: m.sender.image,
+    content: m.content,
+    createdAt: m.createdAt.toISOString(),
+  }));
+}
+
+// ─── 12. Düello Mesajı Gönder ────────────────────────────────────────────────
+
+const MAX_MESSAGE_LENGTH = 200;
+const COOLDOWN_SECONDS = 3;
+const _lastMessageTime = new Map<string, number>();
+
+export async function sendDuelMessage(input: {
+  duelId: string;
+  content: string;
+}): Promise<{ success: boolean; message?: DuelMessageEntry; error?: string }> {
+  const session = await requireAuth();
+  const userId = (session.user as any).id as string;
+
+  // Mesaj uzunluk kontrolü
+  const content = input.content.trim();
+  if (!content || content.length > MAX_MESSAGE_LENGTH) {
+    return { success: false, error: "INVALID_MESSAGE" };
+  }
+
+  // Cooldown kontrolü (kullanıcı bazlı)
+  const cooldownKey = `${userId}:${input.duelId}`;
+  const lastSent = _lastMessageTime.get(cooldownKey) ?? 0;
+  if (Date.now() - lastSent < COOLDOWN_SECONDS * 1000) {
+    return { success: false, error: "COOLDOWN" };
+  }
+
+  // Düello aktif mi ve kullanıcı taraf mı kontrol et
+  const duel = await prisma.duel.findFirst({
+    where: {
+      id: input.duelId,
+      status: "ACTIVE",
+      OR: [{ challengerId: userId }, { opponentId: userId }],
+    },
+    select: { id: true },
+  });
+
+  if (!duel) {
+    return { success: false, error: "DUEL_NOT_FOUND" };
+  }
+
+  const created = await prisma.duelMessage.create({
+    data: {
+      duelId: input.duelId,
+      senderId: userId,
+      content,
+    },
+    select: {
+      id: true,
+      senderId: true,
+      content: true,
+      createdAt: true,
+      sender: { select: { name: true, image: true } },
+    },
+  });
+
+  _lastMessageTime.set(cooldownKey, Date.now());
+
+  return {
+    success: true,
+    message: {
+      id: created.id,
+      senderId: created.senderId,
+      senderName: created.sender.name,
+      senderImage: created.sender.image,
+      content: created.content,
+      createdAt: created.createdAt.toISOString(),
+    },
+  };
+}

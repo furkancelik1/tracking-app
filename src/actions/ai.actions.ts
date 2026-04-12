@@ -278,11 +278,27 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
   "successHighlight": "Short badge text (max 30 chars)"
 }`;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response;
-  const text = response.text();
+  let text: string;
+  try {
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    text = response.text();
+    console.log("[AI Insight] Gemini raw response length:", text?.length ?? 0);
+  } catch (apiError: any) {
+    const status = apiError?.status ?? apiError?.code ?? "unknown";
+    const msg = apiError?.message ?? String(apiError);
+    console.error(`[AI Insight] Gemini API call FAILED — status: ${status}`);
+    console.error(`[AI Insight] Error message: ${msg}`);
+    if (msg.includes("429") || msg.toLowerCase().includes("rate limit")) {
+      console.error("[AI Insight] >>> RATE LIMIT exceeded. Wait and retry later.");
+    } else if (msg.toLowerCase().includes("api key") || msg.toLowerCase().includes("invalid") || msg.includes("401") || msg.includes("403")) {
+      console.error("[AI Insight] >>> INVALID API KEY or permission denied. Check GEMINI_API_KEY.");
+    }
+    throw apiError;
+  }
 
   if (!text || text.trim().length === 0) {
+    console.error("[AI Insight] Gemini returned EMPTY response body.");
     throw new Error("AI returned an empty response");
   }
 
@@ -291,6 +307,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
   try {
     const parsed = JSON.parse(cleaned);
     if (!parsed.insight || !parsed.challenge) {
+      console.error("[AI Insight] Parsed JSON missing required fields. Keys found:", Object.keys(parsed));
       throw new Error("Missing required fields in AI response");
     }
     const rawHighlight = String(parsed.successHighlight || "").trim();
@@ -304,7 +321,9 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
       },
       successHighlight: rawHighlight.length > 30 ? rawHighlight.slice(0, 30) : rawHighlight || null,
     };
-  } catch {
+  } catch (parseError) {
+    console.error("[AI Insight] JSON parse failed. Raw text (first 500 chars):", cleaned.slice(0, 500));
+    console.error("[AI Insight] Parse error:", parseError);
     // Fallback: treat entire text as insight, generate default challenge
     return {
       insight: text.trim(),
@@ -323,21 +342,29 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 
 // ─── Ana Action: Haftalık Insight Al (Cached) ───────────────────────────────
 
-export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
+export async function getWeeklyInsightAction(
+  options?: { force?: boolean }
+): Promise<WeeklyInsightPayload> {
   const session = await requireAuth();
   const userId = (session.user as any).id as string;
   const locale = (session.user as any).language ?? "en";
   const weekKey = getCurrentWeekKey();
+  const force = options?.force ?? false;
+
+  console.log(`[AI Insight] getWeeklyInsightAction called — userId: ${userId}, weekKey: ${weekKey}, locale: ${locale}, force: ${force}`);
 
   // 1) Cache'de var mı kontrol et
   const cached = await prisma.weeklyInsight.findUnique({
     where: { userId_weekKey: { userId, weekKey } },
   });
 
-  if (cached) {
+  console.log(`[AI Insight] Cache lookup result: ${cached ? `FOUND (id: ${cached.id}, summary length: ${cached.summary?.length})` : "NOT FOUND"}`);
+
+  if (cached && !force) {
     // Challenge yoksa — AI ile oluştur ve kaydet
     if (!cached.challengeTitle && !cached.challengeCompleted) {
       try {
+        console.log("[AI Insight] Cache hit but no challenge — generating challenge via AI...");
         const data = await collectWeeklyData(userId);
         const { challenge } = await generateInsightWithAI(data, locale);
         await prisma.weeklyInsight.update({
@@ -362,7 +389,8 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
           challengeCompleted: false,
           successHighlight: cached.successHighlight ?? null,
         };
-      } catch {
+      } catch (challengeErr) {
+        console.error("[AI Insight] Failed to back-fill challenge:", challengeErr);
         // AI başarısızsa mevcut veriyi dön
       }
     }
@@ -390,7 +418,10 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
     }),
   ]);
 
+  console.log(`[AI Insight] Data check — activeRoutines: ${routineCount}, logsLast7Days: ${logCount}`);
+
   if (routineCount === 0 || logCount === 0) {
+    console.log("[AI Insight] Insufficient data — returning empty payload.");
     return {
       id: null, insight: null, weekKey, generatedAt: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
@@ -401,7 +432,9 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
 
   // 3) Veri topla + AI'dan insight al
   try {
+    console.log("[AI Insight] Generating fresh insight via Gemini...");
     const data = await collectWeeklyData(userId);
+    console.log(`[AI Insight] Weekly data collected — completionRate: ${data.completionRate}%, totalCompletions: ${data.totalCompletions}/${data.possibleCompletions}`);
     const { insight, challenge, successHighlight } = await generateInsightWithAI(data, locale);
 
     // 4) Cache'e kaydet (upsert — race condition koruması)
@@ -438,8 +471,13 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
       challengeCompleted: false,
       successHighlight,
     };
-  } catch (error) {
-    console.error("[AI Insight] Error generating insight:", error);
+  } catch (error: any) {
+    console.error("[AI Insight] ✘ FULL ERROR generating insight:");
+    console.error("[AI Insight] Error name:", error?.name);
+    console.error("[AI Insight] Error message:", error?.message);
+    console.error("[AI Insight] Error stack:", error?.stack?.slice(0, 500));
+    if (error?.status) console.error("[AI Insight] HTTP status:", error.status);
+    if (error?.errorDetails) console.error("[AI Insight] Error details:", JSON.stringify(error.errorDetails));
     return {
       id: null, insight: null, weekKey, generatedAt: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
@@ -517,7 +555,8 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
       });
 
       stats.generated++;
-    } catch {
+    } catch (cronErr: any) {
+      console.error(`[AI Cron] Failed for user ${user.id}:`, cronErr?.message ?? cronErr);
       stats.failed++;
     }
   }
@@ -712,8 +751,11 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     });
 
     return { message, coachTip: coachTip || null, dayKey, hasApiKey: true };
-  } catch (error) {
-    console.error("[AI Coach] Daily message error:", error);
+  } catch (error: any) {
+    console.error("[AI Coach] Daily message error:");
+    console.error("[AI Coach] Error name:", error?.name);
+    console.error("[AI Coach] Error message:", error?.message);
+    if (error?.status) console.error("[AI Coach] HTTP status:", error.status);
     return { message: null, coachTip: null, dayKey, hasApiKey: true };
   }
 }

@@ -333,6 +333,8 @@
     "generatedAt": "{date} tarihinde oluşturuldu",
     "weekLabel": "Hafta {week}",
     "regenerate": "Analizi Yenile",
+    "forceGenerate": "AI Zorla Üret",
+    "analyzing": "AI Koç analiz yapıyor, lütfen biraz bekleyin…",
     "proOnly": "Haftalık AI analizleri PRO özelliğidir.",
     "upgradeCta": "PRO'ya Yükselt",
     "emailSubject": "Haftalık Disiplin Raporunuz Hazır! 📊",

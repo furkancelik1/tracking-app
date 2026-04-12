@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain, Sparkles, RefreshCw, Lock, Target, CheckCircle2, Share2, Trophy } from "lucide-react";
+import { Brain, Sparkles, RefreshCw, Lock, Target, CheckCircle2, Share2, Trophy, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { getWeeklyInsightAction, type WeeklyInsightPayload } from "@/actions/ai.actions";
@@ -70,6 +70,7 @@ export function WeeklyInsightCard({ initialData, isPro }: WeeklyInsightCardProps
   const [data, setData] = useState<WeeklyInsightPayload | null>(initialData);
   const [isPending, startTransition] = useTransition();
   const [shareOpen, setShareOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const confettiFired = useRef(false);
 
   // Görev tamamlandığında confetti
@@ -81,11 +82,32 @@ export function WeeklyInsightCard({ initialData, isPro }: WeeklyInsightCardProps
   }, [data?.challengeCompleted]);
 
   const handleRegenerate = () => {
+    setError(null);
     startTransition(async () => {
       try {
         const result = await getWeeklyInsightAction();
         setData(result);
+        if (!result.insight) {
+          setError(t("analyzing"));
+        }
       } catch {
+        setError(t("error"));
+        setData(null);
+      }
+    });
+  };
+
+  const handleForceGenerate = () => {
+    setError(null);
+    startTransition(async () => {
+      try {
+        const result = await getWeeklyInsightAction({ force: true });
+        setData(result);
+        if (!result.insight) {
+          setError(t("analyzing"));
+        }
+      } catch {
+        setError(t("error"));
         setData(null);
       }
     });
@@ -140,6 +162,18 @@ export function WeeklyInsightCard({ initialData, isPro }: WeeklyInsightCardProps
             >
               <Share2 className="h-4 w-4" />
             </Button>
+            {process.env.NODE_ENV === "development" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-amber-500 hover:text-amber-400"
+                onClick={handleForceGenerate}
+                disabled={isPending}
+                title="Force Generate AI (dev only)"
+              >
+                <Zap className={cn("h-4 w-4", isPending && "animate-pulse")} />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -300,18 +334,32 @@ export function WeeklyInsightCard({ initialData, isPro }: WeeklyInsightCardProps
               className="flex flex-col items-center justify-center gap-3 py-6 text-center"
             >
               <p className="text-sm text-muted-foreground max-w-xs">
-                {t("noData")}
+                {error ?? t("noData")}
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRegenerate}
-                disabled={isPending}
-                className="border-violet-500/30 text-violet-400 hover:bg-violet-500/10"
-              >
-                <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isPending && "animate-spin")} />
-                {t("regenerate")}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerate}
+                  disabled={isPending}
+                  className="border-violet-500/30 text-violet-400 hover:bg-violet-500/10"
+                >
+                  <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isPending && "animate-spin")} />
+                  {t("regenerate")}
+                </Button>
+                {process.env.NODE_ENV === "development" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleForceGenerate}
+                    disabled={isPending}
+                    className="border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+                  >
+                    <Zap className={cn("h-3.5 w-3.5 mr-1.5", isPending && "animate-pulse")} />
+                    {t("forceGenerate")}
+                  </Button>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

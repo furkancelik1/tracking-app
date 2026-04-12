@@ -333,6 +333,8 @@
     "generatedAt": "Generated on {date}",
     "weekLabel": "Week {week}",
     "regenerate": "Refresh Insight",
+    "forceGenerate": "Force Generate AI",
+    "analyzing": "AI Coach is analyzing, please wait a moment…",
     "proOnly": "Weekly AI insights are a PRO feature.",
     "upgradeCta": "Upgrade to PRO",
     "emailSubject": "Your Weekly Discipline Report is Ready! 📊",

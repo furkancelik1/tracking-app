@@ -51,6 +51,14 @@ enum ShopItemCategory {
   BOOSTER
 }
 
+enum DuelStatus {
+  PENDING
+  ACTIVE
+  FINISHED
+  DECLINED
+  EXPIRED
+}
+
 model User {
   id                    String           @id @default(cuid())
   name                  String?
@@ -95,6 +103,12 @@ model User {
   challengeLogs         ChallengeLog[]
   weeklyInsights        WeeklyInsight[]
   purchases             Purchase[]
+  dailyCoachMessages    DailyCoachMessage[]
+
+  // Duels
+  sentDuels             Duel[]          @relation("DuelChallengerRelation")
+  receivedDuels         Duel[]          @relation("DuelOpponentRelation")
+  currentDuelId         String?
 }
 
 model Account {
@@ -328,6 +342,23 @@ model WeeklyInsight {
   @@index([userId])
 }
 
+// ─── AI Daily Coach Message Cache ────────────────────────────────────────────
+
+model DailyCoachMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  dayKey    String   // "2026-04-12" formatında
+  locale    String   @default("en")
+  message   String   @db.Text
+  coachTip  String?  @db.Text
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dayKey])
+  @@index([userId])
+}
+
 // ─── Shop & Marketplace ──────────────────────────────────────────────────────
 
 model ShopItem {
@@ -357,4 +388,28 @@ model Purchase {
 
   @@unique([userId, shopItemId])
   @@index([userId])
+}
+
+// ─── Disiplin Düellosu (1v1 Duel) ───────────────────────────────────────────
+
+model Duel {
+  id            String     @id @default(cuid())
+  challengerId  String
+  opponentId    String
+  stake         Int        // Ortaya konan altın miktarı
+  status        DuelStatus @default(PENDING)
+  startTime     DateTime?
+  endTime       DateTime?  // startTime + 24 saat
+  winnerId      String?
+  challengerScore Int      @default(0)
+  opponentScore   Int      @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  challenger    User       @relation("DuelChallengerRelation", fields: [challengerId], references: [id], onDelete: Cascade)
+  opponent      User       @relation("DuelOpponentRelation", fields: [opponentId], references: [id], onDelete: Cascade)
+
+  @@index([challengerId])
+  @@index([opponentId])
+  @@index([status])
 }

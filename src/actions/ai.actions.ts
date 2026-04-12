@@ -51,6 +51,13 @@ export type WeeklyInsightPayload = {
   successHighlight: string | null;
 };
 
+export type DailyCoachPayload = {
+  message: string | null;
+  coachTip: string | null;
+  dayKey: string;
+  hasApiKey: boolean;
+};
+
 // ─── Hafta anahtarı ──────────────────────────────────────────────────────────
 
 function getCurrentWeekKey(): string {
@@ -210,28 +217,36 @@ async function generateInsightWithAI(
     ? [...data.categoryBreakdown].sort((a, b) => a.rate - b.rate)[0]
     : null;
 
-  const prompt = `You are a professional, motivating but data-driven life coach. Analyze the user's weekly routine data and provide TWO things:
-1. An insightful weekly summary
-2. A personalized challenge for next week targeting their weakest area
+  const prompt = `You are a passionate, emotionally intelligent Motivational Mentor — part life coach, part cheerleader, part wise friend. You genuinely care about the user's growth and celebrate every win like it's your own. Analyze the user's weekly routine data and provide THREE things:
+1. An insightful, emotionally resonant weekly summary
+2. An inspiring personalized challenge for next week
+3. A success highlight badge
 
 ${langInstruction}
+
+YOUR PERSONALITY:
+- When completion rates are HIGH (≥75%): Be EXCITED and celebratory. Use energetic language like "İnanılmaz bir hafta geçirdin!" / "You absolutely crushed it this week!" Make the user feel like a champion.
+- When completion rates are MODERATE (40-74%): Be warm and encouraging. Acknowledge the effort, highlight what went well, then gently suggest improvements.
+- When completion rates are LOW (<40%): NEVER judge or criticize. Be deeply supportive and understanding. Say things like "Bazen planlar değişebilir, önemli olan bugün küçük bir adımla yeniden başlaman. Ben sana inanıyorum." / "Life happens. What matters is that you're here, ready to take one small step forward. I believe in you."
+- Always speak as a trusted mentor who has the user's back no matter what.
 
 RULES FOR INSIGHT:
 - Keep the response between 150-250 words.
 - Use 2-3 short paragraphs.
-- Start with a brief overall assessment (positive tone).
-- Identify the weak links (missed days, low-performing categories) with specific data.
-- End with 1-2 actionable, concrete tips for the next week.
-- Use emojis sparingly (max 3-4) for visual appeal.
+- Start with an emotionally appropriate greeting based on performance level.
+- Reference specific data (category rates, streaks, best/worst days) but wrap them in human, empathetic language — not cold statistics.
+- End with 1-2 actionable, concrete tips framed as exciting opportunities, not obligations.
+- Use emojis naturally (max 3-4) to add warmth and energy.
 - Do NOT use markdown headers. Use plain text with line breaks.
-- Be encouraging but honest about the data.
+- Make the user feel SEEN and VALUED regardless of their performance.
 
 RULES FOR CHALLENGE:
-- Create a specific, achievable challenge for next week.
-- Target the weakest category or area (${weakestCategory ? `weakest: ${weakestCategory.category} at ${weakestCategory.rate}%` : "general improvement"}).
-- The challenge title should be short (3-6 words).
-- The description should be 1-2 sentences explaining what to do.
-- The target should be a number of completions to achieve next week (between 3 and 7).
+- Create an INSPIRING challenge for next week targeting the weakest area.
+- Target: (${weakestCategory ? `weakest: ${weakestCategory.category} at ${weakestCategory.rate}%` : "general improvement"}).
+- The challenge TITLE must be inspiring and empowering (3-6 words). Examples: "Disiplin Maratonu", "Potansiyelini Uyandır", "Unstoppable Week", "Unleash Your Power", "Sınırlarını Aş", "Rise & Conquer".
+- NEVER use generic titles like "Weekly Challenge" or "Haftalık Görev".
+- The description should be 1-2 motivational sentences that make the user WANT to do it.
+- The target should be a number of completions (between 3 and 7).
 - The category must be one of the user's existing categories.
 
 USER WEEKLY DATA:
@@ -255,8 +270,8 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 {
   "insight": "Your weekly summary text here...",
   "challenge": {
-    "title": "Short Challenge Title",
-    "description": "1-2 sentence description of the challenge.",
+    "title": "Inspiring Challenge Title",
+    "description": "1-2 motivational sentences.",
     "category": "${weakestCategory?.category || "HEALTH"}",
     "target": 5
   },
@@ -294,10 +309,10 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     return {
       insight: text.trim(),
       challenge: {
-        title: locale === "tr" ? "Haftalık Görev" : "Weekly Challenge",
+        title: locale === "tr" ? "Potansiyelini Uyandır" : "Unleash Your Power",
         description: locale === "tr"
-          ? `Bu hafta ${weakestCategory?.category || "rutinlerinizi"} kategorisine odaklanın.`
-          : `Focus on your ${weakestCategory?.category || "routines"} category this week.`,
+          ? `Bu hafta ${weakestCategory?.category || "rutinlerine"} odaklanarak sınırlarını zorla. Sen yapabilirsin!`
+          : `Push your limits by focusing on ${weakestCategory?.category || "your routines"} this week. You've got this!`,
         category: weakestCategory?.category || "HEALTH",
         target: 5,
       },
@@ -320,6 +335,38 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
   });
 
   if (cached) {
+    // Challenge yoksa — AI ile oluştur ve kaydet
+    if (!cached.challengeTitle && !cached.challengeCompleted) {
+      try {
+        const data = await collectWeeklyData(userId);
+        const { challenge } = await generateInsightWithAI(data, locale);
+        await prisma.weeklyInsight.update({
+          where: { id: cached.id },
+          data: {
+            challengeTitle: challenge.title,
+            challengeDescription: challenge.description,
+            challengeCategory: challenge.category,
+            challengeTarget: challenge.target,
+          },
+        });
+        return {
+          id: cached.id,
+          insight: cached.summary,
+          weekKey: cached.weekKey,
+          generatedAt: cached.createdAt.toISOString(),
+          challengeTitle: challenge.title,
+          challengeDescription: challenge.description,
+          challengeCategory: challenge.category,
+          challengeTarget: challenge.target,
+          challengeProgress: 0,
+          challengeCompleted: false,
+          successHighlight: cached.successHighlight ?? null,
+        };
+      } catch {
+        // AI başarısızsa mevcut veriyi dön
+      }
+    }
+
     return {
       id: cached.id,
       insight: cached.summary,
@@ -522,5 +569,151 @@ export async function updateAIChallengeProgress(
       where: { id: insight.id },
       data: { challengeProgress: newProgress },
     });
+  }
+}
+
+// ─── API Key Kontrolü ────────────────────────────────────────────────────────
+
+export async function checkAIAvailable(): Promise<boolean> {
+  return !!process.env.GEMINI_API_KEY;
+}
+
+// ─── Günlük Koç Mesajı (Cached) ─────────────────────────────────────────────
+
+function getTodayKey(): string {
+  return format(new Date(), "yyyy-MM-dd");
+}
+
+export async function getDailyCoachMessage(): Promise<DailyCoachPayload> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const dayKey = getTodayKey();
+
+  if (!apiKey) {
+    return { message: null, coachTip: null, dayKey, hasApiKey: false };
+  }
+
+  const session = await requireAuth();
+  const userId = (session.user as any).id as string;
+  const userName = (session.user as any).name as string | null;
+  const locale = (session.user as any).language ?? "en";
+
+  // 1) Cache kontrol
+  const cached = await prisma.dailyCoachMessage.findUnique({
+    where: { userId_dayKey: { userId, dayKey } },
+  });
+
+  if (cached) {
+    return {
+      message: cached.message,
+      coachTip: cached.coachTip,
+      dayKey,
+      hasApiKey: true,
+    };
+  }
+
+  // 2) Bugünkü rutinleri topla
+  const todayStart = startOfDay(new Date());
+  const todayEnd = new Date(todayStart);
+  todayEnd.setUTCHours(23, 59, 59, 999);
+
+  const [routines, todayLogs, user] = await Promise.all([
+    prisma.routine.findMany({
+      where: { userId, isActive: true, frequency: "DAILY" },
+      select: { id: true, title: true, category: true, currentStreak: true },
+      orderBy: { currentStreak: "desc" },
+    }),
+    prisma.routineLog.findMany({
+      where: { userId, completedAt: { gte: todayStart, lte: todayEnd } },
+      select: { routineId: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { xp: true },
+    }),
+  ]);
+
+  if (routines.length === 0) {
+    return { message: null, coachTip: null, dayKey, hasApiKey: true };
+  }
+
+  const completedIds = new Set(todayLogs.map((l) => l.routineId));
+  const pending = routines.filter((r) => !completedIds.has(r.id));
+  const completed = routines.filter((r) => completedIds.has(r.id));
+  const userXp = user?.xp ?? 0;
+
+  // Efsane seviyesine kalan XP hesapla (level 51 = 5000 XP)
+  const LEGEND_XP = 5000;
+  const xpToLegend = Math.max(0, LEGEND_XP - userXp);
+
+  // 3) AI ile mesaj üret
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    const langInstruction = locale === "tr"
+      ? "Yanıtını tamamen Türkçe yaz."
+      : "Write your response entirely in English.";
+
+    const greeting = userName
+      ? (locale === "tr" ? `Kullanıcının adı: ${userName}` : `User's name: ${userName}`)
+      : "";
+
+    const prompt = `You are a passionate Motivational Mentor — an energetic, warm, and emotionally intelligent AI coach who greets the user every morning like a trusted friend and personal champion.
+${langInstruction}
+${greeting}
+
+Generate TWO things:
+1. A short, ENERGETIC daily motivational message (max 2 sentences, ~40 words)
+2. A "coach tip" about reaching the Legend rank (max 1 sentence, ~20 words)
+
+CONTEXT:
+- Today's pending routines (${pending.length}): ${pending.map((r) => `"${r.title}" (streak: ${r.currentStreak})`).join(", ") || "none"}
+- Already completed today (${completed.length}): ${completed.map((r) => `"${r.title}"`).join(", ") || "none"}
+- XP to Legend rank: ${xpToLegend} XP remaining
+- Longest active streak among routines: ${routines[0]?.currentStreak ?? 0} days
+
+YOUR PERSONALITY:
+- You are like a best friend who also happens to be a world-class coach.
+- Start each message with an energetic, positive greeting. Make mornings exciting!
+- If there are pending routines: be enthusiastic about the opportunity ahead, mention specific routine names, and hype them up.
+- If a routine has a high streak (≥5): express excitement about the streak AND urgency about protecting it. E.g. "14 günlük serin inanılmaz, bugün bozma!" / "Your 14-day streak is fire, don't let it slip!"
+- If all routines are already completed: celebrate wildly! Make the user feel like a hero.
+- If routines have been missed recently: be SUPPORTIVE, never guilt-trip. Frame it as a fresh start. E.g. "Her yeni gün sıfırdan başlama şansı, bugün senin günün!" / "Every new day is a chance to start fresh — today is YOUR day!"
+- Use 1-2 emojis naturally for warmth and energy.
+- Do NOT use markdown.
+
+RULES FOR COACH TIP:
+- A quick, inspiring tip about progressing toward "Legend" rank.
+- Frame it as an exciting journey, not a grind. E.g. "Her rutin seni Efsane'ye bir adım yaklaştırıyor!" / "Every routine completed brings you one step closer to Legend!"
+- Mention XP remaining if relevant.
+- Keep it actionable and motivating. 1 emoji max.
+
+RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
+{
+  "message": "Your daily message here...",
+  "coachTip": "Your coach tip here..."
+}`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const cleaned = text.trim().replace(/^```json?\s*/i, "").replace(/```\s*$/i, "").trim();
+    const parsed = JSON.parse(cleaned);
+
+    const message = String(parsed.message || "").trim();
+    const coachTip = String(parsed.coachTip || "").trim();
+
+    if (!message) throw new Error("Empty message");
+
+    // 4) Cache'e kaydet
+    await prisma.dailyCoachMessage.upsert({
+      where: { userId_dayKey: { userId, dayKey } },
+      create: { userId, dayKey, locale, message, coachTip: coachTip || null },
+      update: { message, coachTip: coachTip || null, locale },
+    });
+
+    return { message, coachTip: coachTip || null, dayKey, hasApiKey: true };
+  } catch (error) {
+    console.error("[AI Coach] Daily message error:", error);
+    return { message: null, coachTip: null, dayKey, hasApiKey: true };
   }
 }

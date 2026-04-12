@@ -7,6 +7,7 @@ import { useStreakFreeze } from "@/actions/shop.actions";
 import { checkBadges } from "@/actions/badge.actions";
 import { updateChallengeScoresFromLog } from "@/actions/challenge.actions";
 import { updateAIChallengeProgress } from "@/actions/ai.actions";
+import { updateDuelScore } from "@/actions/duel.actions";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Yardımcı: periyot başlangıcı (Route Handler ile aynı mantık)
@@ -180,6 +181,9 @@ export async function completeRoutineAction(
 
     // Aktif düellolarda skor güncelle
     await updateChallengeScoresFromLog(userId, routine.title).catch(() => {});
+
+    // Disiplin düellosu skor güncelle
+    await updateDuelScore(userId).catch(() => {});
 
     // AI haftalık görev ilerlemesini güncelle
     await updateAIChallengeProgress(userId, routine.category).catch(() => {});

@@ -2,7 +2,10 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { sendPushToUserAction } from "@/actions/push.actions";
+import { getISOWeek, getISOWeekYear } from "date-fns";
+import { unstable_cache } from "next/cache";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -489,4 +492,173 @@ export async function updateChallengeScoresFromLog(
       tag: `challenge-score-${challenge.id}`,
     }).catch(() => {});
   }
+}
+
+// ─── Challenge Leaderboard Types ─────────────────────────────────────────────
+
+export type ChallengeLeaderboardEntry = {
+  rank: number;
+  id: string;
+  name: string | null;
+  image: string | null;
+  xp: number;
+  subscriptionTier: string;
+  challengeTitle: string | null;
+  challengeCategory: string | null;
+  challengeProgress: number;
+  challengeTarget: number;
+  completionRate: number;
+  challengeCompleted: boolean;
+  isCurrentUser: boolean;
+};
+
+export type ChallengeLeaderboardPayload = {
+  entries: ChallengeLeaderboardEntry[];
+  currentUser: ChallengeLeaderboardEntry | null;
+  weekKey: string;
+};
+
+// ─── Challenge Leaderboard Action ────────────────────────────────────────────
+
+function getCurrentWeekKey(): string {
+  const now = new Date();
+  const week = getISOWeek(now);
+  const year = getISOWeekYear(now);
+  return `${year}-W${String(week).padStart(2, "0")}`;
+}
+
+// ─── Cached leaderboard data (shared across users, revalidates every hour) ──
+
+const getCachedLeaderboardData = unstable_cache(
+  async (weekKey: string) => {
+    const insights = await prisma.weeklyInsight.findMany({
+      where: {
+        weekKey,
+        challengeTarget: { gt: 0 },
+        user: { isPublic: true },
+      },
+      select: {
+        userId: true,
+        challengeTitle: true,
+        challengeCategory: true,
+        challengeProgress: true,
+        challengeTarget: true,
+        challengeCompleted: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            xp: true,
+            subscriptionTier: true,
+          },
+        },
+      },
+    });
+
+    const sorted = insights
+      .map((i) => ({
+        ...i,
+        createdAtMs: i.createdAt.getTime(),
+        completionRate: Math.min(
+          100,
+          Math.round((i.challengeProgress / i.challengeTarget) * 100)
+        ),
+      }))
+      .sort((a, b) => {
+        if (b.completionRate !== a.completionRate) return b.completionRate - a.completionRate;
+        if (b.user.xp !== a.user.xp) return b.user.xp - a.user.xp;
+        return a.createdAtMs - b.createdAtMs;
+      });
+
+    return sorted.slice(0, 20).map((i, idx) => ({
+      rank: idx + 1,
+      id: i.user.id,
+      name: i.user.name,
+      image: i.user.image,
+      xp: i.user.xp,
+      subscriptionTier: i.user.subscriptionTier,
+      challengeTitle: i.challengeTitle,
+      challengeCategory: i.challengeCategory,
+      challengeProgress: i.challengeProgress,
+      challengeTarget: i.challengeTarget,
+      completionRate: i.completionRate,
+      challengeCompleted: i.challengeCompleted,
+    }));
+  },
+  ["challenge-leaderboard"],
+  { revalidate: 3600 } // 1 saat
+);
+
+export async function getChallengeLeaderboard(): Promise<ChallengeLeaderboardPayload> {
+  const session = await getSession();
+  const currentUserId = (session?.user as any)?.id as string | undefined;
+  const weekKey = getCurrentWeekKey();
+
+  const cached = await getCachedLeaderboardData(weekKey);
+
+  // Kullanıcı bilgilerini ekle
+  const entries: ChallengeLeaderboardEntry[] = cached.map((e) => ({
+    ...e,
+    isCurrentUser: e.id === currentUserId,
+  }));
+
+  // Kullanıcı listede yoksa ayrı çek
+  let currentUser: ChallengeLeaderboardEntry | null = null;
+
+  if (currentUserId && !entries.some((e) => e.isCurrentUser)) {
+    const userInsight = await prisma.weeklyInsight.findUnique({
+      where: { userId_weekKey: { userId: currentUserId, weekKey } },
+      select: {
+        challengeTitle: true,
+        challengeCategory: true,
+        challengeProgress: true,
+        challengeTarget: true,
+        challengeCompleted: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            xp: true,
+            subscriptionTier: true,
+          },
+        },
+      },
+    });
+
+    if (userInsight && userInsight.challengeTarget > 0) {
+      const userRate = Math.min(
+        100,
+        Math.round(
+          (userInsight.challengeProgress / userInsight.challengeTarget) * 100
+        )
+      );
+
+      const aboveCount = cached.filter(
+        (s) =>
+          s.completionRate > userRate ||
+          (s.completionRate === userRate && s.xp > userInsight.user.xp)
+      ).length;
+
+      currentUser = {
+        rank: aboveCount + 1,
+        id: userInsight.user.id,
+        name: userInsight.user.name,
+        image: userInsight.user.image,
+        xp: userInsight.user.xp,
+        subscriptionTier: userInsight.user.subscriptionTier,
+        challengeTitle: userInsight.challengeTitle,
+        challengeCategory: userInsight.challengeCategory,
+        challengeProgress: userInsight.challengeProgress,
+        challengeTarget: userInsight.challengeTarget,
+        completionRate: userRate,
+        challengeCompleted: userInsight.challengeCompleted,
+        isCurrentUser: true,
+      };
+    }
+  }
+
+  return { entries, currentUser, weekKey };
 }

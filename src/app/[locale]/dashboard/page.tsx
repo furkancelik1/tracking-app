@@ -10,10 +10,14 @@ import { DashboardEmptyState } from "@/components/dashboard/DashboardEmptyState"
 import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
 import { TestEmailButton } from "@/components/dashboard/TestEmailButton";
 import { WeeklyInsightCard } from "@/components/dashboard/WeeklyInsightCard";
+import { AICoachBriefing } from "@/components/dashboard/AICoachBriefing";
+import { ChallengeTracker } from "@/components/dashboard/ChallengeTracker";
+import { ChallengeLeaderboard } from "@/components/dashboard/ChallengeLeaderboard";
 import { getSubscriptionTier } from "@/lib/stripe";
 import { getDashboardData } from "@/actions/dashboard.actions";
 import { getYearlyActivityData } from "@/actions/dashboard.actions";
 import { getWeeklyInsightAction } from "@/actions/ai.actions";
+import { getChallengeLeaderboard } from "@/actions/challenge.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
@@ -141,6 +145,13 @@ export default async function DashboardPage({
       ? await getWeeklyInsightAction().catch(() => null)
       : null;
 
+    // Challenge Leaderboard (1 saatlik cache — hata yutulur)
+    const challengeLeaderboard = await getChallengeLeaderboard().catch(() => ({
+      entries: [],
+      currentUser: null,
+      weekKey: "",
+    }));
+
     const userXp = userXpData?.xp ?? 0;
 
     const routines: RoutineWithMeta[] = (raw ?? []).map((r) => ({
@@ -185,6 +196,7 @@ export default async function DashboardPage({
         <DashboardNav />
         <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
           <LevelProgressBar xp={userXp} />
+          <AICoachBriefing xp={userXp} initialInsight={weeklyInsight} isPro={isPro} />
           <StreakAlert routines={routines} />
 
           {/* ── 4 Stat Cards ─────────────────────────────────────────── */}
@@ -217,6 +229,12 @@ export default async function DashboardPage({
               trend={stats.trends.thisWeekVsLastWeek}
             />
           </section>
+
+          {/* ── Challenge Tracker ────────────────────────────────── */}
+          <ChallengeTracker initialData={weeklyInsight} isPro={isPro} />
+
+          {/* ── Challenge Leaderboard ───────────────────────────── */}
+          <ChallengeLeaderboard data={challengeLeaderboard} />
 
           {/* ── Charts ───────────────────────────────────────────────── */}
           <Suspense

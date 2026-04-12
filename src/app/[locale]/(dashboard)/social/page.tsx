@@ -1,5 +1,6 @@
 import { getFollowersAction, getFollowingAction, getPendingRequestsAction } from "@/actions/social.actions";
 import { getChallengesAction, getCompletedChallengesAction, distributeChallengeRewards } from "@/actions/challenge.actions";
+import { getActiveDuelAction, checkAndFinalizeDuels } from "@/actions/duel.actions";
 import { getFriendsAction } from "@/actions/social.actions";
 import { UserSearch } from "@/components/dashboard/UserSearch";
 import { SocialTabs } from "@/components/dashboard/SocialTabs";
@@ -7,6 +8,8 @@ import { ConnectionList } from "@/components/dashboard/ConnectionList";
 import { ActiveChallenges } from "@/components/dashboard/ActiveChallenges";
 import { ChallengeHistory } from "@/components/dashboard/ChallengeHistory";
 import ChallengeRewardToast from "@/components/dashboard/ChallengeRewardToast";
+import { DuelArena } from "@/components/dashboard/DuelArena";
+import { DuelInviteDialog } from "@/components/dashboard/DuelInviteDialog";
 import { Users } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/lib/auth";
@@ -35,13 +38,17 @@ export default async function SocialPage({
   // Süresi dolmuş düelloları finalize et & ödülleri dağıt (sayfa yüklendiğinde)
   const pendingRewards = await distributeChallengeRewards(userId).catch(() => []);
 
-  const [followers, following, pendingRequests, friends, challenges, completedChallenges] = await Promise.all([
+  // Disiplin düellolarını finalize et
+  const duelResults = await checkAndFinalizeDuels(userId).catch(() => []);
+
+  const [followers, following, pendingRequests, friends, challenges, completedChallenges, activeDuel] = await Promise.all([
     getFollowersAction().catch(() => []),
     getFollowingAction().catch(() => []),
     getPendingRequestsAction().catch(() => []),
     getFriendsAction().catch(() => []),
     getChallengesAction().catch(() => []),
     getCompletedChallengesAction().catch(() => []),
+    getActiveDuelAction().catch(() => null),
   ]);
 
   return (
@@ -77,6 +84,15 @@ export default async function SocialPage({
       {/* Connection List — Takip Edilenler */}
       <section>
         <ConnectionList following={following} />
+      </section>
+
+      {/* Disiplin Düellosu */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <div />
+          <DuelInviteDialog friends={friends} />
+        </div>
+        <DuelArena duel={activeDuel} />
       </section>
 
       {/* Active Challenges */}

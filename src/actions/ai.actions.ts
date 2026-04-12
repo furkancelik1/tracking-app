@@ -37,6 +37,7 @@ export type AIChallengeData = {
 };
 
 export type WeeklyInsightPayload = {
+  id: string | null;
   insight: string | null;
   weekKey: string;
   generatedAt: string | null;
@@ -309,6 +310,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
 
   if (cached) {
     return {
+      id: cached.id,
       insight: cached.summary,
       weekKey: cached.weekKey,
       generatedAt: cached.createdAt.toISOString(),
@@ -331,7 +333,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
 
   if (routineCount === 0 || logCount === 0) {
     return {
-      insight: null, weekKey, generatedAt: null,
+      id: null, insight: null, weekKey, generatedAt: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
       challengeTarget: 0, challengeProgress: 0, challengeCompleted: false,
     };
@@ -343,7 +345,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
     const { insight, challenge } = await generateInsightWithAI(data, locale);
 
     // 4) Cache'e kaydet (upsert — race condition koruması)
-    await prisma.weeklyInsight.upsert({
+    const saved = await prisma.weeklyInsight.upsert({
       where: { userId_weekKey: { userId, weekKey } },
       create: {
         userId, weekKey, locale, summary: insight,
@@ -362,6 +364,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
     });
 
     return {
+      id: saved.id,
       insight,
       weekKey,
       generatedAt: new Date().toISOString(),
@@ -375,7 +378,7 @@ export async function getWeeklyInsightAction(): Promise<WeeklyInsightPayload> {
   } catch (error) {
     console.error("[AI Insight] Error generating insight:", error);
     return {
-      insight: null, weekKey, generatedAt: null,
+      id: null, insight: null, weekKey, generatedAt: null,
       challengeTitle: null, challengeDescription: null, challengeCategory: null,
       challengeTarget: 0, challengeProgress: 0, challengeCompleted: false,
     };

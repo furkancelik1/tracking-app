@@ -8,13 +8,11 @@ import {
   Copy,
   Check,
   Share2,
-  Brain,
-  Sparkles,
   ExternalLink,
+  ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import type { WeeklyInsightPayload } from "@/actions/ai.actions";
 
 // ─── Social Icons (inline SVG) ──────────────────────────────────────────────
@@ -49,7 +47,6 @@ interface ShareInsightModalProps {
   open: boolean;
   onClose: () => void;
   data: WeeklyInsightPayload;
-  completionRate?: number;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -58,11 +55,17 @@ export function ShareInsightModal({
   open,
   onClose,
   data,
-  completionRate,
 }: ShareInsightModalProps) {
   const t = useTranslations("aiInsight");
+  const locale = useLocale();
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
+  const [ogLoaded, setOgLoaded] = useState(false);
+
+  const ogImageUrl =
+    typeof window !== "undefined" && data.id
+      ? `${window.location.origin}/api/${locale}/og/weekly-insight?id=${data.id}`
+      : "";
 
   const shareUrl =
     typeof window !== "undefined"
@@ -126,9 +129,6 @@ export function ShareInsightModal({
     window.open(url, "_blank", "noopener,noreferrer");
   }, [shareUrl]);
 
-  const weekNumber = data.weekKey?.split("-W")[1] ?? "";
-  const rate = completionRate ?? 0;
-
   return (
     <AnimatePresence>
       {open && (
@@ -178,52 +178,26 @@ export function ShareInsightModal({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="relative rounded-xl overflow-hidden border border-indigo-500/20 bg-gradient-to-br from-indigo-950 via-violet-950 to-indigo-950 p-4"
+                  className="relative rounded-xl overflow-hidden border border-indigo-500/20"
                 >
-                  {/* Decorative glow */}
-                  <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-indigo-500/10 blur-3xl" />
-                  <div className="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-violet-500/10 blur-3xl" />
-
-                  <div className="relative flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-violet-500/20">
-                      <Brain className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-semibold text-white">
-                          {t("title")}
-                        </span>
-                        <Badge className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white border-0 text-[9px] px-1.5 py-0">
-                          <Sparkles className="size-2" /> AI
-                        </Badge>
+                  {/* Loading skeleton */}
+                  {!ogLoaded && (
+                    <div className="flex items-center justify-center bg-gradient-to-br from-indigo-950 via-violet-950 to-indigo-950 aspect-[1200/630]">
+                      <div className="flex flex-col items-center gap-2 text-indigo-300/50">
+                        <ImageIcon className="h-6 w-6 animate-pulse" />
+                        <span className="text-[10px]">{t("sharePreview")}…</span>
                       </div>
-                      <p className="text-[11px] text-indigo-200/70 line-clamp-2 leading-relaxed">
-                        {data.insight?.slice(0, 120)}…
-                      </p>
                     </div>
-                  </div>
-
-                  {/* Stats row */}
-                  <div className="relative flex items-center gap-3 mt-3 pt-3 border-t border-white/5">
-                    {weekNumber && (
-                      <span className="text-[10px] font-medium text-indigo-300/60">
-                        {t("weekLabel", { week: weekNumber })}
-                      </span>
-                    )}
-                    {rate > 0 && (
-                      <div className="flex items-center gap-1.5 ml-auto">
-                        <div className="h-1 w-12 rounded-full bg-white/10 overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-violet-400 to-indigo-400"
-                            style={{ width: `${rate}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-semibold text-indigo-300">
-                          {rate}%
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  )}
+                  {/* Actual OG Image */}
+                  {ogImageUrl && (
+                    <img
+                      src={ogImageUrl}
+                      alt="Weekly Insight OG Image"
+                      className={`w-full ${ogLoaded ? "block" : "hidden"}`}
+                      onLoad={() => setOgLoaded(true)}
+                    />
+                  )}
                 </motion.div>
               </div>
 

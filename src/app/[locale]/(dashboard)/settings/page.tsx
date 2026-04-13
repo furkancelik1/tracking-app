@@ -4,6 +4,7 @@ import { getSubscriptionTier, STRIPE_PLANS } from "@/lib/stripe";
 import { EmailNotificationsToggle } from "@/components/settings/EmailNotificationsToggle";
 import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
 import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
+import { BadgesSettingsSection } from "@/components/settings/BadgesSettingsSection";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -68,6 +69,9 @@ export default async function SettingsPage({
         <EmailNotificationsToggle enabled={user.emailNotificationsEnabled} isPro={isPro} />
         <PushNotificationButton />
       </section>
+
+      {/* ── Badges ── */}
+      <BadgesSettingsSection />
 
       {/* ── Abonelik ── */}
       <section>

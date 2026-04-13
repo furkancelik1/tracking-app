@@ -575,6 +575,11 @@
       "enabled": "E-posta bildirimleri açıldı.",
       "disabled": "E-posta bildirimleri kapatıldı."
     },
+    "badges": {
+      "title": "Başarı Rozetleri",
+      "description": "Disiplininizle kazandığınız tüm rozetleri görüntüleyin.",
+      "viewAll": "Rozetlerimi Görüntüle"
+    },
     "subscription": {
       "proPlan": "Pro Plan",
       "proDescription": "Tam erişim — sınırsız rutin",

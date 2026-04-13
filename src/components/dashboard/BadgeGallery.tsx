@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import {
   Trophy,
@@ -42,9 +42,9 @@ const BADGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   Award,
 };
 
-function BadgeIcon({ icon, className }: { icon: string | null; className?: string }) {
+function BadgeIcon({ icon, className, style }: { icon: string | null; className?: string; style?: React.CSSProperties }) {
   const Icon = BADGE_ICONS[icon ?? ""] ?? Award;
-  return <Icon className={className} />;
+  return <Icon className={className} style={style} />;
 }
 
 export function BadgeGallery({ open, onOpenChange }: Props) {
@@ -76,7 +76,7 @@ export function BadgeGallery({ open, onOpenChange }: Props) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
+            <Trophy className="h-5 w-5" style={{ color: "#39FF14", filter: "drop-shadow(0 0 6px #39FF14)" }} />
             {t("title")}
           </DialogTitle>
           <DialogDescription>
@@ -105,12 +105,21 @@ export function BadgeGallery({ open, onOpenChange }: Props) {
                   {earned.map((badge) => (
                     <div
                       key={badge.id}
-                      className="flex items-center gap-3 rounded-lg border border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 to-amber-500/5 p-3"
+                      className="flex items-center gap-3 rounded-lg p-3"
+                      style={{
+                        border: "1px solid rgba(57,255,20,0.25)",
+                        background: "linear-gradient(135deg, rgba(57,255,20,0.06) 0%, rgba(57,255,20,0.02) 100%)",
+                        boxShadow: "0 0 12px rgba(57,255,20,0.08)",
+                      }}
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-yellow-500/10">
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                        style={{ background: "rgba(57,255,20,0.1)" }}
+                      >
                         <BadgeIcon
                           icon={badge.icon}
-                          className="h-5 w-5 text-yellow-500"
+                          className="h-5 w-5"
+                          style={{ color: "#39FF14", filter: "drop-shadow(0 0 4px #39FF14)" }}
                         />
                       </div>
                       <div className="min-w-0">

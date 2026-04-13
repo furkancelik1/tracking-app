@@ -575,6 +575,11 @@
       "enabled": "Email notifications enabled.",
       "disabled": "Email notifications disabled."
     },
+    "badges": {
+      "title": "Achievement Badges",
+      "description": "View all the badges you've earned through your discipline.",
+      "viewAll": "View My Badges"
+    },
     "subscription": {
       "proPlan": "Pro Plan",
       "proDescription": "Full access — unlimited routines",

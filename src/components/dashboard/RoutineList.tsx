@@ -22,6 +22,7 @@ import { calculateLevel, didLevelUp } from "@/lib/level";
 import { fireDuelToast } from "@/lib/duel-notifications";
 import { ShareCardModal } from "@/components/dashboard/ShareCardModal";
 import type { ShareCardProps } from "@/components/dashboard/ShareCard";
+import { BadgeCelebration } from "@/components/dashboard/BadgeCelebration";
 
 // ─── Optimistic reducer ───────────────────────────────────────────────────────
 
@@ -84,6 +85,7 @@ export function RoutineList({ initialRoutines }: Props) {
     open: false,
     props: null,
   });
+  const [celebrationBadge, setCelebrationBadge] = useState<string | null>(null);
 
   // Sunucu verisi (TanStack Query — polling + refetch)
   const { data: serverRoutines = [], isLoading } = useRoutines(initialRoutines);
@@ -175,6 +177,11 @@ export function RoutineList({ initialRoutines }: Props) {
               actionLabel: td("notifViewDuel"),
               onAction: () => window.dispatchEvent(new CustomEvent("navigate-social")),
             });
+          }
+
+          // ── Rozet kutlaması ───────────────────────────────────────
+          if (result?.newBadges && result.newBadges.length > 0) {
+            setTimeout(() => setCelebrationBadge(result.newBadges[0]), 1800);
           }
 
           // ── Level-up algıla ────────────────────────────────────────
@@ -393,6 +400,12 @@ export function RoutineList({ initialRoutines }: Props) {
           cardProps={shareModal.props}
         />
       )}
+
+      {/* Badge Celebration Overlay */}
+      <BadgeCelebration
+        badgeName={celebrationBadge}
+        onDone={() => setCelebrationBadge(null)}
+      />
     </div>
   );
 }

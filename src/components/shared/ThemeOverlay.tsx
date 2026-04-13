@@ -25,12 +25,17 @@ export function ThemeOverlay() {
         const root = document.documentElement;
 
         if (theme?.metadata) {
-          const { primary, secondary, accent, glow } = theme.metadata;
+          const { primary, secondary, accent, glow, pattern } = theme.metadata;
           if (primary) root.style.setProperty("--shop-primary", primary);
           if (secondary) root.style.setProperty("--shop-secondary", secondary);
           if (accent) root.style.setProperty("--shop-accent", accent);
           if (glow) root.style.setProperty("--shop-primary-glow", glow);
           root.setAttribute("data-shop-theme", "true");
+          if (pattern && pattern !== "none") {
+            root.setAttribute("data-bg-pattern", pattern);
+          } else {
+            root.removeAttribute("data-bg-pattern");
+          }
           setApplied(true);
         } else {
           root.style.removeProperty("--shop-primary");
@@ -38,6 +43,7 @@ export function ThemeOverlay() {
           root.style.removeProperty("--shop-accent");
           root.style.removeProperty("--shop-primary-glow");
           root.removeAttribute("data-shop-theme");
+          root.removeAttribute("data-bg-pattern");
           setApplied(false);
         }
       } catch {

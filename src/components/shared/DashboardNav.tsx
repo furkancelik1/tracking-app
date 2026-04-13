@@ -109,8 +109,8 @@ export function DashboardNav() {
             onClick={() => setShopOpen(true)}
           >
             <Coins className="h-4 w-4" />
-            <span className="text-sm font-semibold tabular-nums">
-              {coins !== null ? coins.toLocaleString() : "—"}
+            <span className="text-sm font-semibold tabular-nums" suppressHydrationWarning>
+              {coins !== null ? coins.toLocaleString("en-US") : "—"}
             </span>
           </Button>
           {/* Badge gallery */}

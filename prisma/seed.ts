@@ -23,6 +23,7 @@ const THEMES = [
       secondary: "#0d9488",
       accent: "#99f6e4",
       glow: "rgba(94, 234, 212, 0.25)",
+      pattern: "dots",
     },
   },
   {
@@ -45,6 +46,7 @@ const THEMES = [
       secondary: "#0284c7",
       accent: "#7dd3fc",
       glow: "rgba(56, 189, 248, 0.28)",
+      pattern: "lines",
     },
   },
   {
@@ -56,6 +58,7 @@ const THEMES = [
       secondary: "#a16207",
       accent: "#fde047",
       glow: "rgba(234, 179, 8, 0.35)",
+      pattern: "grid",
     },
   },
   {
@@ -88,9 +91,19 @@ async function main() {
           metadata: theme.metadata,
         },
       });
-      console.log(`✓ "${theme.name}" seeded`);
+      console.log(`✓ "${theme.name}" created`);
     } else {
-      console.log(`⟳ "${theme.name}" already exists, skipping`);
+      // Update metadata so pattern/price/description changes propagate
+      await prisma.shopItem.update({
+        where: { id: existing.id },
+        data: {
+          description: theme.description,
+          price: theme.price,
+          metadata: theme.metadata,
+          isActive: true,
+        },
+      });
+      console.log(`⟳ "${theme.name}" updated`);
     }
   }
 

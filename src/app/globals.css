@@ -152,3 +152,34 @@
     transparent 42%
   );
 }
+
+/* ─── Background Patterns ────────────────────────────────────────────────────
+   Applied to <main> via data-bg-pattern on <html>.
+   Patterns are intentionally subtle — they layer over the body tint.
+────────────────────────────────────────────────────────────────────────────── */
+
+[data-bg-pattern="dots"] main {
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.045) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
+
+[data-bg-pattern="grid"] main {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+[data-bg-pattern="lines"] main {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 9px,
+    rgba(255, 255, 255, 0.025) 9px,
+    rgba(255, 255, 255, 0.025) 10px
+  );
+}

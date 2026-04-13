@@ -90,7 +90,16 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
             return i;
           })
         );
-        toast.success(t("equipSuccess"));
+        const primaryColor = item.metadata?.primary ?? "#818cf8";
+        const glowColor = item.metadata?.glow ?? "rgba(129,140,248,0.4)";
+        toast.success(`${item.name} activated`, {
+          description: item.category === "THEME" ? "Theme applied — enjoy the vibe" : "Frame equipped",
+          duration: 3500,
+          style: {
+            borderLeft: `3px solid ${primaryColor}`,
+            boxShadow: `0 0 24px ${glowColor}, 0 4px 16px rgba(0,0,0,0.4)`,
+          },
+        });
         window.dispatchEvent(new CustomEvent("theme-changed"));
       } else {
         toast.error(t("equipFailed"));

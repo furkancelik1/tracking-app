@@ -65,17 +65,10 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
       transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       <Card
-        className={`relative border-zinc-800/50 bg-card/70 backdrop-blur-sm overflow-hidden transition-shadow duration-300 ${
-          isHot ? "shadow-[0_0_30px_rgba(57,255,20,0.15)]" : ""
+        className={`relative border-zinc-800/50 bg-card/70 backdrop-blur-sm overflow-hidden transition-all duration-500 ${
+          isHot ? "shadow-[0_0_40px_rgba(57,255,20,0.18)] border-[rgba(57,255,20,0.2)]" : "hover:border-zinc-700/70"
         }`}
       >
-        {/* Ambient neon glow */}
-        <div
-          className="pointer-events-none absolute -inset-px rounded-xl opacity-[0.06]"
-          style={{
-            background: `radial-gradient(ellipse at 50% 40%, ${NEON_GREEN} 0%, transparent 60%)`,
-          }}
-        />
 
         <CardHeader className="pb-0 pt-4 relative">
           <CardTitle className="text-sm font-medium text-muted-foreground text-center">

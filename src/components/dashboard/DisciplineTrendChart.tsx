@@ -134,9 +134,11 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
 
         <CardContent className="pb-4 relative">
           <div
-            className="h-[200px] md:h-[250px] w-full min-w-0"
+            className="w-full min-w-0"
             style={{
-              minHeight: 200,
+              width: "100%",
+              height: 250,
+              position: "relative",
               touchAction: "manipulation",
               filter:
                 "drop-shadow(0 0 8px rgba(34,211,238,0.15)) drop-shadow(0 0 16px rgba(167,139,250,0.1))",

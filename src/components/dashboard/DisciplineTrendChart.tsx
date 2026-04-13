@@ -134,17 +134,18 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
 
         <CardContent className="pb-4 relative">
           <div
-            className="w-full min-w-0"
+            className="w-full min-w-0 overflow-hidden"
             style={{
               width: "100%",
-              height: 250,
+              height: "250px",
+              minHeight: "250px",
               position: "relative",
               touchAction: "manipulation",
               filter:
                 "drop-shadow(0 0 8px rgba(34,211,238,0.15)) drop-shadow(0 0 16px rgba(167,139,250,0.1))",
             }}
           >
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" debounce={100}>
               <AreaChart
                 data={points}
                 margin={{ top: 4, right: 4, left: -24, bottom: 0 }}

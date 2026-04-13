@@ -84,8 +84,8 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
         </CardHeader>
 
         <CardContent className="relative pb-4">
-          <div className="relative mx-auto min-w-0" style={{ width: 200, height: 200, position: "relative" }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="relative mx-auto min-w-0 overflow-hidden" style={{ width: "200px", height: "200px", minHeight: "200px", position: "relative" }}>
+            <ResponsiveContainer width="100%" height="100%" debounce={100}>
               <RadialBarChart
                 cx="50%"
                 cy="50%"

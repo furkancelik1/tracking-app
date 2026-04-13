@@ -929,9 +929,40 @@
     }
   },
   "pwa": {
-    "installTitle": "Install Routine Tracker",
+    "installTitle": "Install ZenTrack",
     "installDescription": "Add to your home screen for the best experience.",
-    "installButton": "Install"
+    "installButton": "Install",
+    "settingsTitle": "Mobile App",
+    "settingsDescription": "Install ZenTrack as a native app for a faster, fullscreen experience — no app store needed.",
+    "installAppButton": "Install App",
+    "alreadyInstalled": "App is already installed",
+    "iosGuide": {
+      "title": "Install ZenTrack",
+      "subtitle": "Add ZenTrack to your home screen in 3 easy steps.",
+      "step1": "Tap the Share button at the bottom of Safari",
+      "step2": "Scroll down and tap 'Add to Home Screen'",
+      "step3": "Tap 'Add' to confirm",
+      "gotIt": "Got it"
+    }
+  },
+
+  "push": {
+    "title": "Push Notifications",
+    "checking": "Checking status…",
+    "statusOn": "Notifications are on — you'll receive push reminders.",
+    "statusOff": "Enable push notifications for routine reminders.",
+    "statusDenied": "Permission denied. Enable in browser settings.",
+    "enabled": "Push notifications enabled!",
+    "disabled": "Push notifications turned off.",
+    "permissionDenied": "Notification permission denied. Check your browser settings.",
+    "subscribeFailed": "Failed to enable notifications.",
+    "unsubscribeFailed": "Failed to disable notifications.",
+    "testSent": "Test notification sent!",
+    "testFailed": "Failed to send test notification.",
+    "allow": "Allow",
+    "turnOff": "Turn Off",
+    "test": "Test",
+    "blocked": "Blocked"
   },
 
   "gauge": {

@@ -930,9 +930,40 @@
     }
   },
   "pwa": {
-    "installTitle": "Routine Tracker'ı Yükle",
+    "installTitle": "ZenTrack'i Yükle",
     "installDescription": "En iyi deneyim için ana ekranına ekle.",
-    "installButton": "Yükle"
+    "installButton": "Yükle",
+    "settingsTitle": "Mobil Uygulama",
+    "settingsDescription": "ZenTrack'i bir native uygulama olarak yükle — mağazaya gerek yok, tam ekran hızlı deneyim.",
+    "installAppButton": "Uygulamayı Yükle",
+    "alreadyInstalled": "Uygulama zaten yüklü",
+    "iosGuide": {
+      "title": "ZenTrack'i Yükle",
+      "subtitle": "ZenTrack'i 3 kolay adımda ana ekranına ekle.",
+      "step1": "Safari'nin altındaki Paylaş butonuna dokun",
+      "step2": "Aşağı kaydır ve 'Ana Ekrana Ekle' seçeneğine dokun",
+      "step3": "'Ekle' butonuna dokunarak onayla",
+      "gotIt": "Anladım"
+    }
+  },
+
+  "push": {
+    "title": "Push Bildirimleri",
+    "checking": "Kontrol ediliyor…",
+    "statusOn": "Bildirimler açık — hatırlatmaları alacaksın.",
+    "statusOff": "Rutin hatırlatmaları için bildirimleri aç.",
+    "statusDenied": "İzin reddedildi. Tarayıcı ayarlarından etkinleştir.",
+    "enabled": "Push bildirimleri etkinleştirildi!",
+    "disabled": "Push bildirimleri kapatıldı.",
+    "permissionDenied": "Bildirim izni reddedildi. Tarayıcı ayarlarını kontrol et.",
+    "subscribeFailed": "Bildirimler etkinleştirilemedi.",
+    "unsubscribeFailed": "Bildirimler kapatılamadı.",
+    "testSent": "Test bildirimi gönderildi!",
+    "testFailed": "Test bildirimi gönderilemedi.",
+    "allow": "İzin Ver",
+    "turnOff": "Kapat",
+    "test": "Test",
+    "blocked": "Engellendi"
   },
 
   "gauge": {

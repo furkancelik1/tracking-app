@@ -9,27 +9,28 @@ self.addEventListener("push", (event) => {
     payload = event.data.json();
   } catch {
     payload = {
-      title: "Rutin Takipçisi",
+      title: "ZenTrack",
       body: event.data.text(),
     };
   }
 
-  const { title, body, icon, badge, url, tag } = payload;
+  const { title, body, icon, badge, url, tag, actions: customActions } = payload;
 
   const options = {
     body: body ?? "",
-    icon: icon ?? "/icons/maskable_icon_x192.png",
-    badge: badge ?? "/icons/maskable_icon_x192.png",
-    tag: tag ?? "default",
-    vibrate: [200, 100, 200],
+    icon: icon ?? "/icons/icon-192x192.png",
+    badge: badge ?? "/icons/icon-192x192.png",
+    tag: tag ?? "zentrack-default",
+    vibrate: [100, 50, 100],
+    renotify: true,
     data: { url: url ?? "/dashboard" },
-    actions: [
-      { action: "open", title: "Aç" },
-      { action: "dismiss", title: "Kapat" },
+    actions: customActions ?? [
+      { action: "open", title: "Open" },
+      { action: "dismiss", title: "Dismiss" },
     ],
   };
 
-  event.waitUntil(self.registration.showNotification(title ?? "Rutin Takipçisi", options));
+  event.waitUntil(self.registration.showNotification(title ?? "ZenTrack", options));
 });
 
 self.addEventListener("notificationclick", (event) => {

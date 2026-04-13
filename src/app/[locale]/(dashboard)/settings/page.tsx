@@ -6,6 +6,7 @@ import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
 import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
 import { BadgesSettingsSection } from "@/components/settings/BadgesSettingsSection";
 import { SoundEffectsToggle } from "@/components/settings/SoundEffectsToggle";
+import { PWAInstallSection } from "@/components/settings/PWAInstallSection";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -76,6 +77,9 @@ export default async function SettingsPage({
         <h2 className="font-semibold">Sound</h2>
         <SoundEffectsToggle />
       </section>
+
+      {/* ── App Install ── */}
+      <PWAInstallSection />
 
       {/* ── Badges ── */}
       <BadgesSettingsSection />

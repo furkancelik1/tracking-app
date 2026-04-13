@@ -1,27 +1,42 @@
 {
-  "name": "Habit Tracker",
-  "short_name": "Habit Tracker",
+  "name": "ZenTrack — Mindful Habits",
+  "short_name": "ZenTrack",
   "description": "Track your daily habits, earn XP & coins, and build consistency with streaks.",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
-  "background_color": "#6366f1",
-  "theme_color": "#6366f1",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
     {
-      "src": "/icons/maskable_icon_x192.png",
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/maskable_icon_x512.png",
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
+  "screenshots": [],
   "categories": ["productivity", "lifestyle", "health"],
   "prefer_related_applications": false,
   "gcm_sender_id": "103953800507"

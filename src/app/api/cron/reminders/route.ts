@@ -4,6 +4,7 @@ import { sendRoutineReminderEmail } from "@/lib/mail";
 import { webpush } from "@/lib/web-push";
 import { startOfDay } from "date-fns";
 import { timingSafeEqual } from "crypto";
+import { buildPushPayload, type NotificationSlot } from "@/constants/notifications";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -17,6 +18,14 @@ const BATCH_DELAY_MS = 200;
 function isValidSecret(token: string, secret: string): boolean {
   if (token.length !== secret.length) return false;
   return timingSafeEqual(Buffer.from(token), Buffer.from(secret));
+}
+
+// ── Detect notification time slot from UTC hour ─────────────────────────────
+function detectSlot(utcHour: number): NotificationSlot {
+  // Cron runs at 06:00, 09:00, 18:00 UTC → maps to slots
+  if (utcHour < 10) return "morning";
+  if (utcHour < 15) return "midday";
+  return "evening";
 }
 
 // ─── GET /api/cron/reminders ─────────────────────────────────────────────────
@@ -150,6 +159,8 @@ export async function GET(req: NextRequest) {
     // FAZA 2: TÜM KULLANICILARA PUSH BİLDİRİM (FREE + PRO)
     // ══════════════════════════════════════════════════════════════════════════
 
+    const slot = detectSlot(new Date().getUTCHours());
+
     const pushUsers = await prisma.user.findMany({
       where: {
         pushSubscriptions: { some: {} },
@@ -158,6 +169,7 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         name: true,
+        language: true,
         pushSubscriptions: {
           select: { id: true, endpoint: true, p256dh: true, auth: true },
         },
@@ -178,12 +190,14 @@ export async function GET(req: NextRequest) {
 
     const pushTargets = pushUsers
       .map((user) => {
-        const pending = user.routines.filter((r) => r.logs.length === 0);
+        const pending = user.routines
+          .filter((r) => r.logs.length === 0)
+          .map((r) => ({ title: r.title, currentStreak: r.currentStreak }));
         return { ...user, pending };
       })
       .filter((u) => u.pending.length > 0);
 
-    console.log(`[cron] 🔔 Push fazı — ${pushUsers.length} abone, ${pushTargets.length} kişinin bekleyen rutini var`);
+    console.log(`[cron] 🔔 Push fazı (${slot}) — ${pushUsers.length} abone, ${pushTargets.length} kişinin bekleyen rutini var`);
 
     // ── Push batch gönderimi ────────────────────────────────────────────────
     for (let i = 0; i < pushTargets.length; i += PUSH_BATCH_SIZE) {
@@ -196,28 +210,10 @@ export async function GET(req: NextRequest) {
 
       await Promise.allSettled(
         batch.flatMap((user) => {
-          const pendingCount = user.pending.length;
-          const body =
-            pendingCount === 1 && user.pending[0]
-              ? `"${user.pending[0].title}" rutinini henüz tamamlamadın!`
-              : `${pendingCount} tamamlanmamış rutinin var. Serini bozma!`;
-
-          const longestStreak = Math.max(
-            ...user.pending.map((r) => r.currentStreak),
-            0
+          const locale = (user.language === "tr" ? "tr" : "en") as "en" | "tr";
+          const payload = JSON.stringify(
+            buildPushPayload(locale, slot, user.pending)
           );
-
-          const payload = JSON.stringify({
-            title: "⏰ Rutin Hatırlatıcısı",
-            body:
-              longestStreak > 0
-                ? `${body} 🔥 ${longestStreak} günlük serin tehlikede!`
-                : body,
-            icon: "/icons/maskable_icon_x192.png",
-            badge: "/icons/maskable_icon_x192.png",
-            url: "/dashboard",
-            tag: "routine-reminder",
-          });
 
           return user.pushSubscriptions.map(async (sub) => {
             try {
@@ -235,7 +231,6 @@ export async function GET(req: NextRequest) {
                   .delete({ where: { id: sub.id } })
                   .catch(() => {});
                 stats.subsCleaned++;
-                console.log(`[cron] 🧹 Geçersiz abonelik silindi: ${sub.endpoint.slice(0, 60)}…`);
               } else {
                 stats.pushFailed++;
                 console.error(`[cron] ❌ Push hatası (${err.statusCode}): ${sub.endpoint.slice(0, 60)}…`);

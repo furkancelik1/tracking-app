@@ -4,6 +4,11 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { webpush } from "@/lib/web-push";
 import { revalidatePath } from "next/cache";
+import {
+  buildPushPayload,
+  buildTestPayload,
+  type NotificationSlot,
+} from "@/constants/notifications";
 
 // ─── Push Aboneliğini Kaydet ─────────────────────────────────────────────────
 
@@ -100,14 +105,15 @@ export async function sendTestPushAction() {
   const session = await requireAuth();
   const userId = (session.user as { id: string }).id;
 
-  const result = await sendPushToUserAction(userId, {
-    title: "🔥 Rutin Hatırlatıcısı",
-    body: "Bu bir test bildirimidir! Push bildirimler çalışıyor.",
-    icon: "/icons/maskable_icon_x192.png",
-    badge: "/icons/maskable_icon_x192.png",
-    url: "/dashboard",
-    tag: "test-push",
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { language: true },
   });
+
+  const locale = (user.language === "tr" ? "tr" : "en") as "en" | "tr";
+  const payload = buildTestPayload(locale);
+
+  const result = await sendPushToUserAction(userId, payload);
 
   if (result.sent === 0) {
     throw new Error("Push aboneliği bulunamadı. Lütfen önce bildirimlere izin verin.");
@@ -118,36 +124,40 @@ export async function sendTestPushAction() {
 
 // ─── Bekleyen Rutinler İçin Push Gönder ──────────────────────────────────────
 
-export async function sendRoutineReminderPushAction(userId: string) {
+export async function sendRoutineReminderPushAction(
+  userId: string,
+  slot: NotificationSlot = "morning",
+) {
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
 
-  const routines = await prisma.routine.findMany({
-    where: { userId, isActive: true },
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
     select: {
-      title: true,
-      logs: {
-        where: { completedAt: { gte: todayStart } },
-        select: { id: true },
-        take: 1,
+      language: true,
+      routines: {
+        where: { isActive: true },
+        select: {
+          title: true,
+          currentStreak: true,
+          logs: {
+            where: { completedAt: { gte: todayStart } },
+            select: { id: true },
+            take: 1,
+          },
+        },
       },
     },
   });
 
-  const pending = routines.filter((r) => r.logs.length === 0);
+  const pending = user.routines
+    .filter((r) => r.logs.length === 0)
+    .map((r) => ({ title: r.title, currentStreak: r.currentStreak }));
+
   if (pending.length === 0) return { sent: 0, reason: "all_done" };
 
-  const body =
-    pending.length === 1
-      ? `"${pending[0].title}" rutinini henüz tamamlamadın!`
-      : `${pending.length} tamamlanmamış rutinin var. Serini bozma!`;
+  const locale = (user.language === "tr" ? "tr" : "en") as "en" | "tr";
+  const payload = buildPushPayload(locale, slot, pending);
 
-  return sendPushToUserAction(userId, {
-    title: "⏰ Rutin Hatırlatıcısı",
-    body,
-    icon: "/icons/maskable_icon_x192.png",
-    badge: "/icons/maskable_icon_x192.png",
-    url: "/dashboard",
-    tag: "routine-reminder",
-  });
+  return sendPushToUserAction(userId, payload);
 }

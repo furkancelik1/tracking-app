@@ -30,14 +30,6 @@ function useIsMobile() {
   return isMobile;
 }
 
-function getStatusKey(score: number): string {
-  if (score >= 90) return "status_fire";
-  if (score >= 70) return "status_storm";
-  if (score >= 50) return "status_decent";
-  if (score >= 25) return "status_push";
-  if (score > 0) return "status_sleepy";
-  return "status_alarm";
-}
 
 const NEON_GREEN = "#39FF14";
 
@@ -64,7 +56,6 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
   }
 
   const data = [{ name: "score", value: score, fill: NEON_GREEN }];
-  const statusKey = getStatusKey(score);
   const isHot = score >= 80;
 
   return (
@@ -147,18 +138,6 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
             </div>
           </div>
 
-          {/* Abi status text */}
-          <p
-            className="text-center text-sm font-medium mt-1"
-            style={{
-              color: isHot ? NEON_GREEN : "hsl(var(--muted-foreground))",
-              textShadow: isHot
-                ? `0 0 8px ${NEON_GREEN}40`
-                : "none",
-            }}
-          >
-            {t(statusKey)}
-          </p>
         </CardContent>
       </Card>
     </motion.div>

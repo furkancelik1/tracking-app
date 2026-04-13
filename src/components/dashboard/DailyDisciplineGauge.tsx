@@ -42,14 +42,10 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
   if (!isMounted) {
     return (
       <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm">
-        <CardHeader className="pb-0 pt-4">
-          <Skeleton className="h-4 w-24 mx-auto" />
-        </CardHeader>
-        <CardContent className="pb-4">
-          <div className="mx-auto w-[180px] h-[180px] md:w-[200px] md:h-[200px] flex items-center justify-center">
+        <CardContent className="py-4">
+          <div className="mx-auto w-[200px] h-[200px] flex items-center justify-center">
             <Skeleton className="w-full h-full rounded-full" />
           </div>
-          <Skeleton className="h-4 w-20 mx-auto mt-2" />
         </CardContent>
       </Card>
     );
@@ -70,13 +66,7 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
         }`}
       >
 
-        <CardHeader className="pb-0 pt-4 relative">
-          <CardTitle className="text-sm font-medium text-muted-foreground text-center">
-            {t("title")}
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent className="relative pb-4">
+        <CardContent className="relative py-4">
           <div className="relative mx-auto min-w-0 overflow-hidden" style={{ width: "200px", height: "200px", minHeight: "200px", position: "relative" }}>
             <ResponsiveContainer width="100%" height="100%" debounce={100}>
               <RadialBarChart
@@ -115,18 +105,15 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
             </ResponsiveContainer>
 
             {/* Center label */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span
-                className="text-3xl md:text-4xl font-black tabular-nums"
+                className="text-4xl md:text-5xl font-black tabular-nums"
                 style={{
                   color: NEON_GREEN,
-                  textShadow: `0 0 10px ${NEON_GREEN}60, 0 0 30px ${NEON_GREEN}30`,
+                  textShadow: `0 0 12px ${NEON_GREEN}70, 0 0 40px ${NEON_GREEN}30`,
                 }}
               >
                 {score}%
-              </span>
-              <span className="text-[11px] md:text-xs text-muted-foreground mt-0.5">
-                {t("completedOf", { completed, total })}
               </span>
             </div>
           </div>

@@ -33,11 +33,42 @@ function useIsMobile() {
 
 const NEON_GREEN = "#39FF14";
 
+function getThemeColor() {
+  const primary = getComputedStyle(document.documentElement)
+    .getPropertyValue("--shop-primary")
+    .trim();
+  return primary || NEON_GREEN;
+}
+
+function getThemeGlow() {
+  const glow = getComputedStyle(document.documentElement)
+    .getPropertyValue("--shop-primary-glow")
+    .trim();
+  return glow || `${NEON_GREEN}30`;
+}
+
 export function DailyDisciplineGauge({ score, completed, total }: Props) {
   const t = useTranslations("gauge");
   const [isMounted, setIsMounted] = useState(false);
+  const [ringColor, setRingColor] = useState(NEON_GREEN);
+  const [glowColor, setGlowColor] = useState(`${NEON_GREEN}30`);
   const isMobile = useIsMobile();
-  useEffect(() => setIsMounted(true), []);
+
+  useEffect(() => {
+    setIsMounted(true);
+    setRingColor(getThemeColor());
+    setGlowColor(getThemeGlow());
+
+    const handler = () => {
+      // small delay so ThemeOverlay has time to apply CSS vars
+      setTimeout(() => {
+        setRingColor(getThemeColor());
+        setGlowColor(getThemeGlow());
+      }, 80);
+    };
+    window.addEventListener("theme-changed", handler);
+    return () => window.removeEventListener("theme-changed", handler);
+  }, []);
 
   if (!isMounted) {
     return (
@@ -51,7 +82,7 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
     );
   }
 
-  const data = [{ name: "score", value: score, fill: NEON_GREEN }];
+  const data = [{ name: "score", value: score, fill: ringColor }];
   const isHot = score >= 80;
 
   return (
@@ -61,9 +92,11 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
       transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       <Card
-        className={`relative border-zinc-800/50 bg-card/70 backdrop-blur-sm overflow-hidden transition-all duration-500 ${
-          isHot ? "shadow-[0_0_40px_rgba(57,255,20,0.18)] border-[rgba(57,255,20,0.2)]" : "hover:border-zinc-700/70"
-        }`}
+        className="relative border-zinc-800/50 bg-card/70 backdrop-blur-sm overflow-hidden transition-all duration-500 hover:border-zinc-700/70"
+        style={isHot ? {
+          boxShadow: `0 0 40px ${glowColor}, 0 0 0 1px ${ringColor}30`,
+          borderColor: `${ringColor}30`,
+        } : undefined}
       >
 
         <CardContent className="relative py-4">
@@ -109,8 +142,8 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
               <span
                 className="text-4xl md:text-5xl font-black tabular-nums"
                 style={{
-                  color: NEON_GREEN,
-                  textShadow: `0 0 12px ${NEON_GREEN}70, 0 0 40px ${NEON_GREEN}30`,
+                  color: ringColor,
+                  textShadow: `0 0 12px ${ringColor}90, 0 0 40px ${glowColor}`,
                 }}
               >
                 {score}%

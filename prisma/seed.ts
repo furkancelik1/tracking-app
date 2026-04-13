@@ -25,6 +25,50 @@ const THEMES = [
       glow: "rgba(94, 234, 212, 0.25)",
     },
   },
+  {
+    name: "Ember Overdrive",
+    description: "Aggressive red-orange neon — for warriors who don't stop.",
+    price: 600,
+    metadata: {
+      primary: "#f97316",
+      secondary: "#dc2626",
+      accent: "#fb923c",
+      glow: "rgba(249, 115, 22, 0.38)",
+    },
+  },
+  {
+    name: "Arctic Focus",
+    description: "Ice-blue silence — cold clarity, zero distractions.",
+    price: 450,
+    metadata: {
+      primary: "#38bdf8",
+      secondary: "#0284c7",
+      accent: "#7dd3fc",
+      glow: "rgba(56, 189, 248, 0.28)",
+    },
+  },
+  {
+    name: "Prestige Gold",
+    description: "Elite golden aura — for those who've earned it.",
+    price: 1000,
+    metadata: {
+      primary: "#eab308",
+      secondary: "#a16207",
+      accent: "#fde047",
+      glow: "rgba(234, 179, 8, 0.35)",
+    },
+  },
+  {
+    name: "Forest Silence",
+    description: "Soft emerald — breathe deep, move with intention.",
+    price: 400,
+    metadata: {
+      primary: "#34d399",
+      secondary: "#059669",
+      accent: "#6ee7b7",
+      glow: "rgba(52, 211, 153, 0.26)",
+    },
+  },
 ];
 
 async function main() {

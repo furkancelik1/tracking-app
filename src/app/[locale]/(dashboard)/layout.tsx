@@ -1,5 +1,6 @@
 import { DashboardNav } from "@/components/shared/DashboardNav";
 import { ThemeOverlay } from "@/components/shared/ThemeOverlay";
+import { ThemeTransition } from "@/components/shared/ThemeTransition";
 import { DevCoinButton } from "@/components/dev/DevCoinButton";
 
 export default async function DashboardLayout({
@@ -11,6 +12,7 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-black">
       <DashboardNav />
       <ThemeOverlay />
+      <ThemeTransition />
       <main className="mx-auto max-w-6xl">{children}</main>
       {process.env.NODE_ENV === "development" && <DevCoinButton />}
     </div>

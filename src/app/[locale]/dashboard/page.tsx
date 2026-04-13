@@ -12,6 +12,7 @@ import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
 import { AICoachButton } from "@/components/dashboard/AICoachButton";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
+import { MottoDisplay } from "@/components/dashboard/MottoDisplay";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AlertTriangle } from "lucide-react";
@@ -136,6 +137,9 @@ export default async function DashboardPage({
       <>
         <DashboardNav />
         <main className="mx-auto max-w-3xl px-4 md:px-8 py-8 md:py-12 space-y-10 pb-24 md:pb-12">
+          {/* ── Daily motto — whisper at the top ── */}
+          <MottoDisplay />
+
           {/* ── Gauge — hero focus element ── */}
           <DashboardCharts gaugeData={gaugeData} />
 

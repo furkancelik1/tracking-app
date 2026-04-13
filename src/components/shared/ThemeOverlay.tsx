@@ -31,6 +31,7 @@ export function ThemeOverlay() {
           if (accent) root.style.setProperty("--shop-accent", accent);
           if (glow) root.style.setProperty("--shop-primary-glow", glow);
           root.setAttribute("data-shop-theme", "true");
+          root.setAttribute("data-theme-name", theme.name ?? "");
           if (pattern && pattern !== "none") {
             root.setAttribute("data-bg-pattern", pattern);
           } else {
@@ -43,6 +44,7 @@ export function ThemeOverlay() {
           root.style.removeProperty("--shop-accent");
           root.style.removeProperty("--shop-primary-glow");
           root.removeAttribute("data-shop-theme");
+          root.removeAttribute("data-theme-name");
           root.removeAttribute("data-bg-pattern");
           setApplied(false);
         }

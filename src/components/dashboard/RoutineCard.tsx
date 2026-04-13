@@ -28,6 +28,7 @@ import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { ICON_MAP } from "@/lib/routine-icons";
 import { HabitHeatmap } from "@/components/dashboard/HabitHeatmap";
 import { fireConfetti, hapticTap } from "@/lib/celebrations";
+import { useSoundEffect } from "@/hooks/useSoundEffect";
 
 type Props = {
   routine: RoutineWithMeta;
@@ -58,6 +59,7 @@ const cardVariants = {
 
 export function RoutineCard({ routine, onToggle, onDelete, onShare, isPending, index = 0 }: Props) {
   const t = useTranslations("dashboard.routineCard");
+  const { playComplete } = useSoundEffect();
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [justCompleted, setJustCompleted] = useState(false);
@@ -81,6 +83,7 @@ export function RoutineCard({ routine, onToggle, onDelete, onShare, isPending, i
   function handleConfirm() {
     setNoteDialogOpen(false);
     hapticTap();
+    playComplete();
     // Optimistic: anında konfeti + animasyon başlat
     setJustCompleted(true);
     fireConfetti();

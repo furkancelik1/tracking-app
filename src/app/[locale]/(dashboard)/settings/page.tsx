@@ -5,6 +5,7 @@ import { EmailNotificationsToggle } from "@/components/settings/EmailNotificatio
 import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
 import { PushNotificationButton } from "@/components/dashboard/PushNotificationButton";
 import { BadgesSettingsSection } from "@/components/settings/BadgesSettingsSection";
+import { SoundEffectsToggle } from "@/components/settings/SoundEffectsToggle";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -68,6 +69,12 @@ export default async function SettingsPage({
         <h2 className="font-semibold">{t("notifications.title")}</h2>
         <EmailNotificationsToggle enabled={user.emailNotificationsEnabled} isPro={isPro} />
         <PushNotificationButton />
+      </section>
+
+      {/* ── Sound Effects ── */}
+      <section className="rounded-lg border p-5 space-y-3">
+        <h2 className="font-semibold">Sound</h2>
+        <SoundEffectsToggle />
       </section>
 
       {/* ── Badges ── */}

@@ -74,7 +74,7 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
             !isPro && "blur-sm select-none pointer-events-none"
           )}
         >
-          <div className="h-[200px] min-h-0 w-full">
+          <div style={{ height: "200px", minHeight: "200px", width: "100%" }}>
           {!mounted ? (
             <Skeleton className="h-full w-full rounded-md" />
           ) : (

@@ -81,7 +81,7 @@ export function WeeklyProgressChart({ data }: Props) {
       </CardHeader>
 
       <CardContent className="pb-6">
-        <div className="h-[200px] md:h-[240px] min-h-0 w-full" style={{ touchAction: "manipulation" }}>
+        <div style={{ height: "200px", minHeight: "200px", width: "100%", touchAction: "manipulation" }}>
           {!mounted ? (
             <Skeleton className="h-full w-full rounded-md" />
           ) : (

@@ -2,7 +2,7 @@
 
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import { useTransition } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { Globe } from "lucide-react";
 import {
   DropdownMenu,
@@ -37,6 +37,9 @@ export function LanguageSwitcher() {
     }).catch(() => {});
   }
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
   const current = LOCALES.find((l) => l.value === locale) ?? LOCALES[0];
 
   return (
@@ -49,7 +52,7 @@ export function LanguageSwitcher() {
           disabled={isPending}
         >
           <Globe className="size-3.5" />
-          {current.flag} {current.value.toUpperCase()}
+          {isMounted && `${current.flag} ${current.value.toUpperCase()}`}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[120px]">

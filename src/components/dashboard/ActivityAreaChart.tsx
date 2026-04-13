@@ -85,7 +85,7 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
         </div>
       </CardHeader>
       <CardContent className="pb-6">
-        <div className="h-[220px] md:h-[260px] min-h-0 w-full" style={{ touchAction: "manipulation" }}>
+        <div className="h-[220px] md:h-[260px] w-full" style={{ minHeight: "220px", width: "100%", touchAction: "manipulation" }}>
           {!mounted ? (
             <Skeleton className="h-full w-full rounded-md" />
           ) : (

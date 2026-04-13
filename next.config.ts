@@ -9,13 +9,16 @@ const withPWA = withPWAInit({
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
-  disable: false,
-  register: false,
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  customWorkerSrc: "src/worker",
   fallbacks: {
     document: "/offline.html",
   },
   workboxOptions: {
     disableDevLogs: true,
+    skipWaiting: true,
+    clientsClaim: true,
     runtimeCaching: [
       // App Shell — HTML pages (NetworkFirst → stale offline)
       {

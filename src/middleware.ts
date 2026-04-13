@@ -66,7 +66,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all pathnames except API, _next, and static files
-    "/((?!api|_next|.*\\..*).*)",
+    // Statik dosyaları, sw.js ve PWA varlıklarını middleware'den hariç tut
+    "/((?!api|_next/static|_next/image|favicon\\.ico|sw\\.js|workbox-.*|manifest\\.json|.*\\.png|.*\\.jpg|.*\\.ico|.*\\.svg).*)",
   ],
 };

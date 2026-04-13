@@ -136,6 +136,7 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
           <div
             className="h-[200px] md:h-[250px] w-full min-w-0"
             style={{
+              minHeight: 200,
               touchAction: "manipulation",
               filter:
                 "drop-shadow(0 0 8px rgba(34,211,238,0.15)) drop-shadow(0 0 16px rgba(167,139,250,0.1))",

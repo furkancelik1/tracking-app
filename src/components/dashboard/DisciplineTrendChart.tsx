@@ -18,7 +18,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -47,15 +46,9 @@ function NeonDot(props: any) {
   if (cx == null || cy == null) return null;
   const color = STATUS_COLORS[payload.status] ?? "#a78bfa";
   return (
-    <g
-      onClick={() => onClick?.(payload)}
-      style={{ cursor: "pointer" }}
-    >
-      {/* Outer glow */}
+    <g onClick={() => onClick?.(payload)} style={{ cursor: "pointer" }}>
       <circle cx={cx} cy={cy} r={10} fill={color} opacity={0.15} />
-      {/* Mid glow */}
       <circle cx={cx} cy={cy} r={6} fill={color} opacity={0.3} />
-      {/* Inner dot */}
       <circle cx={cx} cy={cy} r={3.5} fill={color} stroke="#0f172a" strokeWidth={1.5} />
     </g>
   );
@@ -66,10 +59,7 @@ function NeonActiveDot(props: any) {
   if (cx == null || cy == null) return null;
   const color = STATUS_COLORS[payload.status] ?? "#a78bfa";
   return (
-    <g
-      onClick={() => onClick?.(payload)}
-      style={{ cursor: "pointer" }}
-    >
+    <g onClick={() => onClick?.(payload)} style={{ cursor: "pointer" }}>
       <circle cx={cx} cy={cy} r={14} fill={color} opacity={0.12} />
       <circle cx={cx} cy={cy} r={9} fill={color} opacity={0.25} />
       <circle cx={cx} cy={cy} r={5} fill={color} stroke="#0f172a" strokeWidth={2} />
@@ -77,19 +67,28 @@ function NeonActiveDot(props: any) {
   );
 }
 
+// ─── Main Component ──────────────────────────────────────────────────────────
+
 export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
   const t = useTranslations("disciplineTrend");
-  const [mounted, setMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
   useEffect(() => {
-    setMounted(true);
+    setIsMounted(true);
     const mql = window.matchMedia("(max-width: 767px)");
     setIsMobile(mql.matches);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
   }, []);
+
+  const handleDotClick = useCallback((payload: any) => {
+    setSelectedDate(payload?.date ?? null);
+  }, []);
+
+  if (!isMounted) return null;
 
   const { points, avgScore, trend, streakDays, biggestDrop, biggestSurge } = data;
 
@@ -100,165 +99,129 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
     trend === "up"
       ? "text-emerald-400"
       : trend === "down"
-        ? "text-red-400"
-        : "text-zinc-400";
-
-  const trendLabel =
-    trend === "up"
-      ? t("trendUp")
-      : trend === "down"
-        ? t("trendDown")
-        : t("trendStable");
-
-  const handleDotClick = useCallback((payload: any) => {
-    if (payload?.date) setSelectedDate(payload.date);
-  }, []);
+      ? "text-red-400"
+      : "text-muted-foreground";
 
   return (
     <>
-      <Card className="relative border-zinc-800/50 bg-card/70 backdrop-blur-sm overflow-hidden">
-        {/* Neon ambient glow behind the card */}
-        <div
-          className="pointer-events-none absolute -inset-px rounded-xl opacity-[0.07]"
-          style={{
-            background:
-              "radial-gradient(ellipse at 50% 0%, #22d3ee 0%, transparent 60%), radial-gradient(ellipse at 50% 100%, #a78bfa 0%, transparent 60%)",
-          }}
-        />
-
-        <CardHeader className="pb-3 relative">
-          <div className="flex items-start justify-between gap-4">
+      <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base">{t("title")}</CardTitle>
-              <CardDescription className="mt-0.5">
+              <CardTitle className="text-base font-semibold">
+                {t("title")}
+              </CardTitle>
+              <CardDescription className="text-xs mt-0.5">
                 {t("subtitle")}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
-              {/* Ortalama skor */}
-              <div className="text-right">
-                <p className="text-lg font-semibold tabular-nums">
-                  %{avgScore}
-                </p>
-                <p className="text-[11px] text-muted-foreground">{t("avg")}</p>
-              </div>
-              {/* Streak */}
-              {streakDays > 0 && (
-                <div className="text-right">
-                  <p className="text-lg font-semibold tabular-nums text-amber-400">
-                    {streakDays}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {t("streakDays")}
-                  </p>
-                </div>
-              )}
-              {/* Trend badge */}
-              <Badge
-                variant="outline"
-                className={cn(
-                  "gap-1 text-[11px] px-2 py-0.5 border-zinc-700",
-                  trendColor
-                )}
-              >
-                <TrendIcon className="h-3 w-3" />
-                {trendLabel}
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={cn("text-xs", trendColor)}>
+                <TrendIcon className="h-3 w-3 mr-1" />
+                {avgScore}%
               </Badge>
+              {streakDays > 0 && (
+                <Badge
+                  variant="outline"
+                  className="text-xs text-cyan-400 border-cyan-500/30"
+                >
+                  {streakDays} {t("streak")}
+                </Badge>
+              )}
             </div>
           </div>
         </CardHeader>
 
         <CardContent className="pb-4 relative">
           <div
-            className="h-[170px] md:h-[200px] min-h-0 w-full"
+            className="h-[170px] md:h-[200px] min-h-0 w-full min-w-0"
             style={{
               touchAction: "manipulation",
-              filter: "drop-shadow(0 0 8px rgba(34,211,238,0.15)) drop-shadow(0 0 16px rgba(167,139,250,0.1))",
+              filter:
+                "drop-shadow(0 0 8px rgba(34,211,238,0.15)) drop-shadow(0 0 16px rgba(167,139,250,0.1))",
             }}
           >
-            {!mounted ? (
-              <Skeleton className="h-full w-full rounded-md" />
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={points}
-                  margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="neonTrendGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.35} />
-                      <stop offset="35%" stopColor="#a78bfa" stopOpacity={0.15} />
-                      <stop offset="100%" stopColor="#7c3aed" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={points}
+                margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient
+                    id="neonTrendGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.35} />
+                    <stop offset="35%" stopColor="#a78bfa" stopOpacity={0.15} />
+                    <stop offset="100%" stopColor="#7c3aed" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
 
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="hsl(var(--border))"
-                    strokeOpacity={0.3}
-                  />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="hsl(var(--border))"
+                  strokeOpacity={0.3}
+                />
 
-                  <XAxis
-                    dataKey="day"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{
-                      fontSize: 12,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                    tickFormatter={(val: string) => isMobile ? val.charAt(0) : val}
-                  />
-                  <YAxis
-                    domain={[0, 100]}
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{
-                      fontSize: 11,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                    tickFormatter={(v: number) => `${v}%`}
-                    width={40}
-                  />
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fontSize: 12,
+                    fill: "hsl(var(--muted-foreground))",
+                  }}
+                  tickFormatter={(val: string) =>
+                    isMobile ? val.charAt(0) : val
+                  }
+                />
+                <YAxis
+                  domain={[0, 100]}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fontSize: 11,
+                    fill: "hsl(var(--muted-foreground))",
+                  }}
+                  tickFormatter={(v: number) => `${v}%`}
+                  width={40}
+                />
 
-                  <Tooltip
-                    cursor={{
-                      stroke: "rgba(34,211,238,0.25)",
-                      strokeWidth: 1,
-                    }}
-                    contentStyle={{
-                      background: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "13px",
-                      boxShadow: "0 0 20px rgba(34,211,238,0.1), 0 4px 16px rgba(0,0,0,.25)",
-                    }}
-                    labelStyle={{ fontWeight: 600, marginBottom: 2 }}
-                    formatter={(value) => [`${Number(value)}%`, t("score")]}
-                  />
+                <Tooltip
+                  cursor={{
+                    stroke: "rgba(34,211,238,0.25)",
+                    strokeWidth: 1,
+                  }}
+                  contentStyle={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                    fontSize: "13px",
+                    boxShadow:
+                      "0 0 20px rgba(34,211,238,0.1), 0 4px 16px rgba(0,0,0,.25)",
+                  }}
+                  labelStyle={{ fontWeight: 600, marginBottom: 2 }}
+                  formatter={(value) => [`${Number(value)}%`, t("score")]}
+                />
 
-                  <Area
-                    type="monotone"
-                    dataKey="score"
-                    stroke="url(#neonStroke)"
-                    strokeWidth={2.5}
-                    fill="url(#neonTrendGradient)"
-                    dot={<NeonDot onClick={handleDotClick} />}
-                    activeDot={<NeonActiveDot onClick={handleDotClick} />}
-                    style={{
-                      stroke: "#22d3ee",
-                      filter: "drop-shadow(0 0 4px rgba(34,211,238,0.4))",
-                    }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
+                <Area
+                  type="monotone"
+                  dataKey="score"
+                  stroke="#22d3ee"
+                  strokeWidth={2.5}
+                  fill="url(#neonTrendGradient)"
+                  dot={<NeonDot onClick={handleDotClick} />}
+                  activeDot={<NeonActiveDot onClick={handleDotClick} />}
+                  style={{
+                    filter: "drop-shadow(0 0 4px rgba(34,211,238,0.4))",
+                  }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
 
           {/* Highlight pills */}

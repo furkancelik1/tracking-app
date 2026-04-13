@@ -43,9 +43,11 @@ const NEON_GREEN = "#39FF14";
 
 export function DailyDisciplineGauge({ score, completed, total }: Props) {
   const t = useTranslations("gauge");
-  const [mounted, setMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const isMobile = useIsMobile();
-  useEffect(() => setMounted(true), []);
+  useEffect(() => setIsMounted(true), []);
+
+  if (!isMounted) return null;
 
   const data = [{ name: "score", value: score, fill: NEON_GREEN }];
   const statusKey = getStatusKey(score);
@@ -77,64 +79,58 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
         </CardHeader>
 
         <CardContent className="relative pb-4">
-          <div className="relative mx-auto w-[180px] h-[180px] md:w-[200px] md:h-[200px]">
-            {!mounted ? (
-              <Skeleton className="h-full w-full rounded-full" />
-            ) : (
-              <>
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadialBarChart
-                    cx="50%"
-                    cy="50%"
-                    innerRadius="78%"
-                    outerRadius="100%"
-                    startAngle={90}
-                    endAngle={-270}
-                    data={data}
-                    barSize={12}
-                  >
-                    <defs>
-                      <filter id="neonGaugeGlow">
-                        <feGaussianBlur
-                          in="SourceGraphic"
-                          stdDeviation="3"
-                          result="blur"
-                        />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                    </defs>
-                    <RadialBar
-                      dataKey="value"
-                      cornerRadius={10}
-                      background={{ fill: "hsl(var(--border) / 0.3)" }}
-                      isAnimationActive={!isMobile}
-                      animationDuration={1200}
-                      animationEasing="ease-out"
-                      style={{ filter: "url(#neonGaugeGlow)" }}
+          <div className="relative mx-auto w-[180px] h-[180px] md:w-[200px] md:h-[200px] min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadialBarChart
+                cx="50%"
+                cy="50%"
+                innerRadius="78%"
+                outerRadius="100%"
+                startAngle={90}
+                endAngle={-270}
+                data={data}
+                barSize={12}
+              >
+                <defs>
+                  <filter id="neonGaugeGlow">
+                    <feGaussianBlur
+                      in="SourceGraphic"
+                      stdDeviation="3"
+                      result="blur"
                     />
-                  </RadialBarChart>
-                </ResponsiveContainer>
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <RadialBar
+                  dataKey="value"
+                  cornerRadius={10}
+                  background={{ fill: "hsl(var(--border) / 0.3)" }}
+                  isAnimationActive={!isMobile}
+                  animationDuration={1200}
+                  animationEasing="ease-out"
+                  style={{ filter: "url(#neonGaugeGlow)" }}
+                />
+              </RadialBarChart>
+            </ResponsiveContainer>
 
-                {/* Center label */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span
-                    className="text-3xl md:text-4xl font-black tabular-nums"
-                    style={{
-                      color: NEON_GREEN,
-                      textShadow: `0 0 10px ${NEON_GREEN}60, 0 0 30px ${NEON_GREEN}30`,
-                    }}
-                  >
-                    {score}%
-                  </span>
-                  <span className="text-[11px] md:text-xs text-muted-foreground mt-0.5">
-                    {t("completedOf", { completed, total })}
-                  </span>
-                </div>
-              </>
-            )}
+            {/* Center label */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span
+                className="text-3xl md:text-4xl font-black tabular-nums"
+                style={{
+                  color: NEON_GREEN,
+                  textShadow: `0 0 10px ${NEON_GREEN}60, 0 0 30px ${NEON_GREEN}30`,
+                }}
+              >
+                {score}%
+              </span>
+              <span className="text-[11px] md:text-xs text-muted-foreground mt-0.5">
+                {t("completedOf", { completed, total })}
+              </span>
+            </div>
           </div>
 
           {/* Abi status text */}

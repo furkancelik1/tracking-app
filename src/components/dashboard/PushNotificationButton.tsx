@@ -39,21 +39,6 @@ export function PushNotificationButton() {
     }
     console.log("[Push] ✅ serviceWorker & PushManager mevcut");
 
-    // Dev modda SW yoksa elle register et
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    console.log("[Push] 📋 Kayıtlı SW sayısı:", registrations.length, registrations.map(r => r.scope));
-    if (registrations.length === 0) {
-      console.log("[Push] ⚙️ SW bulunamadı, /sw.js elle register ediliyor...");
-      try {
-        const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
-        console.log("[Push] ✅ SW register edildi — scope:", reg.scope);
-      } catch (regErr) {
-        console.error("[Push] ❌ SW register BAŞARISIZ:", regErr);
-        setState("unsupported");
-        return;
-      }
-    }
-
     const permission = Notification.permission;
     console.log("[Push] 🔔 Mevcut izin durumu:", permission);
     if (permission === "denied") {

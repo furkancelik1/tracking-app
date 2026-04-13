@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { MarketplaceContent } from "@/components/dashboard/MarketplaceContent";
+import { getMarketplaceItems } from "@/actions/shop.actions";
 
 export async function generateMetadata({
   params,
@@ -19,9 +20,11 @@ export default async function MarketplacePage({
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const data = await getMarketplaceItems();
+
   return (
-    <div className="px-6 py-8">
-      <MarketplaceContent />
+    <div className="px-6 py-12">
+      <MarketplaceContent initialData={data} />
     </div>
   );
 }

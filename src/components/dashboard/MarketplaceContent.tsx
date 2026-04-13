@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Coins, Check, Loader2, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
-  getMarketplaceItems,
   buyShopItem,
   equipItem,
   unequipItem,
@@ -27,6 +25,13 @@ type MarketplaceItem = {
   equipped: boolean;
 };
 
+type MarketplaceData = {
+  coins: number;
+  equippedTheme: string | null;
+  equippedFrame: string | null;
+  items: MarketplaceItem[];
+};
+
 type TabValue = "all" | "THEME" | "FRAME" | "BOOSTER";
 
 const TABS: { value: TabValue; labelKey: string }[] = [
@@ -36,32 +41,16 @@ const TABS: { value: TabValue; labelKey: string }[] = [
   { value: "BOOSTER", labelKey: "tabs.boosters" },
 ];
 
-export function MarketplaceContent() {
+export function MarketplaceContent({ initialData }: { initialData: MarketplaceData }) {
   const t = useTranslations("marketplace");
   const tShop = useTranslations("shop");
 
-  const [coins, setCoins] = useState(0);
-  const [items, setItems] = useState<MarketplaceItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [coins, setCoins] = useState(initialData.coins);
+  const [items, setItems] = useState<MarketplaceItem[]>(
+    initialData.items as MarketplaceItem[]
+  );
   const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [actionId, setActionId] = useState<string | null>(null);
-
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getMarketplaceItems();
-      setCoins(data.coins);
-      setItems(data.items as MarketplaceItem[]);
-    } catch {
-      toast.error(tShop("loadError"));
-    } finally {
-      setLoading(false);
-    }
-  }, [tShop]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   async function handleBuy(item: MarketplaceItem) {
     setActionId(item.id);
@@ -120,9 +109,7 @@ export function MarketplaceContent() {
       const result = await unequipItem(type);
       if (result.success) {
         setItems((prev) =>
-          prev.map((i) =>
-            i.id === item.id ? { ...i, equipped: false } : i
-          )
+          prev.map((i) => (i.id === item.id ? { ...i, equipped: false } : i))
         );
         toast.success(t("unequipSuccess"));
         window.dispatchEvent(new CustomEvent("theme-changed"));
@@ -139,49 +126,30 @@ export function MarketplaceContent() {
       ? items
       : items.filter((i) => i.category === activeTab);
 
-  if (loading) {
-    return (
-      <div className="max-w-2xl mx-auto space-y-10">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-7 w-40" />
-          <Skeleton className="h-6 w-20" />
-        </div>
-        <Skeleton className="h-8 w-64" />
-        <div className="divide-y divide-border/40">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between py-6">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-48" />
-                </div>
-              </div>
-              <Skeleton className="h-8 w-20" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-2xl mx-auto space-y-10">
-      {/* Header */}
+      {/* ── Header: title + coin balance ── */}
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-light tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Coins className="h-4 w-4 text-yellow-500" />
-          <span className="font-semibold tabular-nums text-foreground">
-            {coins.toLocaleString()}
+
+        {/* Discipline Points balance */}
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
+            Balance
           </span>
+          <div className="flex items-center gap-1.5">
+            <Coins className="h-4 w-4 text-yellow-500" />
+            <span className="text-lg font-semibold tabular-nums leading-none">
+              {coins.toLocaleString()}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Category filter — minimal pills */}
+      {/* ── Category filter — minimal pills ── */}
       <div className="flex gap-1.5 flex-wrap">
         {TABS.map(({ value, labelKey }) => (
           <button
@@ -198,10 +166,10 @@ export function MarketplaceContent() {
         ))}
       </div>
 
-      {/* Item list */}
+      {/* ── Item list ── */}
       {filteredItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <Package className="h-10 w-10 text-muted-foreground/40 mb-3" />
+          <Package className="h-10 w-10 text-muted-foreground/30 mb-3" />
           <p className="text-sm text-muted-foreground">{t("empty")}</p>
         </div>
       ) : (
@@ -225,7 +193,7 @@ export function MarketplaceContent() {
   );
 }
 
-// ─── Item Row (Zen List View) ────────────────────────────────────────────────
+// ─── Item Row (Zen list view) ────────────────────────────────────────────────
 
 function ItemRow({
   item,
@@ -251,24 +219,23 @@ function ItemRow({
 
   return (
     <div
-      className={`flex items-center justify-between py-6 px-1 transition-all duration-300 ${
+      className={`flex items-center justify-between py-6 px-2 transition-all duration-300 ${
         item.equipped ? "neon-item-active" : ""
       }`}
     >
       {/* Left: swatch + info */}
       <div className="flex items-center gap-4">
-        {/* Color swatch */}
         <div className="relative flex-shrink-0">
           <div
-            className="h-10 w-10 rounded-full border border-border/50"
+            className="h-10 w-10 rounded-full border border-border/40"
             style={{
-              background:
-                item.metadata && item.metadata.secondary
-                  ? `linear-gradient(135deg, ${primaryColor}, ${item.metadata.secondary})`
-                  : primaryColor,
-              boxShadow: item.equipped && glowColor
-                ? `0 0 16px ${glowColor}`
-                : undefined,
+              background: item.metadata?.secondary
+                ? `linear-gradient(135deg, ${primaryColor}, ${item.metadata.secondary})`
+                : primaryColor,
+              boxShadow:
+                item.equipped && glowColor
+                  ? `0 0 18px ${glowColor}`
+                  : undefined,
             }}
           />
           {item.equipped && (
@@ -281,7 +248,6 @@ function ItemRow({
           )}
         </div>
 
-        {/* Name + description */}
         <div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">{item.name}</span>
@@ -311,11 +277,9 @@ function ItemRow({
       {/* Right: price + action */}
       <div className="flex items-center gap-4 flex-shrink-0">
         {!item.owned && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 text-xs">
             <Coins className="h-3.5 w-3.5 text-yellow-500" />
-            <span className="font-semibold tabular-nums text-foreground">
-              {item.price}
-            </span>
+            <span className="font-semibold tabular-nums">{item.price}</span>
           </div>
         )}
 

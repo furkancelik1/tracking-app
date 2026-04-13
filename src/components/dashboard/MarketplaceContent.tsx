@@ -1,26 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
-import {
-  Coins,
-  Palette,
-  Frame,
-  Zap,
-  Check,
-  ShoppingBag,
-  Loader2,
-  Package,
-  Sparkles,
-} from "lucide-react";
+import { Coins, Check, Loader2, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   getMarketplaceItems,
@@ -44,17 +29,12 @@ type MarketplaceItem = {
 
 type TabValue = "all" | "THEME" | "FRAME" | "BOOSTER";
 
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  THEME: <Palette className="h-5 w-5" />,
-  FRAME: <Frame className="h-5 w-5" />,
-  BOOSTER: <Zap className="h-5 w-5" />,
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  THEME: "from-violet-500/20 to-purple-500/20 border-violet-500/30",
-  FRAME: "from-sky-500/20 to-cyan-500/20 border-sky-500/30",
-  BOOSTER: "from-amber-500/20 to-orange-500/20 border-amber-500/30",
-};
+const TABS: { value: TabValue; labelKey: string }[] = [
+  { value: "all", labelKey: "tabs.all" },
+  { value: "THEME", labelKey: "tabs.themes" },
+  { value: "FRAME", labelKey: "tabs.frames" },
+  { value: "BOOSTER", labelKey: "tabs.boosters" },
+];
 
 export function MarketplaceContent() {
   const t = useTranslations("marketplace");
@@ -62,8 +42,6 @@ export function MarketplaceContent() {
 
   const [coins, setCoins] = useState(0);
   const [items, setItems] = useState<MarketplaceItem[]>([]);
-  const [equippedTheme, setEquippedTheme] = useState<string | null>(null);
-  const [equippedFrame, setEquippedFrame] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [actionId, setActionId] = useState<string | null>(null);
@@ -73,8 +51,6 @@ export function MarketplaceContent() {
       setLoading(true);
       const data = await getMarketplaceItems();
       setCoins(data.coins);
-      setEquippedTheme(data.equippedTheme);
-      setEquippedFrame(data.equippedFrame);
       setItems(data.items as MarketplaceItem[]);
     } catch {
       toast.error(tShop("loadError"));
@@ -118,9 +94,6 @@ export function MarketplaceContent() {
     try {
       const result = await equipItem(item.id);
       if (result.success) {
-        if (item.category === "THEME") setEquippedTheme(item.id);
-        else if (item.category === "FRAME") setEquippedFrame(item.id);
-
         setItems((prev) =>
           prev.map((i) => {
             if (i.category === item.category)
@@ -146,9 +119,6 @@ export function MarketplaceContent() {
       const type = item.category as "THEME" | "FRAME";
       const result = await unequipItem(type);
       if (result.success) {
-        if (type === "THEME") setEquippedTheme(null);
-        else setEquippedFrame(null);
-
         setItems((prev) =>
           prev.map((i) =>
             i.id === item.id ? { ...i, equipped: false } : i
@@ -171,12 +141,24 @@ export function MarketplaceContent() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-12 w-full" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-52 rounded-xl" />
+      <div className="max-w-2xl mx-auto space-y-10">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="h-6 w-20" />
+        </div>
+        <Skeleton className="h-8 w-64" />
+        <div className="divide-y divide-border/40">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between py-6">
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+              </div>
+              <Skeleton className="h-8 w-20" />
+            </div>
           ))}
         </div>
       </div>
@@ -184,82 +166,68 @@ export function MarketplaceContent() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Coin balance */}
-      <div className="flex items-center justify-between">
+    <div className="max-w-2xl mx-auto space-y-10">
+      {/* Header */}
+      <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5" />
-            {t("title")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {t("subtitle")}
-          </p>
+          <h1 className="text-2xl font-light tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
-        <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 px-4 py-2">
-          <Coins className="h-5 w-5 text-yellow-500" />
-          <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400 tabular-nums">
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Coins className="h-4 w-4 text-yellow-500" />
+          <span className="font-semibold tabular-nums text-foreground">
             {coins.toLocaleString()}
           </span>
-          <span className="text-sm text-muted-foreground">{tShop("coins")}</span>
         </div>
       </div>
 
-      <Separator />
+      {/* Category filter — minimal pills */}
+      <div className="flex gap-1.5 flex-wrap">
+        {TABS.map(({ value, labelKey }) => (
+          <button
+            key={value}
+            onClick={() => setActiveTab(value)}
+            className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 ${
+              activeTab === value
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+            }`}
+          >
+            {t(labelKey)}
+          </button>
+        ))}
+      </div>
 
-      {/* Category tabs */}
-      <Tabs
-        value={activeTab}
-        onValueChange={(v) => setActiveTab(v as TabValue)}
-      >
-        <TabsList className="w-full justify-start">
-          <TabsTrigger value="all">{t("tabs.all")}</TabsTrigger>
-          <TabsTrigger value="THEME" className="gap-1.5">
-            <Palette className="h-3.5 w-3.5" />
-            {t("tabs.themes")}
-          </TabsTrigger>
-          <TabsTrigger value="FRAME" className="gap-1.5">
-            <Frame className="h-3.5 w-3.5" />
-            {t("tabs.frames")}
-          </TabsTrigger>
-          <TabsTrigger value="BOOSTER" className="gap-1.5">
-            <Zap className="h-3.5 w-3.5" />
-            {t("tabs.boosters")}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={activeTab} className="mt-4">
-          {filteredItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Package className="h-12 w-12 text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">{t("empty")}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredItems.map((item) => (
-                <ShopItemCard
-                  key={item.id}
-                  item={item}
-                  coins={coins}
-                  isActioning={actionId === item.id}
-                  onBuy={() => handleBuy(item)}
-                  onEquip={() => handleEquip(item)}
-                  onUnequip={() => handleUnequip(item)}
-                  t={t}
-                  tShop={tShop}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+      {/* Item list */}
+      {filteredItems.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <Package className="h-10 w-10 text-muted-foreground/40 mb-3" />
+          <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-border/40">
+          {filteredItems.map((item) => (
+            <ItemRow
+              key={item.id}
+              item={item}
+              coins={coins}
+              isActioning={actionId === item.id}
+              onBuy={() => handleBuy(item)}
+              onEquip={() => handleEquip(item)}
+              onUnequip={() => handleUnequip(item)}
+              t={t}
+              tShop={tShop}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-// ─── Item Card ───────────────────────────────────────────────────────────────
+// ─── Item Row (Zen List View) ────────────────────────────────────────────────
 
-function ShopItemCard({
+function ItemRow({
   item,
   coins,
   isActioning,
@@ -278,142 +246,125 @@ function ShopItemCard({
   t: ReturnType<typeof useTranslations>;
   tShop: ReturnType<typeof useTranslations>;
 }) {
-  const colorClass = CATEGORY_COLORS[item.category] ?? "";
-  const previewColor = item.metadata?.primary ?? "#6366f1";
+  const primaryColor = item.metadata?.primary ?? "#6366f1";
+  const glowColor = item.metadata?.glow;
 
   return (
-    <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    <div
+      className={`flex items-center justify-between py-6 px-1 transition-all duration-300 ${
+        item.equipped ? "neon-item-active" : ""
+      }`}
     >
-      <Card
-        className={`overflow-hidden border transition-shadow hover:shadow-lg ${
-          item.equipped ? "ring-2 ring-primary" : ""
-        }`}
-      >
-        {/* Color preview bar */}
-        <div
-          className="h-2 w-full"
-          style={{
-            background: item.metadata
-              ? `linear-gradient(to right, ${item.metadata.primary ?? previewColor}, ${item.metadata.accent ?? item.metadata.secondary ?? previewColor})`
-              : undefined,
-          }}
-        />
-
-        <CardContent className="p-4 space-y-3">
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2.5">
-              <div
-                className={`h-10 w-10 rounded-lg bg-gradient-to-br ${colorClass} flex items-center justify-center`}
-              >
-                {CATEGORY_ICONS[item.category]}
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm">{item.name}</h3>
-                <p className="text-xs text-muted-foreground line-clamp-1">
-                  {item.description}
-                </p>
-              </div>
+      {/* Left: swatch + info */}
+      <div className="flex items-center gap-4">
+        {/* Color swatch */}
+        <div className="relative flex-shrink-0">
+          <div
+            className="h-10 w-10 rounded-full border border-border/50"
+            style={{
+              background:
+                item.metadata && item.metadata.secondary
+                  ? `linear-gradient(135deg, ${primaryColor}, ${item.metadata.secondary})`
+                  : primaryColor,
+              boxShadow: item.equipped && glowColor
+                ? `0 0 16px ${glowColor}`
+                : undefined,
+            }}
+          />
+          {item.equipped && (
+            <div
+              className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: primaryColor }}
+            >
+              <Check className="h-2.5 w-2.5 text-white" />
             </div>
+          )}
+        </div>
 
-            {/* Status badges */}
+        {/* Name + description */}
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{item.name}</span>
             {item.equipped && (
-              <Badge className="bg-primary/10 text-primary border-primary/20 text-xs gap-1">
-                <Check className="h-3 w-3" />
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                style={{
+                  backgroundColor: glowColor ?? `${primaryColor}22`,
+                  color: primaryColor,
+                }}
+              >
                 {t("equipped")}
-              </Badge>
+              </span>
             )}
             {item.owned && !item.equipped && (
-              <Badge variant="secondary" className="text-xs">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
                 {t("owned")}
-              </Badge>
+              </span>
             )}
           </div>
+          <p className="text-xs text-muted-foreground mt-0.5 max-w-xs">
+            {item.description}
+          </p>
+        </div>
+      </div>
 
-          {/* Theme preview */}
-          {item.category === "THEME" && item.metadata && (
-            <div className="flex gap-1.5">
-              {Object.values(item.metadata).map((color, i) => (
-                <div
-                  key={i}
-                  className="h-6 flex-1 rounded-md border border-border/50"
-                  style={{ backgroundColor: color }}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Frame preview */}
-          {item.category === "FRAME" && item.metadata?.gradient && (
-            <div className="flex items-center justify-center py-1">
-              <div
-                className={`h-12 w-12 rounded-full bg-gradient-to-br ${item.metadata.gradient} p-0.5`}
-              >
-                <div className="h-full w-full rounded-full bg-card flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Action row */}
-          <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-1 text-sm font-semibold text-yellow-600 dark:text-yellow-400">
-              <Coins className="h-4 w-4" />
+      {/* Right: price + action */}
+      <div className="flex items-center gap-4 flex-shrink-0">
+        {!item.owned && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Coins className="h-3.5 w-3.5 text-yellow-500" />
+            <span className="font-semibold tabular-nums text-foreground">
               {item.price}
-            </div>
-
-            {!item.owned ? (
-              <Button
-                size="sm"
-                variant={coins >= item.price ? "default" : "outline"}
-                disabled={coins < item.price || isActioning}
-                onClick={onBuy}
-                className="h-8 text-xs px-4"
-              >
-                {isActioning ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  tShop("buy")
-                )}
-              </Button>
-            ) : item.category === "BOOSTER" ? (
-              <Badge variant="secondary" className="text-xs">
-                {t("owned")}
-              </Badge>
-            ) : item.equipped ? (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={isActioning}
-                onClick={onUnequip}
-                className="h-8 text-xs px-4"
-              >
-                {isActioning ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  t("unequip")
-                )}
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                disabled={isActioning}
-                onClick={onEquip}
-                className="h-8 text-xs px-4"
-              >
-                {isActioning ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  t("equip")
-                )}
-              </Button>
-            )}
+            </span>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        )}
+
+        {!item.owned ? (
+          <Button
+            size="sm"
+            variant={coins >= item.price ? "default" : "outline"}
+            disabled={coins < item.price || isActioning}
+            onClick={onBuy}
+            className="h-8 text-xs px-4 min-w-[72px]"
+          >
+            {isActioning ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              tShop("buy")
+            )}
+          </Button>
+        ) : item.category === "BOOSTER" ? (
+          <span className="text-xs text-muted-foreground">{t("owned")}</span>
+        ) : item.equipped ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={isActioning}
+            onClick={onUnequip}
+            className="h-8 text-xs px-4 text-muted-foreground min-w-[72px]"
+          >
+            {isActioning ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              t("unequip")
+            )}
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isActioning}
+            onClick={onEquip}
+            className="h-8 text-xs px-4 min-w-[72px]"
+          >
+            {isActioning ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              t("equip")
+            )}
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

@@ -25,16 +25,18 @@ export function ThemeOverlay() {
         const root = document.documentElement;
 
         if (theme?.metadata) {
-          const { primary, secondary, accent } = theme.metadata;
+          const { primary, secondary, accent, glow } = theme.metadata;
           if (primary) root.style.setProperty("--shop-primary", primary);
           if (secondary) root.style.setProperty("--shop-secondary", secondary);
           if (accent) root.style.setProperty("--shop-accent", accent);
+          if (glow) root.style.setProperty("--shop-primary-glow", glow);
           root.setAttribute("data-shop-theme", "true");
           setApplied(true);
         } else {
           root.style.removeProperty("--shop-primary");
           root.style.removeProperty("--shop-secondary");
           root.style.removeProperty("--shop-accent");
+          root.style.removeProperty("--shop-primary-glow");
           root.removeAttribute("data-shop-theme");
           setApplied(false);
         }

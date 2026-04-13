@@ -75,7 +75,8 @@ const config: Config = {
   			'dark-card-hover': 'inset 0 1px 0 hsl(0 0% 100% / 0.05), 0 10px 30px hsl(240 40% 2% / 0.52), 0 0 0 1px hsl(var(--accent-blue) / 0.14)',
   			'neon-blue': '0 0 0 1px hsl(var(--accent-blue) / 0.45), 0 0 28px hsl(var(--accent-blue-glow) / 0.35)',
   			'neon-green': '0 0 0 1px hsl(var(--accent-green) / 0.4), 0 0 24px hsl(var(--accent-green-glow) / 0.32)',
-  			'neon-orange': '0 0 0 1px hsl(var(--accent-orange) / 0.42), 0 0 24px hsl(var(--accent-orange-glow) / 0.32)'
+  			'neon-orange': '0 0 0 1px hsl(var(--accent-orange) / 0.42), 0 0 24px hsl(var(--accent-orange-glow) / 0.32)',
+  			'neon-purple': '0 0 0 1px rgba(168, 85, 247, 0.45), 0 0 28px rgba(168, 85, 247, 0.32)',
   		},
   		keyframes: {
   			'accordion-down': {

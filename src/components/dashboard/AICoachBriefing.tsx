@@ -213,7 +213,7 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
                 {coach.coachTip}
               </p>
             ) : (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground" suppressHydrationWarning>
                 {xpToLegend > 0
                   ? t("legendRemaining", { xp: xpToLegend.toLocaleString() })
                   : t("legendReached")}

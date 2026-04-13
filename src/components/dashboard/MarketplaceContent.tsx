@@ -136,13 +136,13 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
         </div>
 
         {/* Discipline Points balance */}
-        <div className="flex flex-col items-end gap-0.5">
+        <div className="flex flex-col items-end gap-1.5">
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
             Balance
           </span>
-          <div className="flex items-center gap-1.5">
-            <Coins className="h-4 w-4 text-yellow-500" />
-            <span className="text-lg font-semibold tabular-nums leading-none">
+          <div className="flex items-center gap-2">
+            <Coins className="h-4 w-4 text-yellow-500 shrink-0" />
+            <span className="text-xl font-semibold tabular-nums leading-none">
               {coins.toLocaleString()}
             </span>
           </div>

@@ -54,11 +54,11 @@ export function ConsistencyRadarChart({ data }: Props) {
             {t("noData")}
           </div>
         ) : !mounted ? (
-          <div className="h-[280px] min-h-0 w-full">
+          <div style={{ height: "280px", minHeight: "280px", width: "100%" }}>
             <Skeleton className="h-full w-full rounded-md" />
           </div>
         ) : (
-          <div className="h-[280px] min-h-0 w-full">
+          <div style={{ height: "280px", minHeight: "280px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={localizedData} cx="50%" cy="50%" outerRadius="70%">
                 <PolarGrid

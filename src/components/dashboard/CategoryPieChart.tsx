@@ -71,11 +71,11 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
             Henüz kategori verisi yok
           </div>
         ) : !mounted ? (
-          <div className="h-[260px] min-h-0 w-full">
+          <div style={{ height: "260px", minHeight: "260px", width: "100%" }}>
             <Skeleton className="h-full w-full rounded-md" />
           </div>
         ) : (
-          <div className="h-[260px] min-h-0 w-full" style={{ touchAction: "manipulation" }}>
+          <div style={{ height: "260px", minHeight: "260px", width: "100%", touchAction: "manipulation" }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie

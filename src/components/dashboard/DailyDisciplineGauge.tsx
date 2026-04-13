@@ -47,7 +47,21 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
   const isMobile = useIsMobile();
   useEffect(() => setIsMounted(true), []);
 
-  if (!isMounted) return null;
+  if (!isMounted) {
+    return (
+      <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm">
+        <CardHeader className="pb-0 pt-4">
+          <Skeleton className="h-4 w-24 mx-auto" />
+        </CardHeader>
+        <CardContent className="pb-4">
+          <div className="mx-auto w-[180px] h-[180px] md:w-[200px] md:h-[200px] flex items-center justify-center">
+            <Skeleton className="w-full h-full rounded-full" />
+          </div>
+          <Skeleton className="h-4 w-20 mx-auto mt-2" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   const data = [{ name: "score", value: score, fill: NEON_GREEN }];
   const statusKey = getStatusKey(score);
@@ -79,7 +93,7 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
         </CardHeader>
 
         <CardContent className="relative pb-4">
-          <div className="relative mx-auto w-[180px] h-[180px] md:w-[200px] md:h-[200px] min-w-0">
+          <div className="relative mx-auto w-[180px] md:w-[200px] aspect-square min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart
                 cx="50%"

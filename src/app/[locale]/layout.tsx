@@ -116,7 +116,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <meta name="theme-color" content="#6366f1" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
             <AuthProvider>

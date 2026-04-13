@@ -37,12 +37,17 @@ export function DashboardNav() {
   const auth = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const t = useTranslations("nav");
+  const [isMounted, setIsMounted] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [badgesOpen, setBadgesOpen] = useState(false);
   const [coins, setCoins] = useState<number | null>(null);
 
   const refreshCoins = useCallback(() => {
     getUserCoins().then(setCoins).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    setIsMounted(true);
   }, []);
 
   useEffect(() => {
@@ -136,7 +141,7 @@ export function DashboardNav() {
               <DropdownMenuItem
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
               >
-                {resolvedTheme === "dark" ? (
+                {isMounted && resolvedTheme === "dark" ? (
                   <>
                     <Sun className="mr-2 h-4 w-4" />
                     {t("lightMode")}

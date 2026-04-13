@@ -134,7 +134,7 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
 
         <CardContent className="pb-4 relative">
           <div
-            className="h-[170px] md:h-[200px] min-h-0 w-full min-w-0"
+            className="aspect-square md:aspect-video w-full min-w-0"
             style={{
               touchAction: "manipulation",
               filter:

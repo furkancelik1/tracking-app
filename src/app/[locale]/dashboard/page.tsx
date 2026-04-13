@@ -21,9 +21,28 @@ import { getDisciplineTrend, getTodayDisciplineScoreAction } from "@/actions/sta
 import { getChallengeLeaderboard } from "@/actions/challenge.actions";
 import { getUserAnalytics, type AnalyticsPayload } from "@/lib/analytics";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
-import { DisciplineTrendChart } from "@/components/dashboard/DisciplineTrendChart";
-import { DailyDisciplineGauge } from "@/components/dashboard/DailyDisciplineGauge";
 import { BottomNav } from "@/components/shared/BottomNav";
+
+/* ── ssr:false dynamic imports (Recharts hydration & text-mismatch fix) ─── */
+const DisciplineTrendChart = dynamic(
+  () => import("@/components/dashboard/DisciplineTrendChart").then((m) => m.DisciplineTrendChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full min-h-[300px] rounded-xl border bg-card animate-pulse" />
+    ),
+  }
+);
+
+const DailyDisciplineGauge = dynamic(
+  () => import("@/components/dashboard/DailyDisciplineGauge").then((m) => m.DailyDisciplineGauge),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full max-w-[260px] md:max-w-none min-h-[200px] rounded-xl border bg-card animate-pulse" />
+    ),
+  }
+);
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
@@ -216,7 +235,7 @@ export default async function DashboardPage({
           {/* ── Neon Gauge + Level (mobile: gauge hero, desktop: row) ── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             <div className="md:col-span-1 flex justify-center">
-              <div className="w-full max-w-[260px] md:max-w-none">
+              <div className="w-full max-w-[260px] md:max-w-none min-h-[200px]">
                 <DailyDisciplineGauge
                   score={gaugeData.score}
                   completed={gaugeData.completed}
@@ -293,10 +312,12 @@ export default async function DashboardPage({
 
           {/* ── Discipline Trend Chart ────────────────────────────── */}
           {disciplineTrend && (
-            <DisciplineTrendChart
-              data={disciplineTrend}
-              chartAnalysis={weeklyInsight?.chartAnalysis}
-            />
+            <div className="w-full min-h-[300px]">
+              <DisciplineTrendChart
+                data={disciplineTrend}
+                chartAnalysis={weeklyInsight?.chartAnalysis}
+              />
+            </div>
           )}
 
           <PushNotificationButton />

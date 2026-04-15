@@ -1,7 +1,13 @@
 {
-    "env": {
-        "MAX_THINKING_TOKENS": "10000",
-        "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50",
-        "CLAUDE_CODE_SUBAGENT_MODEL": "claude-haiku-4-5-20251001"
-    }
+  "env": {
+    "MAX_THINKING_TOKENS": "10000",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-haiku-4-5-20251001"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(mv \"C:/Users/FURKAN/Desktop/tracking-app/public/icons/logo 192x192.png\" \"C:/Users/FURKAN/Desktop/tracking-app/public/icons/logo-192x192.png\")",
+      "Bash(mv \"C:/Users/FURKAN/Desktop/tracking-app/public/icons/logo 512x512.png\" \"C:/Users/FURKAN/Desktop/tracking-app/public/icons/logo-512x512.png\")"
+    ]
+  }
 }

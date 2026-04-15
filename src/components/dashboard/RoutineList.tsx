@@ -23,6 +23,7 @@ import { fireDuelToast } from "@/lib/duel-notifications";
 import { ShareCardModal } from "@/components/dashboard/ShareCardModal";
 import type { ShareCardProps } from "@/components/dashboard/ShareCard";
 import { BadgeCelebration } from "@/components/dashboard/BadgeCelebration";
+import { LevelUpModal } from "@/components/dashboard/LevelUpModal";
 
 // ─── Optimistic reducer ───────────────────────────────────────────────────────
 
@@ -86,6 +87,11 @@ export function RoutineList({ initialRoutines }: Props) {
     props: null,
   });
   const [celebrationBadge, setCelebrationBadge] = useState<string | null>(null);
+  const [levelUpModal, setLevelUpModal] = useState<{
+    level: number;
+    rank: string;
+    rankColor: string;
+  } | null>(null);
 
   // Sunucu verisi (TanStack Query — polling + refetch)
   const { data: serverRoutines = [], isLoading } = useRoutines(initialRoutines);
@@ -186,38 +192,11 @@ export function RoutineList({ initialRoutines }: Props) {
 
           // ── Level-up algıla ────────────────────────────────────────
           if (result && didLevelUp(result.totalXp - result.xpGain, result.totalXp)) {
-            const { level, rank } = calculateLevel(result.totalXp);
+            const { level, rank, rankColor } = calculateLevel(result.totalXp);
             setTimeout(() => {
               fireLevelUpConfetti();
               hapticSuccess();
-              toast(
-                t("levelUp", { level, rank }),
-                {
-                  duration: 6000,
-                  action: {
-                    label: t("levelUpShare"),
-                    onClick: () => {
-                      setShareModal({
-                        open: true,
-                        props: {
-                          variant: "level-up",
-                          userName: auth.status === "authenticated" ? auth.user.name : null,
-                          userImage: auth.status === "authenticated" ? auth.user.image : null,
-                          xp: result.totalXp,
-                          currentStreak: serverRoutines.reduce(
-                            (max, r) => Math.max(max, r.currentStreak),
-                            0
-                          ),
-                          totalCompletions: serverRoutines.reduce(
-                            (sum, r) => sum + r._count.logs,
-                            0
-                          ),
-                        },
-                      });
-                    },
-                  },
-                }
-              );
+              setLevelUpModal({ level, rank, rankColor });
             }, 600);
           }
         }
@@ -406,6 +385,17 @@ export function RoutineList({ initialRoutines }: Props) {
         badgeName={celebrationBadge}
         onDone={() => setCelebrationBadge(null)}
       />
+
+      {/* Level Up Modal */}
+      {levelUpModal && (
+        <LevelUpModal
+          open={!!levelUpModal}
+          level={levelUpModal.level}
+          rank={levelUpModal.rank}
+          rankColor={levelUpModal.rankColor}
+          onClose={() => setLevelUpModal(null)}
+        />
+      )}
     </div>
   );
 }

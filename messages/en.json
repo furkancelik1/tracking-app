@@ -848,7 +848,8 @@
     "notOwned": "You don't own this item.",
     "empty": "No items in this category yet.",
     "buyAndEquip": "Buy & Equip",
-    "viewShop": "Browse Marketplace"
+    "viewShop": "Browse Marketplace",
+    "levelRequired": "Requires Level {level}+"
   },
 
   "badges": {

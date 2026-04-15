@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import type { ShopItemCategory } from "@prisma/client";
+import { calculateLevel } from "@/lib/level";
 
 async function requireUser() {
   const session = await getSession();
@@ -126,7 +127,7 @@ export async function getMarketplaceItems(category?: ShopItemCategory) {
   const [user, shopItems, purchases] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { coins: true, equippedTheme: true, equippedFrame: true },
+      select: { coins: true, xp: true, equippedTheme: true, equippedFrame: true },
     }),
     prisma.shopItem.findMany({
       where: { isActive: true, ...(category ? { category } : {}) },
@@ -139,9 +140,11 @@ export async function getMarketplaceItems(category?: ShopItemCategory) {
   ]);
 
   const ownedIds = new Set(purchases.map((p) => p.shopItemId));
+  const userLevel = calculateLevel(user?.xp ?? 0).level;
 
   return {
     coins: user?.coins ?? 0,
+    userLevel,
     equippedTheme: user?.equippedTheme ?? null,
     equippedFrame: user?.equippedFrame ?? null,
     items: shopItems.map((item) => ({
@@ -161,7 +164,7 @@ export async function buyShopItem(
   const userId = await requireUser();
 
   const [user, shopItem, existingPurchase] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId }, select: { coins: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { coins: true, xp: true } }),
     prisma.shopItem.findUnique({ where: { id: shopItemId } }),
     prisma.purchase.findUnique({
       where: { userId_shopItemId: { userId, shopItemId } },
@@ -174,6 +177,8 @@ export async function buyShopItem(
     return { success: false, message: "ALREADY_OWNED", coins: user?.coins ?? 0 };
   if (!user || user.coins < shopItem.price)
     return { success: false, message: "NOT_ENOUGH_COINS", coins: user?.coins ?? 0 };
+  if (shopItem.minLevel > 0 && calculateLevel(user.xp).level < shopItem.minLevel)
+    return { success: false, message: "LEVEL_REQUIRED", coins: user.coins, requiredLevel: shopItem.minLevel };
 
   await prisma.$transaction([
     prisma.user.update({

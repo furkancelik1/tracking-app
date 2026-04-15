@@ -8,6 +8,7 @@ import { checkBadges } from "@/actions/badge.actions";
 import { updateChallengeScoresFromLog } from "@/actions/challenge.actions";
 import { updateAIChallengeProgress } from "@/actions/ai.actions";
 import { updateDuelScore } from "@/actions/duel.actions";
+import { calculateLevel } from "@/lib/level";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Yardımcı: periyot başlangıcı (Route Handler ile aynı mantık)
@@ -146,15 +147,20 @@ export async function completeRoutineAction(
 
     // All Done bonus: bu tamamlama sonrası bugünkü tüm aktif rutinler tamam mı?
     const todayStart = getPeriodStart("DAILY");
-    const [activeRoutines, todayLogs] = await Promise.all([
+    const [activeRoutines, todayLogs, currentUser] = await Promise.all([
       prisma.routine.count({ where: { userId, isActive: true } }),
       prisma.routineLog.count({ where: { userId, completedAt: { gte: todayStart } } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { xp: true } }),
     ]);
     // todayLogs henüz bu tamamlamayı içermiyor, +1 ekleyerek kontrol et
     if (todayLogs + 1 >= activeRoutines && activeRoutines > 1) {
       xpGain += XP_ALL_DONE_BONUS;
       coinGain += COINS_ALL_DONE_BONUS;
     }
+
+    // Pre-compute new level so it can be stored atomically with xp
+    const newXp = (currentUser?.xp ?? 0) + xpGain;
+    const newLevel = calculateLevel(newXp).level;
 
     await prisma.$transaction([
       prisma.routineLog.create({
@@ -166,7 +172,7 @@ export async function completeRoutineAction(
       }),
       prisma.user.update({
         where: { id: userId },
-        data: { xp: { increment: xpGain }, coins: { increment: coinGain } },
+        data: { xp: { increment: xpGain }, level: newLevel, coins: { increment: coinGain } },
       }),
     ]);
 
@@ -236,6 +242,10 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
 
     const restoredStreak = prevLog ? Math.max(0, routine.currentStreak - 1) : 0;
 
+    const undoUser = await prisma.user.findUnique({ where: { id: userId }, select: { xp: true } });
+    const xpAfterUndo = Math.max(0, (undoUser?.xp ?? 0) - XP_PER_COMPLETION);
+    const levelAfterUndo = calculateLevel(xpAfterUndo).level;
+
     await prisma.$transaction([
       prisma.routineLog.delete({ where: { id: log.id } }),
       prisma.routine.update({
@@ -245,7 +255,7 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
       // XP ve coin geri al (minimum 0)
       prisma.user.update({
         where: { id: userId },
-        data: { xp: { decrement: XP_PER_COMPLETION }, coins: { decrement: COINS_PER_COMPLETION } },
+        data: { xp: { decrement: XP_PER_COMPLETION }, level: levelAfterUndo, coins: { decrement: COINS_PER_COMPLETION } },
       }),
     ]);
 

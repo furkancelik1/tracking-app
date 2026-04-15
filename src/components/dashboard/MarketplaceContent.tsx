@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Coins, Check, Loader2, Package } from "lucide-react";
+import { Coins, Check, Loader2, Package, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ type MarketplaceItem = {
   name: string;
   description: string;
   price: number;
+  minLevel: number;
   category: "THEME" | "FRAME" | "BOOSTER";
   imageUrl: string | null;
   metadata: Record<string, string> | null;
@@ -27,6 +28,7 @@ type MarketplaceItem = {
 
 type MarketplaceData = {
   coins: number;
+  userLevel: number;
   equippedTheme: string | null;
   equippedFrame: string | null;
   items: MarketplaceItem[];
@@ -46,6 +48,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
   const tShop = useTranslations("shop");
 
   const [coins, setCoins] = useState(initialData.coins);
+  const [userLevel] = useState(initialData.userLevel);
   const [items, setItems] = useState<MarketplaceItem[]>(
     initialData.items as MarketplaceItem[]
   );
@@ -68,6 +71,8 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
         toast.error(tShop("notEnoughCoins"));
       } else if (result.message === "ALREADY_OWNED") {
         toast.error(t("alreadyOwned"));
+      } else if (result.message === "LEVEL_REQUIRED") {
+        toast.error(t("levelRequired", { level: (result as any).requiredLevel ?? "?" }));
       } else {
         toast.error(tShop("purchaseFailed"));
       }
@@ -188,6 +193,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
               key={item.id}
               item={item}
               coins={coins}
+              userLevel={userLevel}
               isActioning={actionId === item.id}
               onBuy={() => handleBuy(item)}
               onEquip={() => handleEquip(item)}
@@ -207,6 +213,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
 function ItemRow({
   item,
   coins,
+  userLevel,
   isActioning,
   onBuy,
   onEquip,
@@ -216,6 +223,7 @@ function ItemRow({
 }: {
   item: MarketplaceItem;
   coins: number;
+  userLevel: number;
   isActioning: boolean;
   onBuy: () => void;
   onEquip: () => void;
@@ -225,12 +233,13 @@ function ItemRow({
 }) {
   const primaryColor = item.metadata?.primary ?? "#6366f1";
   const glowColor = item.metadata?.glow;
+  const isLocked = item.minLevel > 0 && userLevel < item.minLevel;
 
   return (
     <div
       className={`flex items-center justify-between py-6 px-2 transition-all duration-300 ${
         item.equipped ? "neon-item-active" : ""
-      }`}
+      } ${isLocked ? "opacity-60" : ""}`}
     >
       {/* Left: swatch + info */}
       <div className="flex items-center gap-4">
@@ -253,6 +262,11 @@ function ItemRow({
               style={{ backgroundColor: primaryColor }}
             >
               <Check className="h-2.5 w-2.5 text-white" />
+            </div>
+          )}
+          {isLocked && (
+            <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-muted border border-border/60 flex items-center justify-center">
+              <Lock className="h-2.5 w-2.5 text-muted-foreground" />
             </div>
           )}
         </div>
@@ -285,14 +299,21 @@ function ItemRow({
 
       {/* Right: price + action */}
       <div className="flex items-center gap-4 flex-shrink-0">
-        {!item.owned && (
+        {!item.owned && !isLocked && (
           <div className="flex items-center gap-1 text-xs">
             <Coins className="h-3.5 w-3.5 text-yellow-500" />
             <span className="font-semibold tabular-nums">{item.price}</span>
           </div>
         )}
 
-        {!item.owned ? (
+        {!item.owned && isLocked ? (
+          <div className="flex items-center gap-1.5 h-8 px-3 rounded-md bg-muted/50 border border-border/40">
+            <Lock className="h-3 w-3 text-muted-foreground/60" />
+            <span className="text-[11px] text-muted-foreground/70 font-medium whitespace-nowrap">
+              Lv. {item.minLevel}+
+            </span>
+          </div>
+        ) : !item.owned ? (
           <Button
             size="sm"
             variant={coins >= item.price ? "default" : "outline"}

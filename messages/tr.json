@@ -849,7 +849,8 @@
     "notOwned": "Bu eşyaya sahip değilsin.",
     "empty": "Bu kategoride henüz ürün yok.",
     "buyAndEquip": "Satın Al ve Kuşan",
-    "viewShop": "Pazar Yerine Göz At"
+    "viewShop": "Pazar Yerine Göz At",
+    "levelRequired": "Seviye {level}+ gerekiyor"
   },
 
   "badges": {

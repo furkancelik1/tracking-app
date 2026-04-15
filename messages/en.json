@@ -27,7 +27,7 @@
     "shop": "Shop",
     "marketplace": "Marketplace",
     "badges": "Badges",
-    "logo": "Routine Tracker",
+    "logo": "ZENITH",
     "lightMode": "Switch to Light Mode",
     "darkMode": "Switch to Dark Mode",
     "signOut": "Sign Out"
@@ -35,8 +35,8 @@
 
   "landing": {
     "metadata": {
-      "title": "Routine Tracker — Build Better Habits, Transform Your Life",
-      "description": "Easily track your daily habits. Stay motivated with streaks, weekly stats, and analytics."
+      "title": "Zenith - Master Your Discipline",
+      "description": "Achieve your peak with zen-like focus."
     },
     "header": {
       "features": "Features",
@@ -786,9 +786,9 @@
   },
 
   "metadata": {
-    "title": "Routine Tracker — Build Better Habits",
-    "description": "Easily track your daily habits. Stay motivated with streaks, weekly stats, and analytics.",
-    "siteName": "Routine Tracker",
+    "title": "Zenith - Master Your Discipline",
+    "description": "Achieve your peak with zen-like focus.",
+    "siteName": "Zenith",
     "keywords": "habit tracker, routine tracker, daily habits, streak, productivity, self-improvement"
   },
 

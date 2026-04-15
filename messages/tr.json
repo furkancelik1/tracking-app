@@ -27,7 +27,7 @@
     "shop": "Dükkan",
     "marketplace": "Pazar Yeri",
     "badges": "Rozetler",
-    "logo": "Rutin Takip",
+    "logo": "ZENITH",
     "lightMode": "Açık Moda Geç",
     "darkMode": "Karanlık Moda Geç",
     "signOut": "Çıkış Yap"
@@ -35,8 +35,8 @@
 
   "landing": {
     "metadata": {
-      "title": "Rutin Takipçisi — Alışkanlıklarını Geliştir, Hayatını Dönüştür",
-      "description": "Günlük alışkanlıklarını kolayca takip et. Seriler, haftalık istatistikler ve analizlerle motivasyonunu koru."
+      "title": "Zenith - Master Your Discipline",
+      "description": "Achieve your peak with zen-like focus."
     },
     "header": {
       "features": "Özellikler",
@@ -787,9 +787,9 @@
   },
 
   "metadata": {
-    "title": "Routine Tracker — Daha İyi Alışkanlıklar Edin",
-    "description": "Günlük alışkanlıklarınızı kolayca takip edin. Seriler, haftalık istatistikler ve analizlerle motivasyonunuzu koruyun.",
-    "siteName": "Routine Tracker",
+    "title": "Zenith - Master Your Discipline",
+    "description": "Achieve your peak with zen-like focus.",
+    "siteName": "Zenith",
     "keywords": "alışkanlık takip, rutin takip, günlük alışkanlıklar, seri, verimlilik, kişisel gelişim"
   },
 

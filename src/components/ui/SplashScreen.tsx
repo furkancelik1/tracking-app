@@ -81,11 +81,14 @@ export function SplashScreen() {
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="absolute bottom-[30%] text-xs font-medium tracking-[0.3em] uppercase"
-            style={{ color: `${NEON_GREEN}80` }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+            className="absolute bottom-[30%] text-base font-black tracking-[0.45em] uppercase"
+            style={{
+              color: NEON_GREEN,
+              textShadow: `0 0 12px ${NEON_GREEN}70, 0 0 28px ${NEON_GREEN}30`,
+            }}
           >
-            ZenTrack
+            ZENITH
           </motion.p>
         </motion.div>
       )}

@@ -76,9 +76,14 @@ export function DashboardNav() {
     <header className="border-b bg-card sticky top-0 z-40">
       <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/dashboard" className="font-semibold text-sm flex items-center gap-2">
-          <span className="size-5 rounded-full bg-primary inline-block" />
-          {t("logo")}
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 group"
+        >
+          <span className="size-5 rounded-full bg-primary inline-block shrink-0 group-hover:scale-110 transition-transform duration-200" />
+          <span className="text-sm font-black tracking-[0.18em] uppercase bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent select-none">
+            {t("logo")}
+          </span>
         </Link>
 
         {/* Nav links — hidden on mobile, BottomNav handles it */}

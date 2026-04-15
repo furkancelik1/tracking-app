@@ -165,7 +165,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="ZenTrack" />
+        <meta name="apple-mobile-web-app-title" content="Zenith" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="msapplication-TileColor" content="#000000" />
         <meta name="msapplication-tap-highlight" content="no" />

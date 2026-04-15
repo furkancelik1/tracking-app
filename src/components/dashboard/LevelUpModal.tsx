@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield } from "lucide-react";
+import confetti from "canvas-confetti";
 
 type Props = {
   open: boolean;
@@ -20,8 +21,22 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(onClose, 4000);
+
+    // Minimalist neon confetti patlaması
+    confetti({
+      particleCount: 55,
+      spread: 70,
+      origin: { x: 0.5, y: 0.52 },
+      colors: [rankColor, "#ffffff", rankColor + "bb", "#e0e0ff"],
+      startVelocity: 22,
+      gravity: 1.3,
+      scalar: 0.8,
+      ticks: 160,
+      disableForReducedMotion: true,
+    });
+
     return () => clearTimeout(t);
-  }, [open, onClose]);
+  }, [open, onClose, rankColor]);
 
   return (
     <AnimatePresence>

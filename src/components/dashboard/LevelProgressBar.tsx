@@ -28,16 +28,11 @@ export function LevelProgressBar({ xp, className }: Props) {
           >
             <Shield className="size-4" style={{ color: rankColor }} />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold" style={{ color: rankColor }}>
-                Level {level}
-              </span>
-              <span className="text-xs text-muted-foreground">• {localizedRank}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground tabular-nums">
-              {currentLevelXp}/{xpForNextLevel} XP
-            </p>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-bold" style={{ color: rankColor }}>
+              Level {level}
+            </span>
+            <span className="text-xs text-muted-foreground">• {localizedRank}</span>
           </div>
         </div>
 
@@ -56,7 +51,7 @@ export function LevelProgressBar({ xp, className }: Props) {
           }}
           initial={{ width: 0 }}
           animate={{ width: `${progress * 100}%` }}
-          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ type: "spring", stiffness: 90, damping: 16, mass: 0.9 }}
         />
         {/* Shimmer efekti */}
         <motion.div
@@ -68,6 +63,17 @@ export function LevelProgressBar({ xp, className }: Props) {
           animate={{ x: ["-100%", "400%"] }}
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3, ease: "linear" }}
         />
+      </div>
+
+      {/* XP sayacı — barın hemen altında */}
+      <div className="flex items-center justify-between mt-1.5">
+        <span className="text-[11px] tabular-nums font-semibold" style={{ color: rankColor }}>
+          {currentLevelXp}
+          <span className="font-normal text-muted-foreground"> / {xpForNextLevel} XP</span>
+        </span>
+        <span className="text-[11px] tabular-nums text-muted-foreground/60">
+          {Math.round(progress * 100)}%
+        </span>
       </div>
     </div>
   );

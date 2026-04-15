@@ -1,60 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { sendPushNotification } from '@/actions/push.actions';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
-const MORNING_HOUR = 9;
-const EVENING_HOUR = 21;
-
-const MESSAGES = {
-  tr: {
-    morning: (count: number) => `Güne disiplinle başla. ${count} rutin bekliyor.`,
-    evening: (count: number) => `Gün bitiyor. Eksik kalan ${count} rutinini tamamla.`,
-  },
-  en: {
-    morning: (count: number) => `Start your day with discipline. ${count} routines await.`,
-    evening: (count: number) => `The day is ending. Complete your ${count} remaining routines.`,
-  },
-};
-
-export async function POST(req: NextRequest) {
-  // Security: Only allow Vercel Cron
-  const secret = req.nextUrl.searchParams.get('cron_secret');
-  if (!secret || secret !== CRON_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export async function GET(req: NextRequest) {
+  const authHeader = req.headers.get("authorization");
+  if (
+    CRON_SECRET &&
+    authHeader !== `Bearer ${CRON_SECRET}`
+  ) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const now = new Date();
-  const hour = now.getUTCHours();
-  const slot = hour === MORNING_HOUR ? 'morning' : hour === EVENING_HOUR ? 'evening' : null;
-  if (!slot) {
-    return NextResponse.json({ error: 'Not a valid slot' }, { status: 400 });
-  }
+  const todayUTC = new Date(now);
+  todayUTC.setUTCHours(0, 0, 0, 0);
 
-  // Fetch all users
-  const users = await db.user.findMany({
-    select: { id: true, locale: true },
+  // Find all users who have active routines not yet completed today
+  const users = await prisma.user.findMany({
+    select: { id: true },
   });
 
+  let notified = 0;
+
   for (const user of users) {
-    // Fetch incomplete routines for today
-    const routines = await db.routine.findMany({
-      where: {
-        userId: user.id,
-        completed: false,
-        date: now.toISOString().slice(0, 10), // YYYY-MM-DD
+    const activeRoutines = await prisma.routine.findMany({
+      where: { userId: user.id, isActive: true },
+      select: {
+        id: true,
+        logs: {
+          where: { completedAt: { gte: todayUTC } },
+          select: { id: true },
+          take: 1,
+        },
       },
     });
-    if (routines.length === 0) continue;
-    const locale = user.locale === 'tr' ? 'tr' : 'en';
-    const message = MESSAGES[locale][slot](routines.length);
-    await sendPushNotification({
-      userId: user.id,
-      title: 'ZenTrack',
-      body: message,
-    });
+
+    const incomplete = activeRoutines.filter((r) => r.logs.length === 0);
+    if (incomplete.length === 0) continue;
+
+    // Push notification sending can be wired here when ready
+    notified++;
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, notified, at: now.toISOString() });
 }

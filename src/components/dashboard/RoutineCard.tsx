@@ -1,305 +1,225 @@
-"use client";
+"use server";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Share2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
-import type { RoutineWithMeta } from "@/hooks/useRoutines";
-import { ICON_MAP } from "@/lib/routine-icons";
-import { HabitHeatmap } from "@/components/dashboard/HabitHeatmap";
-import { fireConfetti, hapticTap } from "@/lib/celebrations";
-import { useSoundEffect } from "@/hooks/useSoundEffect";
+import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { checkBadges } from "@/actions/badge.actions";
+import { updateChallengeScoresFromLog } from "@/actions/challenge.actions";
+import { updateAIChallengeProgress } from "@/actions/ai.actions";
+import { updateDuelScore } from "@/actions/duel.actions";
+import { calculateLevel } from "@/lib/level";
 
-type Props = {
-  routine: RoutineWithMeta;
-  /** RoutineList'ten gelen optimistic-aware callback'ler */
-  onToggle: (id: string, completed: boolean, note?: string) => void;
-  onDelete: (id: string) => void;
-  onShare?: (routine: RoutineWithMeta) => void;
-  /** useTransition isPending — tüm kartlar için geçerli değil, sadece bu kart */
-  isPending: boolean;
-  /** Stagger animasyonu için kart indeksi */
-  index?: number;
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// Yardımcı Fonksiyonlar: Tarih ve Periyot Mantığı
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ── Framer Motion variants ───────────────────────────────────────────────────
+/** İki tarih arasındaki farkın tam olarak 1 gün olup olmadığını (Dün mü?) kontrol eder */
+function isYesterday(date: Date): boolean {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const target = new Date(date);
+  target.setUTCHours(0, 0, 0, 0);
+  
+  const diffInMs = today.getTime() - target.getTime();
+  const diffInDays = Math.round(diffInMs / (1000 * 60 * 60 * 24));
+  return diffInDays === 1;
+}
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: i * 0.06,
-      duration: 0.35,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
-  }),
-};
+/** Verilen tarihin bugün olup olmadığını kontrol eder */
+function isToday(date: Date): boolean {
+  const today = new Date();
+  const target = new Date(date);
+  return today.getUTCDate() === target.getUTCDate() &&
+         today.getUTCMonth() === target.getUTCMonth() &&
+         today.getUTCFullYear() === target.getUTCFullYear();
+}
 
-export function RoutineCard({ routine, onToggle, onDelete, onShare, isPending, index = 0 }: Props) {
-  const t = useTranslations("dashboard.routineCard");
-  const { playComplete } = useSoundEffect();
-  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
-  const [noteText, setNoteText] = useState("");
-  const [justCompleted, setJustCompleted] = useState(false);
-
-  const todayUTC = new Date();
-  todayUTC.setUTCHours(0, 0, 0, 0);
-  const isCompleted = routine.logs.some(
-    (l) => new Date(l.completedAt) >= todayUTC
-  );
-
-  function handleCompleteClick() {
-    if (isCompleted) {
-      // Geri al — direkt çağır, dialog yok
-      onToggle(routine.id, true);
-    } else {
-      setNoteText("");
-      setNoteDialogOpen(true);
+function getPeriodStart(frequency: string): Date {
+  const now = new Date();
+  now.setUTCHours(0, 0, 0, 0);
+  switch (frequency) {
+    case "WEEKLY": {
+      const day = now.getUTCDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      now.setUTCDate(now.getUTCDate() + diff);
+      return now;
     }
+    case "MONTHLY":
+      return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    default:
+      return now;
   }
+}
 
-  function handleConfirm() {
-    setNoteDialogOpen(false);
-    hapticTap();
-    playComplete();
-    // Optimistic: anında konfeti + animasyon başlat
-    setJustCompleted(true);
-    fireConfetti();
-    onToggle(routine.id, false, noteText.trim() || undefined);
-    // Glow efektini kaldır
-    setTimeout(() => setJustCompleted(false), 800);
+function getPrevPeriodStart(frequency: string): Date {
+  const start = getPeriodStart(frequency);
+  const d = new Date(start);
+  switch (frequency) {
+    case "WEEKLY": d.setUTCDate(d.getUTCDate() - 7); break;
+    case "MONTHLY": d.setUTCMonth(d.getUTCMonth() - 1); break;
+    default: d.setUTCDate(d.getUTCDate() - 1); break;
   }
+  return d;
+}
 
-  const Icon = (ICON_MAP[routine.icon] ?? ICON_MAP["CheckCircle"]) as LucideIcon;
+// ── XP ve Ekonomi Sabitleri ──────────────────────────────────────────────────
+const XP_PER_COMPLETION = 10;
+const XP_ALL_DONE_BONUS = 50;
+const COINS_PER_COMPLETION = 10;
+const COINS_ALL_DONE_BONUS = 50;
 
-  return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      custom={index}
-      whileHover={{ y: -3, transition: { duration: 0.2 } }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <motion.div
-        animate={
-          justCompleted
-            ? {
-                scale: [1, 0.95, 1.02, 1],
-                boxShadow: [
-                  "0 0 0 0 rgba(99,102,241,0)",
-                  "0 0 20px 4px rgba(99,102,241,0.3)",
-                  "0 0 30px 6px rgba(168,85,247,0.2)",
-                  "0 0 0 0 rgba(99,102,241,0)",
-                ],
-              }
-            : { scale: 1, boxShadow: "0 0 0 0 rgba(99,102,241,0)" }
-        }
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="rounded-xl"
-      >
-        <Card
-          className={cn(
-            "flex flex-col transition-all duration-200",
-            isCompleted
-              ? "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20"
-              : "hover:shadow-lg hover:shadow-primary/5 hover:border-zinc-300 dark:hover:border-zinc-600"
-          )}
-        >
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span
-              className="size-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200"
-              style={{
-                backgroundColor: routine.color + "22",
-                color: isCompleted ? "#22c55e" : routine.color,
-              }}
-            >
-              <Icon size={16} />
-            </span>
-            <CardTitle
-              className={cn(
-                "text-base leading-snug truncate transition-colors duration-200",
-                isCompleted && "line-through text-muted-foreground"
-              )}
-            >
-              {routine.title}
-            </CardTitle>
-          </div>
+async function requireUser() {
+  const session = await getSession();
+  if (!session?.user) throw new Error("Oturum bulunamadı.");
+  return (session.user as any).id as string;
+}
 
-          <Badge
-            className={cn(
-              "shrink-0 text-xs transition-colors duration-200",
-              isCompleted
-                ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-secondary text-secondary-foreground"
-            )}
-          >
-            {isCompleted ? t("completed") : t(routine.frequency === "DAILY" ? "daily" : routine.frequency === "WEEKLY" ? "weekly" : "monthly")}
-          </Badge>
-        </div>
+// ── Server Actions ───────────────────────────────────────────────────────────
 
-        {routine.category && routine.category !== "Genel" && (
-          <span
-            className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full w-fit mt-1"
-            style={{ backgroundColor: routine.color + "18", color: routine.color }}
-          >
-            {routine.category}
-          </span>
-        )}
+export async function completeRoutineAction(routineId: string, note?: string) {
+  const userId = await requireUser();
 
-        {routine.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-            {routine.description}
-          </p>
-        )}
-      </CardHeader>
+  try {
+    const routine = await prisma.routine.findFirst({
+      where: { id: routineId, userId, isActive: true },
+      select: { 
+        id: true, title: true, category: true, frequency: true, 
+        currentStreak: true, longestStreak: true, lastCompleted: true 
+      },
+    });
+    if (!routine) throw new Error("Rutin bulunamadı.");
 
-      <CardContent className="flex-1 pb-3 space-y-3">
-        <div className="flex items-center gap-3">
-          <span
-            className={cn(
-              "flex items-center gap-1 text-sm font-semibold transition-colors duration-200",
-              routine.currentStreak > 0 ? "text-orange-500" : "text-muted-foreground/40"
-            )}
-          >
-            🔥{" "}
-            {routine.currentStreak > 0 ? t("streak", { count: routine.currentStreak }) : t("noStreak")}
-          </span>
-          {routine.longestStreak > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {t("longestStreak", { count: routine.longestStreak })}
-            </span>
-          )}
-        </div>
+    const periodStart = getPeriodStart(routine.frequency);
+    const alreadyLogged = await prisma.routineLog.findFirst({
+      where: { routineId, userId, completedAt: { gte: periodStart } },
+    });
+    if (alreadyLogged) throw new Error("Bu periyot için zaten tamamlandı.");
 
-        <p className="text-xs text-muted-foreground">
-          {t("totalCompleted", { count: routine._count.logs })}
-        </p>
+    // Streak Mantığı
+    let newStreak = 1;
+    if (routine.lastCompleted) {
+      if (isYesterday(new Date(routine.lastCompleted))) {
+        newStreak = routine.currentStreak + 1;
+      } else if (isToday(new Date(routine.lastCompleted))) {
+        newStreak = routine.currentStreak;
+      }
+    }
+    const newLongest = Math.max(newStreak, routine.longestStreak);
 
-        <HabitHeatmap logs={routine.logs} color={routine.color} />
-      </CardContent>
+    // Kullanıcı verilerini ve bugünkü ilerlemeyi al
+    const [currentUser, activeRoutines, todayLogs] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId }, select: { xp: true, coins: true } }),
+      prisma.routine.count({ where: { userId, isActive: true } }),
+      prisma.routineLog.count({ where: { userId, completedAt: { gte: getPeriodStart("DAILY") } } }),
+    ]);
 
-      <CardFooter className="pt-0 flex gap-2">
-        <Button
-          size="sm"
-          variant={isCompleted ? "outline" : "default"}
-          className="flex-1 transition-all duration-150"
-          style={
-            !isCompleted
-              ? { backgroundColor: routine.color, borderColor: routine.color, color: "#fff" }
-              : undefined
-          }
-          disabled={isPending}
-          onClick={handleCompleteClick}
-        >
-          {isCompleted ? t("completed") : t("confirmComplete").replace(" ✓", "")}
-        </Button>
+    let xpGain = XP_PER_COMPLETION;
+    let coinGain = COINS_PER_COMPLETION;
+    
+    // "Hepsi Tamam" Bonusu
+    if (todayLogs + 1 >= activeRoutines && activeRoutines > 1) {
+      xpGain += XP_ALL_DONE_BONUS;
+      coinGain += COINS_ALL_DONE_BONUS;
+    }
 
-        {onShare && (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="px-2 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-            disabled={isPending}
-            onClick={() => onShare(routine)}
-            aria-label={t("shareRoutine")}
-          >
-            <Share2 className="size-3.5" />
-          </Button>
-        )}
+    const newTotalXp = (currentUser?.xp ?? 0) + xpGain;
+    const newTotalCoins = (currentUser?.coins ?? 0) + coinGain;
+    const newLevel = calculateLevel(newTotalXp).level;
 
-        <Button
-          size="sm"
-          variant="ghost"
-          className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2 shrink-0"
-          disabled={isPending}
-          onClick={() => onDelete(routine.id)}
-          aria-label="Rutini sil"
-        >
-          ✕
-        </Button>
-      </CardFooter>
+    // ATOMİK GÜNCELLEME
+    await prisma.$transaction([
+      prisma.routineLog.create({
+        data: { routineId, userId, completedAt: new Date(), note: note?.trim() || null },
+      }),
+      prisma.routine.update({
+        where: { id: routineId },
+        data: { 
+          currentStreak: newStreak, 
+          longestStreak: newLongest, 
+          lastCompleted: new Date(),
+          streakCount: newStreak 
+        },
+      }),
+      prisma.user.update({
+        where: { id: userId },
+        data: { xp: newTotalXp, level: newLevel, coins: newTotalCoins },
+      }),
+    ]);
 
-      <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <span
-                className="size-6 rounded flex items-center justify-center text-white text-xs"
-                style={{ backgroundColor: routine.color }}
-              >
-                ✓
-              </span>
-              {routine.title}
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Bu rutini tamamlamak için not ekleyebilirsiniz.
-            </DialogDescription>
-          </DialogHeader>
+    // Yan Etkiler (Hata olsa da ana işlemi bozmaz)
+    checkBadges(userId).catch(() => {});
+    updateChallengeScoresFromLog(userId, routine.title).catch(() => {});
+    updateDuelScore(userId).catch(() => {});
+    updateAIChallengeProgress(userId, routine.category).catch(() => {});
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
-              {t("notePlaceholder")}
-            </label>
-            <textarea
-              autoFocus
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleConfirm();
-              }}
-              placeholder={t("notePlaceholder")}
-              rows={3}
-              maxLength={500}
-              className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            {noteText.length > 0 && (
-              <p className="text-[11px] text-muted-foreground text-right tabular-nums">
-                {noteText.length}/500
-              </p>
-            )}
-          </div>
+    revalidatePath("/dashboard");
+    return { 
+      xpGain, totalXp: newTotalXp, 
+      coinGain, totalCoins: newTotalCoins,
+      duelScoreUpdated: true 
+    };
+  } catch (error) {
+    console.error("[completeRoutineAction] Hata:", error);
+    throw error;
+  }
+}
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <DialogClose asChild>
-              <Button variant="ghost" size="sm">{t("cancelComplete")}</Button>
-            </DialogClose>
-            <Button
-              size="sm"
-              style={{ backgroundColor: routine.color, color: "#fff" }}
-              onClick={handleConfirm}
-            >
-              {t("confirmComplete")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Card>
-      </motion.div>
-    </motion.div>
-  );
+export async function undoRoutineAction(routineId: string) {
+  const userId = await requireUser();
+
+  try {
+    const routine = await prisma.routine.findFirst({
+      where: { id: routineId, userId },
+      select: { currentStreak: true, frequency: true }
+    });
+    if (!routine) throw new Error("Rutin bulunamadı.");
+
+    const periodStart = getPeriodStart(routine.frequency);
+    const log = await prisma.routineLog.findFirst({
+      where: { routineId, userId, completedAt: { gte: periodStart } },
+      orderBy: { completedAt: "desc" }
+    });
+    if (!log) throw new Error("Geri alınacak log bulunamadı.");
+
+    // Bir önceki logu bul (Streak restorasyonu için)
+    const prevLog = await prisma.routineLog.findFirst({
+      where: { routineId, userId, completedAt: { lt: periodStart } },
+      orderBy: { completedAt: "desc" },
+      select: { completedAt: true }
+    });
+
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { xp: true, coins: true } });
+    const finalXp = Math.max(0, (user?.xp ?? 0) - XP_PER_COMPLETION);
+    const finalCoins = Math.max(0, (user?.coins ?? 0) - COINS_PER_COMPLETION);
+
+    await prisma.$transaction([
+      prisma.routineLog.delete({ where: { id: log.id } }),
+      prisma.routine.update({
+        where: { id: routineId },
+        data: { 
+          currentStreak: prevLog ? Math.max(0, routine.currentStreak - 1) : 0,
+          lastCompleted: prevLog ? prevLog.completedAt : null,
+          streakCount: prevLog ? Math.max(0, routine.currentStreak - 1) : 0
+        },
+      }),
+      prisma.user.update({
+        where: { id: userId },
+        data: { xp: finalXp, coins: finalCoins, level: calculateLevel(finalXp).level },
+      }),
+    ]);
+
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("[undoRoutineAction] Hata:", error);
+    throw error;
+  }
+}
+
+export async function deleteRoutineAction(routineId: string) {
+  const userId = await requireUser();
+  await prisma.routine.update({
+    where: { id: routineId, userId },
+    data: { isActive: false },
+  });
+  revalidatePath("/dashboard");
 }

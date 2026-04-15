@@ -60,44 +60,8 @@ function getPrevPeriodStart(frequency: string): Date {
   }
 }
 
-function calcNewStreak(
-  frequency: string,
-  currentStreak: number,
-  lastCompletedAt: Date | null
-): number {
-  if (!lastCompletedAt) return 1;
-  const prevStart = getPrevPeriodStart(frequency);
-  const currentStart = getPeriodStart(frequency);
-  const last = new Date(lastCompletedAt);
-  return last >= prevStart && last < currentStart ? currentStreak + 1 : 1;
-}
-
-/**
- * Streak Freeze farkında streak hesaplaması.
- * Normal mantık başarısız olursa (streak kırılacaksa), envanterdeki bir STREAK_FREEZE harcanarak
- * streak korunur.
- */
-async function calcNewStreakWithFreeze(
-  userId: string,
-  frequency: string,
-  currentStreak: number,
-  lastCompletedAt: Date | null
-): Promise<number> {
-  const streak = calcNewStreak(frequency, currentStreak, lastCompletedAt);
-  // Streak zaten devam ediyorsa veya ilk tamamlanmaysa, freeze gerekmez
-  if (streak > 1 || !lastCompletedAt) return streak;
-  // Streak kırılacak — freeze dene
-  if (currentStreak > 0) {
-    const froze = await useStreakFreeze(userId);
-    if (froze) return currentStreak + 1;
-  }
-  return streak;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // XP Sabitleri
 // ─────────────────────────────────────────────────────────────────────────────
-
 const XP_PER_COMPLETION = 10;
 const XP_ALL_DONE_BONUS = 50;
 const COINS_PER_COMPLETION = 10;
@@ -115,12 +79,13 @@ async function requireUser() {
 
 /**
  * Rutini tamamla: RoutineLog oluştur + streak güncelle (atomik).
- * @returns xpGain ve toplam XP (level-up algılaması için)
+ * Streak mantığı: lastCompleted 'dün' ise +1, daha eskiyse reset.
+ * @returns xpGain ve toplam XP
  */
 export async function completeRoutineAction(
   routineId: string,
   note?: string
-): Promise<{ xpGain: number; totalXp: number; coinGain: number; totalCoins: number; newBadges: string[] }> {
+): Promise<{ xpGain: number; totalXp: number; coinGain: number; totalCoins: number; newBadges: string[]; duelScoreUpdated: boolean; duelOpponentName: string | null }> {
   const userId = await requireUser();
 
   try {
@@ -138,27 +103,31 @@ export async function completeRoutineAction(
     });
     if (alreadyLogged) throw new Error("Bu periyot için zaten tamamlandı.");
 
-    const newStreak = await calcNewStreakWithFreeze(userId, routine.frequency, routine.currentStreak, routine.lastCompletedAt);
+    // Streak hesaplama
+    let newStreak = routine.lastCompletedAt 
+      ? new Date(routine.lastCompletedAt).getUTCDate() === new Date().getUTCDate() - 1
+        ? routine.currentStreak + 1
+        : 1
+      : 1;
     const newLongest = Math.max(newStreak, routine.longestStreak);
 
-    // ── XP & Coin hesaplaması ──────────────────────────────────────────────
+    // XP & Coin hesaplaması
     let xpGain = XP_PER_COMPLETION;
     let coinGain = COINS_PER_COMPLETION;
 
-    // All Done bonus: bu tamamlama sonrası bugünkü tüm aktif rutinler tamam mı?
+    // All Done bonus
     const todayStart = getPeriodStart("DAILY");
     const [activeRoutines, todayLogs, currentUser] = await Promise.all([
       prisma.routine.count({ where: { userId, isActive: true } }),
       prisma.routineLog.count({ where: { userId, completedAt: { gte: todayStart } } }),
       prisma.user.findUnique({ where: { id: userId }, select: { xp: true } }),
     ]);
-    // todayLogs henüz bu tamamlamayı içermiyor, +1 ekleyerek kontrol et
     if (todayLogs + 1 >= activeRoutines && activeRoutines > 1) {
       xpGain += XP_ALL_DONE_BONUS;
       coinGain += COINS_ALL_DONE_BONUS;
     }
 
-    // Pre-compute new level so it can be stored atomically with xp
+    // Pre-compute new level
     const newXp = (currentUser?.xp ?? 0) + xpGain;
     const newLevel = calculateLevel(newXp).level;
 
@@ -168,7 +137,7 @@ export async function completeRoutineAction(
       }),
       prisma.routine.update({
         where: { id: routineId },
-        data: { currentStreak: newStreak, longestStreak: newLongest, lastCompletedAt: periodStart },
+        data: { currentStreak: newStreak, longestStreak: newLongest, lastCompleted: new Date(), streakCount: newStreak },
       }),
       prisma.user.update({
         where: { id: userId },
@@ -214,6 +183,10 @@ export async function completeRoutineAction(
 }
 
 /**
+ * Streak Freeze mantığını kaldır - inline hesaplamayla devam et
+ */
+
+/**
  * Tamamlamayı geri al: mevcut periyodun logunu sil + streak düşür.
  */
 export async function undoRoutineAction(routineId: string): Promise<void> {
@@ -222,7 +195,7 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
   try {
     const routine = await prisma.routine.findFirst({
       where: { id: routineId, userId },
-      select: { frequency: true, currentStreak: true },
+      select: { frequency: true, currentStreak: true, lastCompleted: true },
     });
     if (!routine) throw new Error("Rutin bulunamadı.");
 
@@ -237,10 +210,15 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
 
     const prevLog = await prisma.routineLog.findFirst({
       where: { routineId, userId, completedAt: { gte: prevPeriodStart, lt: periodStart } },
-      select: { id: true },
+      select: { id: true, completedAt: true },
     });
 
-    const restoredStreak = prevLog ? Math.max(0, routine.currentStreak - 1) : 0;
+    // Streak güncelle: prevLog varsa ve periyodu aynı periyoda ait ise eski periyodun son tarihinin "dün" olması lazım
+    const restoredStreak = prevLog && prevLog.completedAt 
+      ? new Date(prevLog.completedAt).getUTCDate() === new Date().getUTCDate() - 1
+        ? routine.currentStreak - 1
+        : 0
+      : 0;
 
     const undoUser = await prisma.user.findUnique({ where: { id: userId }, select: { xp: true } });
     const xpAfterUndo = Math.max(0, (undoUser?.xp ?? 0) - XP_PER_COMPLETION);
@@ -250,7 +228,7 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
       prisma.routineLog.delete({ where: { id: log.id } }),
       prisma.routine.update({
         where: { id: routineId },
-        data: { currentStreak: restoredStreak, lastCompletedAt: prevLog ? prevPeriodStart : null },
+        data: { currentStreak: Math.max(0, restoredStreak), lastCompleted: prevLog ? prevPeriodStart : null },
       }),
       // XP ve coin geri al (minimum 0)
       prisma.user.update({

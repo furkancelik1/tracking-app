@@ -116,6 +116,9 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = user.id;
         (session.user as any).subscriptionTier =
           (user as any).subscriptionTier ?? "FREE";
+        (session.user as any).level = (user as any).level ?? 1;
+        (session.user as any).xp = (user as any).xp ?? 0;
+        (session.user as any).coins = (user as any).coins ?? 0;
       }
       return session;
     },

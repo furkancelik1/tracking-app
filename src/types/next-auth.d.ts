@@ -6,6 +6,9 @@ declare module "next-auth" {
     user: {
       id: string;
       subscriptionTier: SubscriptionTier;
+      level: number;
+      xp: number;
+      coins: number;
     } & DefaultSession["user"];
   }
 }

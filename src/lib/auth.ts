@@ -92,21 +92,12 @@ function CustomPrismaAdapter(): Adapter {
 
 // ─── NextAuth Options ────────────────────────────────────────────────────────
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-
-if (!googleClientId || !googleClientSecret) {
-  throw new Error(
-    "Missing Google OAuth envs: GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET"
-  );
-}
-
 export const authOptions: NextAuthOptions = {
   adapter: CustomPrismaAdapter(),
   providers: [
     GoogleProvider({
-      clientId: googleClientId,
-      clientSecret: googleClientSecret,
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
     }),
   ],
 
@@ -148,6 +139,11 @@ export const authOptions: NextAuthOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
+  logger: {
+    error(code, metadata) {
+      console.error("[NextAuth]", code, metadata);
+    },
+  },
 };
 
 // ─── Helper Functions ────────────────────────────────────────────────────────

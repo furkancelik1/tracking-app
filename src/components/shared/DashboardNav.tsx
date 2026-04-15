@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
 import { Moon, Sun, Coins, Trophy } from "lucide-react";
@@ -76,13 +77,21 @@ export function DashboardNav() {
     <header className="border-b bg-card sticky top-0 z-40">
       <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">
         {/* Logo */}
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2 group"
-        >
-          <span className="size-5 rounded-full bg-primary inline-block shrink-0 group-hover:scale-110 transition-transform duration-200" />
-          <span className="text-sm font-black tracking-[0.18em] uppercase bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent select-none">
-            {t("logo")}
+        <Link href="/dashboard" className="flex items-center gap-2 group select-none">
+          {/* Mountain icon — cropped from logo.png (top-center portion) */}
+          <div className="relative h-8 w-8 overflow-hidden shrink-0 transition-transform duration-200 group-hover:scale-105">
+            <Image
+              src="/images/logo.png"
+              alt="Zenith"
+              fill
+              className="object-cover"
+              style={{ objectPosition: "50% 18%" }}
+              sizes="32px"
+            />
+          </div>
+          <span className="text-sm font-black tracking-[0.2em] uppercase"
+            style={{ color: "#00FF80", textShadow: "0 0 8px #00FF8050" }}>
+            ZENITH
           </span>
         </Link>
 

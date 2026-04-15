@@ -66,7 +66,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    // Statik dosyaları, sw.js ve PWA varlıklarını middleware'den hariç tut
-    "/((?!api|_next/static|_next/image|favicon\\.ico|sw\\.js|workbox-.*|manifest\\.json|.*\\.png|.*\\.jpg|.*\\.ico|.*\\.svg).*)",
+    // Statik dosyaları, Clerk public route'ları ve PWA varlıklarını middleware'den hariç tut
+    "/((?!api/cron|api/auth|api/webhook|_next/static|_next/image|favicon\\.ico|sw\\.js|workbox-.*|manifest\\.json|.*\\.png|.*\\.jpg|.*\\.ico|.*\\.svg|sign-in|sign-up).*)",
   ],
 };

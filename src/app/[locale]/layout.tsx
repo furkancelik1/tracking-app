@@ -149,6 +149,13 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   const messages = await getMessages();
 
+  // Hydration fix: Only render children after mount
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
@@ -164,21 +171,23 @@ export default async function LocaleLayout({ children, params }: Props) {
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <body suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>
-          <QueryProvider>
-            <AuthProvider>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                {children}
-                <Toaster />
-              </ThemeProvider>
-            </AuthProvider>
-          </QueryProvider>
-        </NextIntlClientProvider>
+        {mounted ? (
+          <NextIntlClientProvider messages={messages}>
+            <QueryProvider>
+              <AuthProvider>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+                  disableTransitionOnChange
+                >
+                  {children}
+                  <Toaster />
+                </ThemeProvider>
+              </AuthProvider>
+            </QueryProvider>
+          </NextIntlClientProvider>
+        ) : null}
         <SpeedInsights />
         <Analytics />
       </body>

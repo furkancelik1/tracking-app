@@ -88,7 +88,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
                   animate={{ rotate: [0, 10, -10, 8, -6, 0] }}
                   transition={{ duration: 0.8, delay: 0.15 }}
                 >
-                  ğŸŒŸ
+                  🌟
                 </motion.div>
 
                 {/* "LEVEL UP" label */}

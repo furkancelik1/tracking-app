@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button";
 import type { Locale } from "@/i18n/routing";
 
 const LOCALES: { value: Locale; label: string; flag: string }[] = [
-  { value: "en", label: "English", flag: "ğŸ‡ºğŸ‡¸" },
-  { value: "tr", label: "TÃ¼rkÃ§e", flag: "ğŸ‡¹ğŸ‡·" },
+  { value: "en", label: "English", flag: "🇺🇸" },
+  { value: "tr", label: "Türkçe", flag: "🇹🇷" },
 ];
 
 export function LanguageSwitcher() {

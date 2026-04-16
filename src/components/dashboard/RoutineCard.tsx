@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTranslations } from "next-intl";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
+import { ICON_MAP } from "@/lib/routine-icons";
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -50,6 +51,8 @@ export function RoutineCard({
   const t = useTranslations("dashboard.routineCard");
   const completed = isCompletedToday(routine.logs);
   const [menuOpen, setMenuOpen] = useState(false);
+  const iconColor = routine.color ?? "#3b82f6";
+  const Icon = ICON_MAP[routine.icon ?? ""];
 
   return (
     <div
@@ -67,9 +70,9 @@ export function RoutineCard({
           {/* Icon bubble */}
           <div
             className="flex size-10 shrink-0 items-center justify-center rounded-lg text-lg"
-            style={{ backgroundColor: `${routine.color}22`, color: routine.color }}
+            style={{ backgroundColor: `${iconColor}22`, color: iconColor }}
           >
-            {routine.icon}
+            {Icon ? <Icon className="size-5" /> : <Check className="size-5" />}
           </div>
 
           {/* Title + category */}

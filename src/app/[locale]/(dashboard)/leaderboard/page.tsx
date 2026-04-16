@@ -1,4 +1,7 @@
 import React from "react";
+
+export const dynamic = "force-dynamic";
+
 import { getLeaderboard } from "@/actions/leaderboard.actions";
 import { getFriendsAction, getPendingRequestsAction } from "@/actions/social.actions";
 import { getChallengesAction } from "@/actions/challenge.actions";

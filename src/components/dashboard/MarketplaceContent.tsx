@@ -1,9 +1,9 @@
 "use client";
 
-// DİKKAT: 'import * as React' veya 'import React' satırını TAMAMEN SİLİYORUZ.
 import { useState } from "react";
 import { toast } from "sonner";
 import { Coins, Check, Loader2, Package, Lock } from "lucide-react";
+// ... gerisi aynı
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";

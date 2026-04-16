@@ -1,4 +1,3 @@
-import * as React from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { MarketplaceContent } from "@/components/dashboard/MarketplaceContent";
 import { getMarketplaceItems } from "@/actions/shop.actions";

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Coins, Check, Loader2, Package, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -47,13 +47,13 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
   const t = useTranslations("marketplace");
   const tShop = useTranslations("shop");
 
-  const [coins, setCoins] = React.useState(initialData.coins);
-  const [userLevel] = React.useState(initialData.userLevel);
-  const [items, setItems] = React.useState<MarketplaceItem[]>(
+  const [coins, setCoins] = useState(initialData.coins);
+  const [userLevel] = useState(initialData.userLevel);
+  const [items, setItems] = useState<MarketplaceItem[]>(
     initialData.items as MarketplaceItem[]
   );
-  const [activeTab, setActiveTab] = React.useState<TabValue>("all");
-  const [actionId, setActionId] = React.useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabValue>("all");
+  const [actionId, setActionId] = useState<string | null>(null);
 
   async function handleBuy(item: MarketplaceItem) {
     setActionId(item.id);

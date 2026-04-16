@@ -20,6 +20,7 @@ const THEME_TONES: Record<string, ThemeTone> = {
   "Arctic Focus":     { frequency: 660, type: "sine",     duration: 350 },
   default:            { frequency: 440, type: "sine",     duration: 300 },
 };
+const DEFAULT_TONE: ThemeTone = { frequency: 440, type: "sine", duration: 300 };
 
 function getThemeName(): string {
   if (typeof document === "undefined") return "default";
@@ -28,7 +29,7 @@ function getThemeName(): string {
 
 function getTone(): ThemeTone {
   const name = getThemeName();
-  return THEME_TONES[name] ?? THEME_TONES.default;
+  return THEME_TONES[name] ?? DEFAULT_TONE;
 }
 
 export function useSoundEffect() {

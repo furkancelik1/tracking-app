@@ -89,7 +89,7 @@ export function ConsistencyRadarChart({ data }: Props) {
                     fontSize: "13px",
                     boxShadow: "0 4px 12px rgba(0,0,0,.15)",
                   }}
-                  formatter={(value: number) => [value, t("completions")]}
+                  formatter={(value) => [Number(value ?? 0), t("completions")]}
                 />
               </RadarChart>
             </ResponsiveContainer>

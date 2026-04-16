@@ -217,7 +217,7 @@ function ResultBanner({
   duel: DuelEntry;
 }) {
   const t = useTranslations("duel");
-  const myId = duel.isChallenger ? duel.challenger.id : duel.opponent.id;
+  const myId = duel.isChallenger ? duel.challenger.id : (duel.opponent?.id ?? duel.challenger.id);
   const pot = duel.stake * 2;
 
   if (duel.status !== "FINISHED" || !duel.winnerId) {
@@ -371,7 +371,9 @@ export function DuelArena({ duel }: Props) {
   useEffect(() => {
     if (!duel) return;
     if (duel.status === "FINISHED" && duel.winnerId) {
-      const myId = duel.isChallenger ? duel.challenger.id : duel.opponent.id;
+      const myId = duel.isChallenger
+        ? duel.challenger.id
+        : (duel.opponent?.id ?? duel.challenger.id);
       if (duel.winnerId === myId) {
         fireLevelUpConfetti();
         hapticSuccess();
@@ -386,7 +388,13 @@ export function DuelArena({ duel }: Props) {
   const isFinished = duel.status === "FINISHED";
   const endTimeMs = duel.endTime ? new Date(duel.endTime).getTime() : 0;
   const pot = duel.stake * 2;
-  const myId = duel.isChallenger ? duel.challenger.id : duel.opponent.id;
+  const myId = duel.isChallenger ? duel.challenger.id : (duel.opponent?.id ?? duel.challenger.id);
+  const opponentPlayer = duel.opponent ?? {
+    id: "pending-opponent",
+    name: t("pending"),
+    image: null,
+    xp: 0,
+  };
 
   const maxScore = Math.max(duel.challengerScore, duel.opponentScore, 1);
   const challengerPct = Math.round((duel.challengerScore / maxScore) * 100);
@@ -434,11 +442,11 @@ export function DuelArena({ duel }: Props) {
             isCurrentUser={duel.challenger.id === myId}
           />
           <PlayerCard
-            player={duel.opponent}
+            player={opponentPlayer}
             score={duel.opponentScore}
             isLeft={false}
-            isWinner={isFinished && duel.winnerId === duel.opponent.id}
-            isCurrentUser={duel.opponent.id === myId}
+            isWinner={isFinished && duel.winnerId === duel.opponent?.id}
+            isCurrentUser={opponentPlayer.id === myId}
           />
         </div>
         {/* VS overlay */}
@@ -465,7 +473,7 @@ export function DuelArena({ duel }: Props) {
           <div className="space-y-1">
             <div className="flex justify-between text-xs">
               <span className="font-medium truncate max-w-[120px]">
-                {duel.opponent.name ?? "?"}
+                {duel.opponent?.name ?? "?"}
               </span>
               <span className="tabular-nums text-muted-foreground">
                 {duel.opponentScore}

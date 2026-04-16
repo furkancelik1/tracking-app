@@ -198,7 +198,7 @@ export async function getDayDetail(
   const [routines, logs] = await Promise.all([
     prisma.routine.findMany({
       where: { userId, isActive: true, frequency: "DAILY" },
-      select: { id: true, title: true, emoji: true, category: true },
+      select: { id: true, title: true, icon: true, category: true },
     }),
     prisma.routineLog.findMany({
       where: { userId, completedAt: { gte: dayStart, lte: dayEnd } },
@@ -219,7 +219,7 @@ export async function getDayDetail(
     routines: routines.map((r) => ({
       id: r.id,
       title: r.title,
-      emoji: r.emoji ?? "ğŸ“‹",
+      emoji: r.icon ?? "📋",
       category: r.category,
       completed: completedIds.has(r.id),
     })),

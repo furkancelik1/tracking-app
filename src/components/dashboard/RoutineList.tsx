@@ -188,7 +188,10 @@ export function RoutineList({ initialRoutines }: Props) {
 
           // â”€â”€ Rozet kutlamasÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (result?.newBadges && result.newBadges.length > 0) {
-            setTimeout(() => setCelebrationBadge(result.newBadges[0]), 1800);
+            const firstBadge = result.newBadges[0];
+            if (firstBadge) {
+              setTimeout(() => setCelebrationBadge(firstBadge), 1800);
+            }
           }
 
           // â”€â”€ Level-up algÄ±la â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

@@ -136,7 +136,7 @@ export function WeeklyProgressChart({ data }: Props) {
                     boxShadow: "0 4px 16px rgba(0,0,0,.2)",
                   }}
                   labelStyle={{ fontWeight: 600, marginBottom: 2 }}
-                  formatter={(value: number) => [value, "Tamamlanan"]}
+                  formatter={(value) => [Number(value ?? 0), "Tamamlanan"]}
                 />
 
                 <Area

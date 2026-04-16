@@ -392,10 +392,12 @@ export async function checkAndFinalizeDuels(
           where: { id: fresh.challengerId },
           data: { coins: { increment: fresh.stake } },
         });
-        await tx.user.update({
-          where: { id: fresh.opponentId },
-          data: { coins: { increment: fresh.stake } },
-        });
+        if (fresh.opponentId) {
+          await tx.user.update({
+            where: { id: fresh.opponentId },
+            data: { coins: { increment: fresh.stake } },
+          });
+        }
         outcome = "draw";
       }
 
@@ -409,8 +411,11 @@ export async function checkAndFinalizeDuels(
       await tx.duelMessage.deleteMany({ where: { duelId: duel.id } });
 
       // currentDuelId temizle
+      const participantIds = [fresh.challengerId, fresh.opponentId].filter(
+        (id): id is string => !!id
+      );
       await tx.user.updateMany({
-        where: { id: { in: [fresh.challengerId, fresh.opponentId] }, currentDuelId: duel.id },
+        where: { id: { in: participantIds }, currentDuelId: duel.id },
         data: { currentDuelId: null },
       });
 
@@ -742,8 +747,11 @@ export async function calculateDuelWinner(
     // Ephemeral: Sohbet mesajlarÄ±nÄ± temizle
     await tx.duelMessage.deleteMany({ where: { duelId } });
 
+    const participantIds = [duel.challengerId, duel.opponentId].filter(
+      (id): id is string => !!id
+    );
     await tx.user.updateMany({
-      where: { id: { in: [duel.challengerId, duel.opponentId] }, currentDuelId: duelId },
+      where: { id: { in: participantIds }, currentDuelId: duelId },
       data: { currentDuelId: null },
     });
 

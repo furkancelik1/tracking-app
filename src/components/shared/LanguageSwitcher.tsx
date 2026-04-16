@@ -40,7 +40,7 @@ export function LanguageSwitcher() {
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => setIsMounted(true), []);
 
-  const current = LOCALES.find((l) => l.value === locale) ?? LOCALES[0];
+  const current = LOCALES.find((l) => l.value === locale) ?? LOCALES[0]!;
 
   return (
     <DropdownMenu>

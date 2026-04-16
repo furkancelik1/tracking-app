@@ -56,9 +56,12 @@ export function OnboardingDialog() {
       router.refresh();
       toast.success(t("rewardToast"), { duration: 5000 });
       if (result.newBadges.length > 0) {
-        toast.success(t("badgeEarned", { badge: result.newBadges[0] }), {
-          duration: 4000,
-        });
+        const firstBadge = result.newBadges[0];
+        if (firstBadge) {
+          toast.success(t("badgeEarned", { badge: firstBadge }), {
+            duration: 4000,
+          });
+        }
       }
     } catch {
       toast.error(t("error"));
@@ -71,7 +74,7 @@ export function OnboardingDialog() {
     handleFinish();
   }
 
-  const currentStep = STEPS[step];
+  const currentStep = STEPS[step] ?? STEPS[0];
   const isLast = step === STEPS.length - 1;
   const StepIcon = currentStep.icon;
 

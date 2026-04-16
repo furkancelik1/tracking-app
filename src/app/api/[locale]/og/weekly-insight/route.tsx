@@ -51,8 +51,9 @@ async function loadInterFont(): Promise<ArrayBuffer> {
   const match = css.match(/src:\s*url\(([^)]+)\)\s*format\('woff2'\)/);
   if (!match?.[1]) throw new Error("Could not extract Inter font URL");
 
-  _fontCache = await fetch(match[1]).then((r) => r.arrayBuffer());
-  return _fontCache;
+  const fontData = await fetch(match[1]).then((r) => r.arrayBuffer());
+  _fontCache = fontData;
+  return fontData;
 }
 
 // ─── Fallback Branding Image ─────────────────────────────────────────────────
@@ -189,11 +190,12 @@ export async function GET(
     const sentences = insight.summary
       .split(/[.!?]\s+/)
       .filter((s) => s.trim().length > 20);
+    const firstSentence = sentences[0];
     const quote =
-      sentences.length > 0
-        ? sentences[0].length > 140
-          ? sentences[0].slice(0, 137) + "…"
-          : sentences[0] + "."
+      firstSentence
+        ? firstSentence.length > 140
+          ? firstSentence.slice(0, 137) + "…"
+          : firstSentence + "."
         : insight.summary.slice(0, 140);
 
     // ── Lokalize metinler ──

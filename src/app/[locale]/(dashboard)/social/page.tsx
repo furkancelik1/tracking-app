@@ -33,9 +33,11 @@ export default async function SocialPage({
   const t = await getTranslations("social");
 
   const session = await getSession();
-  if (!session?.user) redirect({ href: "/", locale });
-
-  const userId = (session.user as any).id as string;
+  const userId = (session?.user as any)?.id as string | undefined;
+  if (!userId) {
+    redirect({ href: "/", locale });
+    return null;
+  }
 
   // Süresi dolmuş düelloları finalize et & ödülleri dağıt (sayfa yüklendiğinde)
   const pendingRewards = await distributeChallengeRewards(userId).catch(() => []);

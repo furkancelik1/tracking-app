@@ -6,6 +6,8 @@
  * referenced throughout the app (routine actions, marketplace gating, UI components).
  */
 
+import { calculateLevel } from "./level";
+
 // â”€â”€â”€ Re-export level engine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export {

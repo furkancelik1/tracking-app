@@ -160,7 +160,7 @@ export async function getMarketplaceItems(category?: ShopItemCategory) {
 /** Marketplace Ã¼rÃ¼nÃ¼ satÄ±n al */
 export async function buyShopItem(
   shopItemId: string
-): Promise<{ success: boolean; message: string; coins: number }> {
+): Promise<{ success: boolean; message: string; coins: number; requiredLevel?: number }> {
   const userId = await requireUser();
 
   const [user, shopItem, existingPurchase] = await Promise.all([

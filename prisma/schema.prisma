@@ -167,7 +167,7 @@ model Routine {
   frequency             RoutineFrequency     @default(DAILY)
   frequencyType         RoutineFrequencyType @default(DAILY)
   weeklyTarget          Int                  @default(1)
-  specificDays          Int[]                @default([])
+  daysOfWeek            Int[]                @default([])
   stackParentId         String?
   isActive              Boolean              @default(true)
   sortOrder             Int                  @default(0)
@@ -178,8 +178,8 @@ model Routine {
   updatedAt             DateTime             @updatedAt
 
   user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stackParent           Routine?             @relation("RoutineStack", fields: [stackParentId], references: [id], onDelete: SetNull)
-  stackChildren         Routine[]            @relation("RoutineStack")
+  parentRoutine         Routine?             @relation("HabitStacking", fields: [stackParentId], references: [id], onDelete: SetNull)
+  childRoutines         Routine[]            @relation("HabitStacking")
   logs                  RoutineLog[]
 
   @@index([userId])

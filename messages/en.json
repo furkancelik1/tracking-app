@@ -16,7 +16,9 @@
     "anonymous": "Anonymous",
     "you": "(you)",
     "footer": "© {year} Zenith. All rights reserved.",
-    "site": "furkancelik.online"
+    "site": "furkancelik.online",
+    "syncedOfflineCompletions": "{count} offline completion(s) synced.",
+    "queuedOfflineCompletion": "Saved offline. Will sync when you're back online."
   },
 
   "nav": {

@@ -9,6 +9,7 @@ import { updateChallengeScoresFromLog } from "@/actions/challenge.actions";
 import { updateAIChallengeProgress } from "@/actions/ai.actions";
 import { updateDuelScore } from "@/actions/duel.actions";
 import { calculateLevel } from "@/lib/level";
+import { calculateFlexibleStreak } from "@/lib/xp-logic";
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // YardÄ±mcÄ±: periyot baÅŸlangÄ±cÄ± (Route Handler ile aynÄ± mantÄ±k)
@@ -17,8 +18,7 @@ import { calculateLevel } from "@/lib/level";
 function getPeriodStart(frequencyType: string): Date {
   const now = new Date();
   switch (frequencyType) {
-    case "WEEKLY":
-    case "SPECIFIC_DAYS": {
+    case "WEEKLY": {
       const day = now.getUTCDay();
       const diff = day === 0 ? -6 : 1 - day;
       const d = new Date(now);
@@ -37,8 +37,7 @@ function getPeriodStart(frequencyType: string): Date {
 function getPrevPeriodStart(frequencyType: string): Date {
   const now = new Date();
   switch (frequencyType) {
-    case "WEEKLY":
-    case "SPECIFIC_DAYS": {
+    case "WEEKLY": {
       const day = now.getUTCDay();
       const diff = day === 0 ? -6 : 1 - day;
       const d = new Date(now);
@@ -72,10 +71,63 @@ async function requireUser() {
   return (session.user as any).id as string;
 }
 
+export async function createRoutineAction(input: {
+  title: string;
+  description?: string;
+  category?: string;
+  color?: string;
+  icon?: string;
+  frequencyType?: "DAILY" | "WEEKLY" | "SPECIFIC_DAYS";
+  weeklyTarget?: number;
+  daysOfWeek?: number[];
+  stackParentId?: string | null;
+}) {
+  const userId = await requireUser();
+
+  const frequencyType = input.frequencyType ?? "DAILY";
+  const normalizedDays = Array.from(
+    new Set((input.daysOfWeek ?? []).filter((d) => Number.isInteger(d) && d >= 0 && d <= 6))
+  ).sort((a, b) => a - b);
+
+  if (frequencyType === "SPECIFIC_DAYS" && normalizedDays.length === 0) {
+    throw new Error("Belirli günler için en az bir gün seçmelisin.");
+  }
+
+  if (input.stackParentId) {
+    const parent = await prisma.routine.findFirst({
+      where: { id: input.stackParentId, userId, isActive: true },
+      select: { id: true },
+    });
+    if (!parent) throw new Error("Bağlanacak üst alışkanlık bulunamadı.");
+  }
+
+  const created = await prisma.routine.create({
+    data: {
+      userId,
+      title: input.title.trim(),
+      description: input.description?.trim() || null,
+      category: input.category?.trim() || "Genel",
+      color: input.color ?? "#3b82f6",
+      icon: input.icon ?? "CheckCircle",
+      frequency: frequencyType === "DAILY" ? "DAILY" : "WEEKLY",
+      frequencyType,
+      weeklyTarget: frequencyType === "WEEKLY" ? Math.min(7, Math.max(1, input.weeklyTarget ?? 3)) : 1,
+      daysOfWeek: frequencyType === "SPECIFIC_DAYS" ? normalizedDays : [],
+      stackParentId: input.stackParentId ?? null,
+    },
+  });
+
+  revalidatePath("/dashboard");
+  return created;
+}
+
 /**
  * Rutini tamamla: RoutineLog oluÅŸtur + streak gÃ¼ncelle (atomik).
  * Streak mantÄ±ÄŸÄ±: lastCompleted 'dÃ¼n' ise +1, daha eskiyse reset.
  * @returns xpGain ve toplam XP
+ *
+ * Çevrimdışı kullanım: tarayıcı IndexedDB kuyruğu + `flushPendingRoutineLogs`
+ * (bkz. `@/lib/offline/routine-sync-manager`).
  */
 export async function completeRoutineAction(
   routineId: string,
@@ -92,7 +144,7 @@ export async function completeRoutineAction(
         category: true,
         frequencyType: true,
         weeklyTarget: true,
-        specificDays: true,
+        daysOfWeek: true,
         stackParentId: true,
         currentStreak: true,
         longestStreak: true,
@@ -108,7 +160,7 @@ export async function completeRoutineAction(
 
     if (
       routine.frequencyType === "SPECIFIC_DAYS" &&
-      !routine.specificDays.includes(new Date().getUTCDay())
+      !routine.daysOfWeek.includes(new Date().getUTCDay())
     ) {
       throw new Error("Bu alÄ±ÅŸkanlÄ±k bugÃ¼n iÃ§in planlÄ± deÄŸil.");
     }
@@ -143,11 +195,14 @@ export async function completeRoutineAction(
     }
 
     // Streak hesaplama
-    let newStreak = routine.lastCompletedAt 
-      ? new Date(routine.lastCompletedAt).getUTCDate() === new Date().getUTCDate() - 1
-        ? routine.currentStreak + 1
-        : 1
-      : 1;
+    const now = new Date();
+    let newStreak = calculateFlexibleStreak({
+      frequencyType: routine.frequencyType,
+      currentStreak: routine.currentStreak,
+      lastCompletedAt: routine.lastCompletedAt,
+      completedAt: now,
+      daysOfWeek: routine.daysOfWeek,
+    });
     const newLongest = Math.max(newStreak, routine.longestStreak);
 
     // XP & Coin hesaplamasÄ±
@@ -171,7 +226,7 @@ export async function completeRoutineAction(
 
     await prisma.$transaction([
       prisma.routineLog.create({
-        data: { routineId, userId, completedAt: periodStart, note: note?.trim() || null },
+        data: { routineId, userId, completedAt: now, note: note?.trim() || null },
       }),
       prisma.routine.update({
         where: { id: routineId },

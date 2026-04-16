@@ -20,9 +20,28 @@ const withPWA = withPWAInit({
     skipWaiting: true,
     clientsClaim: true,
     runtimeCaching: [
-      // App Shell â€” HTML pages (NetworkFirst â†’ stale offline)
+      // Next.js build chunks — CacheFirst (immutable hashed filenames)
       {
-        urlPattern: /^https?.*\/(dashboard|leaderboard|settings|login).*/i,
+        urlPattern: /^https?:\/\/[^/]+\/_next\/static\/.*/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "next-static",
+          expiration: { maxEntries: 128, maxAgeSeconds: 365 * 24 * 60 * 60 },
+        },
+      },
+      // Public icons, manifest, offline fallback
+      {
+        urlPattern:
+          /^https?:\/\/[^/]+\/(?:icons\/.*|manifest\.webmanifest|favicon\.ico|offline\.html)$/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "public-assets",
+          expiration: { maxEntries: 64, maxAgeSeconds: 30 * 24 * 60 * 60 },
+        },
+      },
+      // App HTML — NetworkFirst with short timeout (offline shell)
+      {
+        urlPattern: /^https?.*\/(dashboard|leaderboard|settings|login|marketplace).*/i,
         handler: "NetworkFirst",
         options: {
           cacheName: "pages-cache",
@@ -30,18 +49,27 @@ const withPWA = withPWAInit({
           networkTimeoutSeconds: 3,
         },
       },
-      // API data â€” stale-while-revalidate for fast reads
+      // REST API reads — stale-while-revalidate (fast repeat visits; mutations still go network-first in app)
       {
-        urlPattern: /^https?.*\/api\/v1\/.*/i,
+        urlPattern: /^https?:\/\/[^/]+\/api\/v1\/.*$/i,
         handler: "StaleWhileRevalidate",
         options: {
           cacheName: "api-cache",
           expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 },
         },
       },
-      // Static assets â€” CacheFirst
+      // Other API routes (cron excluded by hostname in practice) — SWR for GET-heavy endpoints
       {
-        urlPattern: /\.(?:js|css|woff2?|png|jpg|jpeg|gif|svg|ico|webp)$/i,
+        urlPattern: /^https?:\/\/[^/]+\/api\/(?!cron\/).*/i,
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "api-misc",
+          expiration: { maxEntries: 32, maxAgeSeconds: 5 * 60 },
+        },
+      },
+      // Static file extensions — CacheFirst
+      {
+        urlPattern: /\.(?:js|css|woff2?|png|jpg|jpeg|gif|svg|ico|webp|avif)$/i,
         handler: "CacheFirst",
         options: {
           cacheName: "static-assets",
@@ -62,9 +90,6 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   transpilePackages: ["lucide-react", "sonner", "next-intl"],
   async headers() {
     return [

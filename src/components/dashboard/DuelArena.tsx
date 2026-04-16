@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import React from "react";
 import { useState, useEffect, useTransition, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
@@ -366,7 +367,7 @@ const CHALLENGE_CARDS = [
   {
     id: "focus-mode",
     title: "Focus Mode",
-    description: "Bugün 3 rutin bitir, liderliği al.",
+    topic: "Disiplin Yarışı",
     message: "Focus Mode açıldı: Bugün en az 3 rutin tamamlayacağım. Hazır mısın?",
     icon: Rocket,
     className: "border-indigo-500/30 bg-indigo-500/10",
@@ -374,7 +375,7 @@ const CHALLENGE_CARDS = [
   {
     id: "streak-rush",
     title: "Streak Rush",
-    description: "Seriyi koru, puan farkını kapat.",
+    topic: "Streak Koruma",
     message: "Streak Rush kartımı oynadım. Serini koru, ben de tempoyu artırıyorum!",
     icon: Flame,
     className: "border-orange-500/30 bg-orange-500/10",
@@ -382,19 +383,33 @@ const CHALLENGE_CARDS = [
   {
     id: "shield-up",
     title: "Shield Up",
-    description: "Savunma modu: bugünü boş geçme.",
+    topic: "Son Tur Savunması",
     message: "Shield Up! Bugünü boş geçmiyorum. Düello son ana kadar açık.",
     icon: Shield,
     className: "border-emerald-500/30 bg-emerald-500/10",
   },
 ] as const;
 
-function ChallengeCards({ duelId, disabled }: { duelId: string; disabled: boolean }) {
+function formatDuration(endTime: string | null): string {
+  if (!endTime) return "24s";
+  const remainingMs = Math.max(0, new Date(endTime).getTime() - Date.now());
+  const hours = Math.max(1, Math.ceil(remainingMs / (60 * 60 * 1000)));
+  return `${hours}s`;
+}
+
+function ChallengeCards({
+  duel,
+  disabled,
+}: {
+  duel: DuelEntry;
+  disabled: boolean;
+}) {
   const [isPending, startTransition] = useTransition();
+  const durationLabel = React.useMemo(() => formatDuration(duel.endTime), [duel.endTime]);
 
   const sendCard = (message: string, title: string) => {
     startTransition(async () => {
-      const result = await sendDuelMessage({ duelId, content: message });
+      const result = await sendDuelMessage({ duelId: duel.id, content: message });
       if (!result.success) {
         toast.error("Kart gönderilemedi. Birkaç saniye sonra tekrar dene.");
         return;
@@ -407,16 +422,19 @@ function ChallengeCards({ duelId, disabled }: { duelId: string; disabled: boolea
     <div className="space-y-2">
       <p className="text-xs font-medium text-muted-foreground">Meydan Okuma Kartları</p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-        {CHALLENGE_CARDS.map((card) => {
+        {CHALLENGE_CARDS.map((card, index) => {
           const Icon = card.icon;
           return (
-            <button
+            <motion.button
               key={card.id}
               type="button"
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.06 * index }}
               disabled={disabled || isPending}
               onClick={() => sendCard(card.message, card.title)}
               className={cn(
-                "rounded-xl border p-3 text-left transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60",
+                "rounded-xl border glass-card retro-border p-3 text-left transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60",
                 card.className
               )}
             >
@@ -424,8 +442,12 @@ function ChallengeCards({ duelId, disabled }: { duelId: string; disabled: boolea
                 <Icon className="size-4" />
               </div>
               <p className="text-sm font-semibold">{card.title}</p>
-              <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
-            </button>
+              <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
+                <p>Konu: {card.topic}</p>
+                <p>Ödül: {duel.stake * 2} altın</p>
+                <p>Süre: {durationLabel}</p>
+              </div>
+            </motion.button>
           );
         })}
       </div>
@@ -598,7 +620,7 @@ export function DuelArena({ duel }: Props) {
         />
       )}
 
-      {isActive && duel.opponent && <ChallengeCards duelId={duel.id} disabled={!isActive} />}
+      {isActive && duel.opponent && <ChallengeCards duel={duel} disabled={!isActive} />}
     </section>
   );
 }

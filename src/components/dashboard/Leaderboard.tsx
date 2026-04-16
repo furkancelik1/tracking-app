@@ -1,19 +1,19 @@
 ﻿"use client";
 
-import * as React from "react";
+import React from "react";
 import { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { LeaderboardEntry, LeaderboardPayload } from "@/actions/leaderboard.actions";
-import { Trophy, Medal, Flame, Crown, Sparkles, Users, Globe } from "lucide-react";
+import { Trophy, Medal, Flame, Crown, Sparkles, Globe, Shield } from "lucide-react";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { getAvatarFrame } from "@/lib/level";
-import { getLeagueByXp } from "@/lib/league";
+import { getUserLeague } from "@/lib/level";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { getFriendsLeaderboardAction } from "@/actions/social.actions";
+import { getLeagueLeaderboard } from "@/actions/leaderboard.actions";
 
 // â”€â”€â”€ Podium renkleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -160,9 +160,9 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
             </Badge>
             <Badge
               variant="outline"
-              className={cn("text-[10px]", getLeagueByXp(entry.xp).badgeClassName)}
+              className={cn("text-[10px]", getUserLeague(entry.xp).badgeClassName)}
             >
-              {getLeagueByXp(entry.xp).label}
+              {getUserLeague(entry.xp).icon} {getUserLeague(entry.xp).label}
             </Badge>
             <LevelBadge xp={entry.xp} compact />
             {entry.currentStreak > 0 && (
@@ -222,9 +222,9 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
           )}
           <Badge
             variant="outline"
-            className={cn("text-[10px] shrink-0", getLeagueByXp(entry.xp).badgeClassName)}
+            className={cn("text-[10px] shrink-0", getUserLeague(entry.xp).badgeClassName)}
           >
-            {getLeagueByXp(entry.xp).label}
+            {getUserLeague(entry.xp).icon} {getUserLeague(entry.xp).label}
           </Badge>
           <LevelBadge xp={entry.xp} compact />
           {entry.currentStreak > 0 && (
@@ -246,7 +246,7 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
 function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUsers: number }) {
   const t = useTranslations("common");
   const tLb = useTranslations("leaderboard");
-  const league = getLeagueByXp(entry.xp);
+  const league = getUserLeague(entry.xp);
   return (
     <Card className="border-indigo-500/30 bg-indigo-500/5 mt-6">
       <CardContent className="flex items-center gap-4 py-4">
@@ -265,7 +265,7 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
             {tLb("usersAmong", { rank: entry.rank, total: totalUsers })}
           </p>
           <Badge variant="outline" className={cn("mt-1 text-[10px]", league.badgeClassName)}>
-            {league.label} Lig
+            {league.icon} {league.label} Lig
           </Badge>
         </div>
         <div className="text-right shrink-0">
@@ -309,25 +309,32 @@ type Props = {
 
 export function Leaderboard({ data, isLoggedIn = false }: Props) {
   const t = useTranslations("leaderboard");
-  const [tab, setTab] = useState<"global" | "friends">("global");
-  const [friendsData, setFriendsData] = useState<LeaderboardPayload | null>(null);
+  const [tab, setTab] = useState<"global" | "league">("global");
+  const [leagueData, setLeagueData] = useState<LeaderboardPayload | null>(null);
   const [isPending, startTransition] = useTransition();
+  const tabLabels = React.useMemo(
+    () => ({
+      global: "Genel Sıralama",
+      league: "Lig Sıralaması",
+    }),
+    []
+  );
 
-  const handleTabChange = (newTab: "global" | "friends") => {
+  const handleTabChange = (newTab: "global" | "league") => {
     setTab(newTab);
-    if (newTab === "friends" && !friendsData) {
+    if (newTab === "league" && !leagueData) {
       startTransition(async () => {
         try {
-          const result = await getFriendsLeaderboardAction();
-          setFriendsData(result);
+          const result = await getLeagueLeaderboard();
+          setLeagueData(result);
         } catch {
-          setFriendsData({ topTen: [], currentUser: null, totalUsers: 0 });
+          setLeagueData({ topTen: [], currentUser: null, totalUsers: 0 });
         }
       });
     }
   };
 
-  const activeData = tab === "global" ? data : friendsData ?? data;
+  const activeData = tab === "global" ? data : leagueData ?? data;
   const { topTen, currentUser, totalUsers } = activeData;
 
   return (
@@ -345,19 +352,19 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
             )}
           >
             <Globe className="size-4" />
-            {t("tabs.global")}
+            {tabLabels.global}
           </button>
           <button
-            onClick={() => handleTabChange("friends")}
+            onClick={() => handleTabChange("league")}
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              tab === "friends"
+              tab === "league"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Users className="size-4" />
-            {t("tabs.friends")}
+            <Shield className="size-4" />
+            {tabLabels.league}
           </button>
         </div>
       )}
@@ -371,10 +378,10 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
 
       {/* Content */}
       {!isPending && topTen.length === 0 ? (
-        tab === "friends" ? (
+        tab === "league" ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Users className="size-10 text-muted-foreground/30 mb-4" />
-            <p className="text-sm text-muted-foreground">{t("friendsEmpty")}</p>
+            <Shield className="size-10 text-muted-foreground/30 mb-4" />
+            <p className="text-sm text-muted-foreground">Bu ligde henüz oyuncu görünmüyor.</p>
           </div>
         ) : (
           <LeaderboardEmpty />

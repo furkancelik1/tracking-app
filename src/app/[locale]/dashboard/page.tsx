@@ -1,7 +1,8 @@
+import dynamic from "next/dynamic";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardNav } from "@/components/shared/DashboardNav";
-import { RoutineList } from "@/components/dashboard/RoutineList";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StreakAlert } from "@/components/dashboard/StreakAlert";
 import { DashboardEmptyState } from "@/components/dashboard/DashboardEmptyState";
 import { getSubscriptionTier } from "@/lib/stripe";
@@ -13,6 +14,23 @@ import { MottoDisplay } from "@/components/dashboard/MottoDisplay";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AlertTriangle } from "lucide-react";
+
+const RoutineList = dynamic(
+  () =>
+    import("@/components/dashboard/RoutineList").then((mod) => mod.RoutineList),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full max-w-md" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-56 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    ),
+  }
+);
 
 function isMissingColumnError(err: unknown): boolean {
   return err instanceof Error && /column .* does not exist/i.test(err.message);
@@ -113,7 +131,7 @@ export default async function DashboardPage({
             ...routine,
             frequencyType: routine.frequency === "DAILY" ? "DAILY" : "WEEKLY",
             weeklyTarget: routine.frequency === "DAILY" ? 1 : 3,
-            specificDays: [],
+            daysOfWeek: [],
             stackParentId: null,
             lastCompletedAt: null,
           }));
@@ -156,7 +174,7 @@ export default async function DashboardPage({
             ? "WEEKLY"
             : "DAILY",
       weeklyTarget: r.weeklyTarget ?? 1,
-      specificDays: r.specificDays ?? [],
+      daysOfWeek: r.daysOfWeek ?? [],
       stackParentId: r.stackParentId ?? null,
       isActive: r.isActive ?? true,
       sortOrder: r.sortOrder ?? 0,

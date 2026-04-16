@@ -1,10 +1,8 @@
-import React from 'react'; // <--- BU SATIRI EKLE
+import React, { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { MarketplaceContent } from "@/components/dashboard/MarketplaceContent";
-import { getMarketplaceItems } from "@/actions/shop.actions";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MarketplacePageLoader } from "@/components/dashboard/MarketplacePageLoader";
 
-// src/app/[locale]/(dashboard)/marketplace/page.tsx dosyasına ekle
-export const dynamic = 'force-dynamic';
 export async function generateMetadata({
   params,
 }: {
@@ -15,6 +13,19 @@ export async function generateMetadata({
   return { title: t("title"), description: t("description") };
 }
 
+function MarketplaceFallback() {
+  return (
+    <div className="px-6 py-12 space-y-6">
+      <Skeleton className="h-10 w-64" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-48 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default async function MarketplacePage({
   params,
 }: {
@@ -23,11 +34,9 @@ export default async function MarketplacePage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const data = await getMarketplaceItems();
-
   return (
-    <div className="px-6 py-12">
-      <MarketplaceContent initialData={data} />
-    </div>
+    <Suspense fallback={<MarketplaceFallback />}>
+      <MarketplacePageLoader />
+    </Suspense>
   );
 }

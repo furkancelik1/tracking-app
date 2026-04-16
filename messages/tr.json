@@ -16,7 +16,9 @@
     "anonymous": "Anonim",
     "you": "(sen)",
     "footer": "© {year} Zenith. Tüm hakları saklıdır.",
-    "site": "furkancelik.online"
+    "site": "furkancelik.online",
+    "syncedOfflineCompletions": "{count} çevrimdışı tamamlama senkronize edildi.",
+    "queuedOfflineCompletion": "Çevrimdışı kaydedildi; bağlantı gelince senkronize edilecek."
   },
 
   "nav": {

@@ -2,11 +2,13 @@ import { requireAuth } from "@/lib/auth";
 import { getUserAnalytics, getAdvancedAnalytics } from "@/lib/analytics";
 import { StatsRangeTabs } from "@/components/dashboard/StatsRangeTabs";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { CategoryPieChart } from "@/components/dashboard/CategoryPieChart";
 import { YearlyActivityHeatmap } from "@/components/dashboard/YearlyActivityHeatmap";
-import { ActivityAreaChart } from "@/components/dashboard/ActivityAreaChart";
+import {
+  ActivityAreaChart,
+  CategoryPieChart,
+  ConsistencyRadarChart,
+} from "@/components/dashboard/StatsChartsLazy";
 import { StatsShareButton } from "@/components/dashboard/StatsShareButton";
-import { ConsistencyRadarChart } from "@/components/dashboard/ConsistencyRadarChart";
 import { RoutineSuccessList } from "@/components/dashboard/RoutineSuccessList";
 import { InsightCards } from "@/components/dashboard/InsightCards";
 import { prisma } from "@/lib/prisma";

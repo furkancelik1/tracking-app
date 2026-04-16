@@ -1,10 +1,67 @@
-// â”€â”€â”€ Seviye Sabitleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+﻿// â”€â”€â”€ Seviye Sabitleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const XP_PER_LEVEL = 100;
 
 // â”€â”€â”€ RÃ¼tbe TanÄ±mlarÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type RankTitle = "Çırak" | "Disiplinli" | "Rutin Canavarı" | "Üstat" | "Efsane";
+
+export type UserLeagueTier = "BRONZE" | "SILVER" | "GOLD" | "DIAMOND";
+
+export type UserLeague = {
+  tier: UserLeagueTier;
+  label: "Bronz" | "Gümüş" | "Altın" | "Elmas";
+  icon: "🥉" | "🥈" | "🥇" | "💎";
+  minXp: number;
+  maxXp: number | null;
+  badgeClassName: string;
+};
+
+const USER_LEAGUES: UserLeague[] = [
+  {
+    tier: "BRONZE",
+    label: "Bronz",
+    icon: "🥉",
+    minXp: 0,
+    maxXp: 1000,
+    badgeClassName: "border-amber-600/40 bg-amber-600/10 text-amber-700 dark:text-amber-300",
+  },
+  {
+    tier: "SILVER",
+    label: "Gümüş",
+    icon: "🥈",
+    minXp: 1001,
+    maxXp: 3000,
+    badgeClassName: "border-zinc-400/40 bg-zinc-400/10 text-zinc-700 dark:text-zinc-200",
+  },
+  {
+    tier: "GOLD",
+    label: "Altın",
+    icon: "🥇",
+    minXp: 3001,
+    maxXp: 7000,
+    badgeClassName: "border-yellow-400/50 bg-yellow-400/15 text-yellow-700 dark:text-yellow-300",
+  },
+  {
+    tier: "DIAMOND",
+    label: "Elmas",
+    icon: "💎",
+    minXp: 7001,
+    maxXp: null,
+    badgeClassName: "border-cyan-300/50 bg-cyan-300/15 text-cyan-700 dark:text-cyan-200",
+  },
+];
+
+export function getUserLeague(xp: number): UserLeague {
+  const safeXp = Math.max(0, xp);
+  return (
+    USER_LEAGUES.find((league) => {
+      if (safeXp < league.minXp) return false;
+      if (league.maxXp === null) return true;
+      return safeXp <= league.maxXp;
+    }) ?? USER_LEAGUES[0]!
+  );
+}
 
 type RankDef = { minLevel: number; maxLevel: number; title: RankTitle; titleEn: string; color: string };
 

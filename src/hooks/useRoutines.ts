@@ -11,7 +11,7 @@ export type RoutineWithMeta = {
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
   frequencyType: "DAILY" | "WEEKLY" | "SPECIFIC_DAYS";
   weeklyTarget: number;
-  specificDays: number[];
+  daysOfWeek: number[];
   stackParentId: string | null;
   isActive: boolean;
   sortOrder: number;
@@ -58,7 +58,7 @@ export function useCreateRoutine() {
       frequency: "DAILY" | "WEEKLY" | "MONTHLY";
       frequencyType?: "DAILY" | "WEEKLY" | "SPECIFIC_DAYS";
       weeklyTarget?: number;
-      specificDays?: number[];
+      daysOfWeek?: number[];
       stackParentId?: string | null;
       category?: string;
       color?: string;

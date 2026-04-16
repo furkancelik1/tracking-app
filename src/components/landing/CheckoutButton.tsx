@@ -1,20 +1,18 @@
 ﻿"use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
-type Props = {
-  isLoggedIn: boolean;
-};
-
-export function CheckoutButton({ isLoggedIn }: Props) {
+export function CheckoutButton() {
   const t = useTranslations("landing.pricing.pro");
+  const auth = useAuth();
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
-    if (!isLoggedIn) {
+    if (auth.status !== "authenticated") {
       window.location.href = "/login?next=/settings";
       return;
     }

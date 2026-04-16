@@ -51,7 +51,7 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
   const [description, setDescription] = useState("");
   const [frequencyType, setFrequencyType] = useState<FrequencyType>("DAILY");
   const [weeklyTarget, setWeeklyTarget] = useState(3);
-  const [specificDays, setSpecificDays] = useState<number[]>([1, 3, 5]);
+  const [daysOfWeek, setDaysOfWeek] = useState<number[]>([1, 3, 5]);
   const [stackParentId, setStackParentId] = useState<string>("");
   const [category, setCategory] = useState("Genel");
   const [color, setColor] = useState(DEFAULT_COLOR);
@@ -76,7 +76,7 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (atLimit || !title.trim()) return;
-    if (frequencyType === "SPECIFIC_DAYS" && specificDays.length === 0) {
+    if (frequencyType === "SPECIFIC_DAYS" && daysOfWeek.length === 0) {
       toast.error("Belirli günler için en az bir gün seç.");
       return;
     }
@@ -87,7 +87,7 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
         frequency: frequencyType === "DAILY" ? "DAILY" : "WEEKLY",
         frequencyType,
         weeklyTarget: frequencyType === "WEEKLY" ? weeklyTarget : 1,
-        specificDays: frequencyType === "SPECIFIC_DAYS" ? specificDays : [],
+        daysOfWeek: frequencyType === "SPECIFIC_DAYS" ? daysOfWeek : [],
         stackParentId: stackParentId || null,
         category: category.trim() || "Genel",
         color,
@@ -99,7 +99,7 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
           setDescription("");
           setFrequencyType("DAILY");
           setWeeklyTarget(3);
-          setSpecificDays([1, 3, 5]);
+          setDaysOfWeek([1, 3, 5]);
           setStackParentId("");
           setCategory("Genel");
           setColor(DEFAULT_COLOR);
@@ -186,7 +186,7 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
               {[
                 { value: "DAILY", label: "Her gün" },
                 { value: "WEEKLY", label: "Haftada X kez" },
-                { value: "SPECIFIC_DAYS", label: "Belirli günler" },
+                { value: "SPECIFIC_DAYS", label: "Haftanın belirli günleri" },
               ].map((option) => (
                 <button
                   key={option.value}
@@ -226,14 +226,14 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
               <Label>Hangi günler?</Label>
               <div className="flex flex-wrap gap-2">
                 {DAY_OPTIONS.map((day) => {
-                  const selected = specificDays.includes(day.value);
+                  const selected = daysOfWeek.includes(day.value);
                   return (
                     <button
                       key={day.value}
                       type="button"
                       disabled={atLimit}
                       onClick={() =>
-                        setSpecificDays((prev) =>
+                        setDaysOfWeek((prev) =>
                           prev.includes(day.value)
                             ? prev.filter((d) => d !== day.value)
                             : [...prev, day.value]

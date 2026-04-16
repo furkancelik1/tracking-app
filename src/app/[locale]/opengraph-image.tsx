@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Routine Tracker";
+
+export const alt = "Zenith";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -12,6 +13,10 @@ export default async function Image({
 }) {
   const { locale } = await params;
   const isTr = locale === "tr";
+  const title = isTr ? "Zenith — Disiplinini zirveye taşı" : "Zenith — Master Your Discipline";
+  const subtitle = isTr
+    ? "Alışkanlıklarını takip et, serilerini koru, seviye atla."
+    : "Track habits, build streaks, level up.";
 
   return new ImageResponse(
     (
@@ -21,81 +26,38 @@ export default async function Image({
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4f46e5 100%)",
-          color: "white",
-          fontFamily: "sans-serif",
-          padding: "60px",
+          padding: 72,
+          background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #312e81 100%)",
+          color: "#f8fafc",
+          fontFamily: "system-ui, sans-serif",
         }}
       >
-        {/* Logo circle + brand */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "16px",
-            marginBottom: "32px",
-          }}
-        >
-          <div
-            style={{
-              width: "56px",
-              height: "56px",
-              borderRadius: "50%",
-              background: "white",
-            }}
-          />
-          <span style={{ fontSize: 28, fontWeight: 600, color: "#c7d2fe" }}>
-            Routine Tracker
-          </span>
-        </div>
-
-        {/* Main title */}
         <div
           style={{
             fontSize: 56,
             fontWeight: 800,
-            textAlign: "center",
-            lineHeight: 1.15,
+            letterSpacing: -1,
+            lineHeight: 1.1,
+            marginBottom: 20,
             maxWidth: 900,
           }}
         >
-          {isTr
-            ? "Alışkanlıklarını Takip Et, Hayatını Dönüştür"
-            : "Track Your Habits, Transform Your Life"}
+          {title}
         </div>
-
-        {/* Subtitle */}
+        <div style={{ fontSize: 28, opacity: 0.88, maxWidth: 820, lineHeight: 1.35 }}>
+          {subtitle}
+        </div>
         <div
           style={{
-            fontSize: 22,
-            color: "#c7d2fe",
-            marginTop: "24px",
-            textAlign: "center",
-            maxWidth: 700,
-          }}
-        >
-          {isTr
-            ? "Seriler, grafikler ve analizlerle motivasyonunu koru"
-            : "Stay motivated with streaks, charts, and analytics"}
-        </div>
-
-        {/* Bottom bar */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "40px",
-            display: "flex",
-            alignItems: "center",
-            gap: "24px",
-            fontSize: 16,
+            marginTop: 48,
+            fontSize: 20,
+            fontWeight: 600,
             color: "#a5b4fc",
           }}
         >
-          <span>furkancelik.online</span>
-          <span style={{ color: "#6366f1" }}>|</span>
-          <span>{isTr ? "Ücretsiz Başla" : "Start for Free"}</span>
+          furkancelik.online
         </div>
       </div>
     ),

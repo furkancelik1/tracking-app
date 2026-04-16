@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import * as React from "react";
+import React from "react";
 import { useOptimistic, useTransition, useMemo, useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,11 @@ import { ShareCardModal } from "@/components/dashboard/ShareCardModal";
 import type { ShareCardProps } from "@/components/dashboard/ShareCard";
 import { BadgeCelebration } from "@/components/dashboard/BadgeCelebration";
 import { LevelUpModal } from "@/components/dashboard/LevelUpModal";
+import { enqueuePendingRoutineLog, removePendingByRoutineId } from "@/lib/offline/pending-routine-logs-idb";
+import {
+  flushPendingRoutineLogs,
+  subscribeRoutineSync,
+} from "@/lib/offline/routine-sync-manager";
 
 // â”€â”€â”€ Optimistic reducer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -103,6 +108,24 @@ export function RoutineList({ initialRoutines }: Props) {
   //    Transition bitince serverRoutines'e (sunucu doÄŸrusu) dÃ¶ner.
   const [optimisticRoutines, dispatch] = useOptimistic(serverRoutines, optimisticReducer);
 
+  // Çevrimdışı kuyruk: sayfa açılışında ve tekrar çevrimiçi olunca senkronize et
+  useEffect(() => {
+    const run = async () => {
+      if (typeof navigator === "undefined" || !navigator.onLine) return;
+      const res = await flushPendingRoutineLogs();
+      if (res.synced > 0 || res.skipped > 0) {
+        invalidate();
+        if (res.synced > 0) {
+          toast.success(tc("syncedOfflineCompletions", { count: res.synced }), {
+            duration: 3500,
+          });
+        }
+      }
+    };
+    void run();
+    return subscribeRoutineSync(run);
+  }, [invalidate, tc]);
+
   // Reset allDone flag when server data refreshes (new day / undo)
   useEffect(() => {
     const todayUTC = new Date();
@@ -167,41 +190,50 @@ export function RoutineList({ initialRoutines }: Props) {
 
       try {
         if (completed) {
-          await undoRoutineAction(id);
-          toast.success(t("undone"));
+          const removedFromQueue = await removePendingByRoutineId(id);
+          if (removedFromQueue) {
+            toast.success(t("undone"));
+          } else {
+            await undoRoutineAction(id);
+            toast.success(t("undone"));
+          }
           window.dispatchEvent(new CustomEvent("coins-updated"));
         } else {
-          const result = await completeRoutineAction(id, note);
-          toast.success(t("completed"));
-          // Navbar coin gÃ¶stergesini gÃ¼ncelle
-          window.dispatchEvent(new CustomEvent("coins-updated"));
+          const offline =
+            typeof navigator !== "undefined" && !navigator.onLine;
+          if (offline) {
+            await enqueuePendingRoutineLog({ routineId: id, note });
+            toast.success(tc("queuedOfflineCompletion"), { duration: 4000 });
+            window.dispatchEvent(new CustomEvent("coins-updated"));
+          } else {
+            const result = await completeRoutineAction(id, note);
+            toast.success(t("completed"));
+            window.dispatchEvent(new CustomEvent("coins-updated"));
 
-          // â”€â”€ DÃ¼ello skor bildirimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          if (result?.duelScoreUpdated && result.duelOpponentName) {
-            fireDuelToast("score", {
-              title: td("notifOpponentScored"),
-              description: td("notifOpponentScoredDesc", { name: result.duelOpponentName }),
-              actionLabel: td("notifViewDuel"),
-              onAction: () => window.dispatchEvent(new CustomEvent("navigate-social")),
-            });
-          }
-
-          // â”€â”€ Rozet kutlamasÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          if (result?.newBadges && result.newBadges.length > 0) {
-            const firstBadge = result.newBadges[0];
-            if (firstBadge) {
-              setTimeout(() => setCelebrationBadge(firstBadge), 1800);
+            if (result?.duelScoreUpdated && result.duelOpponentName) {
+              fireDuelToast("score", {
+                title: td("notifOpponentScored"),
+                description: td("notifOpponentScoredDesc", { name: result.duelOpponentName }),
+                actionLabel: td("notifViewDuel"),
+                onAction: () => window.dispatchEvent(new CustomEvent("navigate-social")),
+              });
             }
-          }
 
-          // â”€â”€ Level-up algÄ±la â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          if (result && didLevelUp(result.totalXp - result.xpGain, result.totalXp)) {
-            const { level, rank, rankColor } = calculateLevel(result.totalXp);
-            setTimeout(() => {
-              fireLevelUpConfetti();
-              hapticSuccess();
-              setLevelUpModal({ level, rank, rankColor });
-            }, 600);
+            if (result?.newBadges && result.newBadges.length > 0) {
+              const firstBadge = result.newBadges[0];
+              if (firstBadge) {
+                setTimeout(() => setCelebrationBadge(firstBadge), 1800);
+              }
+            }
+
+            if (result && didLevelUp(result.totalXp - result.xpGain, result.totalXp)) {
+              const { level, rank, rankColor } = calculateLevel(result.totalXp);
+              setTimeout(() => {
+                fireLevelUpConfetti();
+                hapticSuccess();
+                setLevelUpModal({ level, rank, rankColor });
+              }, 600);
+            }
           }
         }
       } catch (err) {

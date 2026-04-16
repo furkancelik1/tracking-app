@@ -35,7 +35,7 @@ const createRoutineSchema = z.object({
   frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
   frequencyType: z.enum(["DAILY", "WEEKLY", "SPECIFIC_DAYS"]).optional(),
   weeklyTarget: z.number().int().min(1).max(7).optional(),
-  specificDays: z.array(z.number().int().min(0).max(6)).max(7).optional(),
+  daysOfWeek: z.array(z.number().int().min(0).max(6)).max(7).optional(),
   stackParentId: z.string().cuid().nullable().optional(),
   category: z.string().max(50).default("Genel"),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "GeÃ§ersiz renk").default("#3b82f6"),
@@ -112,7 +112,7 @@ export async function GET() {
         ...routine,
         frequencyType: toFrequencyType(routine.frequency),
         weeklyTarget: routine.frequency === "DAILY" ? 1 : 3,
-        specificDays: [],
+        daysOfWeek: [],
         stackParentId: null,
       }));
     }
@@ -199,11 +199,11 @@ export async function POST(req: Request) {
     const resolvedFrequency =
       parsed.data.frequency ??
       (resolvedFrequencyType === "DAILY" ? "DAILY" : "WEEKLY");
-    const resolvedSpecificDays = Array.from(new Set(parsed.data.specificDays ?? [])).sort();
+    const resolvedDaysOfWeek = Array.from(new Set(parsed.data.daysOfWeek ?? [])).sort();
     const resolvedWeeklyTarget =
       resolvedFrequencyType === "WEEKLY" ? parsed.data.weeklyTarget ?? 3 : 1;
 
-    if (resolvedFrequencyType === "SPECIFIC_DAYS" && resolvedSpecificDays.length === 0) {
+    if (resolvedFrequencyType === "SPECIFIC_DAYS" && resolvedDaysOfWeek.length === 0) {
       return NextResponse.json<ApiResponse<never>>(
         {
           success: false,
@@ -249,7 +249,7 @@ export async function POST(req: Request) {
           frequency: resolvedFrequency as RoutineFrequency,
           frequencyType: resolvedFrequencyType,
           weeklyTarget: resolvedWeeklyTarget,
-          specificDays: resolvedFrequencyType === "SPECIFIC_DAYS" ? resolvedSpecificDays : [],
+          daysOfWeek: resolvedFrequencyType === "SPECIFIC_DAYS" ? resolvedDaysOfWeek : [],
           stackParentId: parsed.data.stackParentId ?? null,
         } as any,
       });
@@ -273,7 +273,7 @@ export async function POST(req: Request) {
         ...legacyRoutine,
         frequencyType: toFrequencyType(legacyRoutine.frequency),
         weeklyTarget: legacyRoutine.frequency === "DAILY" ? 1 : 3,
-        specificDays: [],
+        daysOfWeek: [],
         stackParentId: null,
       };
     }

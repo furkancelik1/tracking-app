@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { sendPushToUserAction } from "@/actions/push.actions";
-import { getLeagueByXp, type LeagueTier } from "@/lib/league";
+import { getUserLeague, type UserLeagueTier } from "@/lib/level";
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -41,7 +41,7 @@ export type WeeklyLeagueEntry = {
   name: string | null;
   image: string | null;
   weeklyXp: number;
-  league: LeagueTier;
+  league: UserLeagueTier;
 };
 
 function startOfUtcDay(date = new Date()): Date {
@@ -518,7 +518,7 @@ export async function getWeeklyLeagueLeaderboardAction(limit = 50): Promise<{
         name: user.name,
         image: user.image,
         weeklyXp: log._count._all * 10,
-        league: getLeagueByXp(user.xp).tier,
+        league: getUserLeague(user.xp).tier,
       };
     })
     .filter((entry): entry is WeeklyLeagueEntry => !!entry);
@@ -556,4 +556,12 @@ export async function resetWeeklyLeagueRankingCronAction(input?: { force?: boole
     weekStart: weekStart.toISOString(),
     previewCount: preview.entries.length,
   };
+}
+
+export async function nudgeFriend(friendId: string): Promise<{
+  success: boolean;
+  nudged: boolean;
+  reason?: string;
+}> {
+  return sendStreakNudgeAction(friendId);
 }

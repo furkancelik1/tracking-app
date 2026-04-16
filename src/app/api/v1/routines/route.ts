@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSubscriptionTier } from "@/lib/stripe";
 import { z } from "zod";
 import type { ApiResponse } from "@/types";
-import type { Routine, RoutineFrequency, RoutineFrequencyType } from "@prisma/client";
+import type { RoutineFrequency } from "@prisma/client";
 
 const FREE_ROUTINE_LIMIT = 3;
 const isProd = process.env.NODE_ENV === "production";
@@ -19,6 +19,14 @@ function serializeError(err: unknown) {
     };
   }
   return { value: err };
+}
+
+function isMissingColumnError(err: unknown): boolean {
+  return err instanceof Error && /column .* does not exist/i.test(err.message);
+}
+
+function toFrequencyType(frequency: RoutineFrequency): "DAILY" | "WEEKLY" {
+  return frequency === "DAILY" ? "DAILY" : "WEEKLY";
 }
 
 const createRoutineSchema = z.object({
@@ -52,19 +60,62 @@ export async function GET() {
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
 
-    const routines = await prisma.routine.findMany({
-      where: { userId, isActive: true },
-      include: {
-        logs: {
-          where: { completedAt: { gte: todayStart } },
-          select: { id: true, completedAt: true },
-          orderBy: { completedAt: "desc" },
-          take: 1,
+    let routines: Array<any>;
+
+    try {
+      routines = await prisma.routine.findMany({
+        where: { userId, isActive: true },
+        include: {
+          logs: {
+            where: { completedAt: { gte: todayStart } },
+            select: { id: true, completedAt: true },
+            orderBy: { completedAt: "desc" },
+            take: 1,
+          },
+          _count: { select: { logs: true } },
         },
-        _count: { select: { logs: true } },
-      },
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    });
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      });
+    } catch (err) {
+      if (!isMissingColumnError(err)) throw err;
+
+      // Fallback for environments where latest migration is not applied yet.
+      const legacyRoutines = await prisma.routine.findMany({
+        where: { userId, isActive: true },
+        select: {
+          id: true,
+          userId: true,
+          title: true,
+          description: true,
+          icon: true,
+          category: true,
+          color: true,
+          frequency: true,
+          isActive: true,
+          sortOrder: true,
+          currentStreak: true,
+          longestStreak: true,
+          createdAt: true,
+          updatedAt: true,
+          logs: {
+            where: { completedAt: { gte: todayStart } },
+            select: { id: true, completedAt: true },
+            orderBy: { completedAt: "desc" },
+            take: 1,
+          },
+          _count: { select: { logs: true } },
+        },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      });
+
+      routines = legacyRoutines.map((routine: any) => ({
+        ...routine,
+        frequencyType: toFrequencyType(routine.frequency),
+        weeklyTarget: routine.frequency === "DAILY" ? 1 : 3,
+        specificDays: [],
+        stackParentId: null,
+      }));
+    }
 
     return NextResponse.json<ApiResponse<typeof routines>>({
       success: true,
@@ -184,24 +235,50 @@ export async function POST(req: Request) {
       }
     }
 
-    const routine = await prisma.routine.create({
-      data: {
-        userId,
-        title: parsed.data.title,
-        description: parsed.data.description,
-        category: parsed.data.category,
-        color: parsed.data.color,
-        icon: parsed.data.icon,
-        sortOrder: parsed.data.sortOrder,
-        frequency: resolvedFrequency as RoutineFrequency,
-        frequencyType: resolvedFrequencyType as RoutineFrequencyType,
-        weeklyTarget: resolvedWeeklyTarget,
-        specificDays: resolvedFrequencyType === "SPECIFIC_DAYS" ? resolvedSpecificDays : [],
-        stackParentId: parsed.data.stackParentId ?? null,
-      },
-    });
+    let routine: any;
+    try {
+      routine = await prisma.routine.create({
+        data: {
+          userId,
+          title: parsed.data.title,
+          description: parsed.data.description,
+          category: parsed.data.category,
+          color: parsed.data.color,
+          icon: parsed.data.icon,
+          sortOrder: parsed.data.sortOrder,
+          frequency: resolvedFrequency as RoutineFrequency,
+          frequencyType: resolvedFrequencyType,
+          weeklyTarget: resolvedWeeklyTarget,
+          specificDays: resolvedFrequencyType === "SPECIFIC_DAYS" ? resolvedSpecificDays : [],
+          stackParentId: parsed.data.stackParentId ?? null,
+        } as any,
+      });
+    } catch (err) {
+      if (!isMissingColumnError(err)) throw err;
 
-    return NextResponse.json<ApiResponse<Routine>>(
+      const legacyRoutine = await prisma.routine.create({
+        data: {
+          userId,
+          title: parsed.data.title,
+          description: parsed.data.description,
+          category: parsed.data.category,
+          color: parsed.data.color,
+          icon: parsed.data.icon,
+          sortOrder: parsed.data.sortOrder,
+          frequency: resolvedFrequency as RoutineFrequency,
+        },
+      });
+
+      routine = {
+        ...legacyRoutine,
+        frequencyType: toFrequencyType(legacyRoutine.frequency),
+        weeklyTarget: legacyRoutine.frequency === "DAILY" ? 1 : 3,
+        specificDays: [],
+        stackParentId: null,
+      };
+    }
+
+    return NextResponse.json<ApiResponse<typeof routine>>(
       { success: true, data: routine },
       { status: 201 }
     );

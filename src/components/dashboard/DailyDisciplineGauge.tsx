@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect } from "react";
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 import {
   Card,
@@ -29,7 +30,6 @@ function useIsMobile() {
   }, []);
   return isMobile;
 }
-
 
 const NEON_GREEN = "#39FF14";
 
@@ -98,7 +98,6 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
           borderColor: `${ringColor}30`,
         } : undefined}
       >
-
         <CardContent className="relative py-4">
           <div className="relative mx-auto min-w-0 overflow-hidden" style={{ width: "200px", height: "200px", minHeight: "200px", position: "relative" }}>
             <ResponsiveContainer width="100%" height="100%" debounce={100}>
@@ -150,7 +149,6 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
               </span>
             </div>
           </div>
-
         </CardContent>
       </Card>
     </motion.div>

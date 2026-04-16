@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const MOTTOS = [
@@ -26,7 +27,7 @@ function getDailyMotto(): string {
   const seed = new Date().toDateString()
     .split("")
     .reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return MOTTOS[seed % MOTTOS.length];
+  return MOTTOS[seed % MOTTOS.length] ?? "";
 }
 
 export function MottoDisplay() {

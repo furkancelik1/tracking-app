@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import * as React from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Coins, Check, Loader2, Package, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";

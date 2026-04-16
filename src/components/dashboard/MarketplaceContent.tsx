@@ -1,9 +1,8 @@
 ﻿"use client";
 
-import { useState } from "react";
+import React from "react";
 import { toast } from "sonner";
 import { Coins, Check, Loader2, Package, Lock } from "lucide-react";
-// ... gerisi aynÄ±
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,6 @@ import {
   unequipItem,
 } from "@/actions/shop.actions";
 import { firePurchaseConfetti } from "@/lib/celebrations";
-
 
 type MarketplaceItem = {
   id: string;
@@ -49,13 +47,13 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
   const t = useTranslations("marketplace");
   const tShop = useTranslations("shop");
 
-  const [coins, setCoins] = useState(initialData.coins);
-  const [userLevel] = useState(initialData.userLevel);
-  const [items, setItems] = useState<MarketplaceItem[]>(
+  const [coins, setCoins] = React.useState(initialData.coins);
+  const [userLevel] = React.useState(initialData.userLevel);
+  const [items, setItems] = React.useState<MarketplaceItem[]>(
     initialData.items as MarketplaceItem[]
   );
-  const [activeTab, setActiveTab] = useState<TabValue>("all");
-  const [actionId, setActionId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = React.useState<TabValue>("all");
+  const [actionId, setActionId] = React.useState<string | null>(null);
 
   async function handleBuy(item: MarketplaceItem) {
     setActionId(item.id);
@@ -100,7 +98,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
         const primaryColor = item.metadata?.primary ?? "#818cf8";
         const glowColor = item.metadata?.glow ?? "rgba(129,140,248,0.4)";
         toast.success(`${item.name} activated`, {
-          description: item.category === "THEME" ? "Theme applied â€” enjoy the vibe" : "Frame equipped",
+          description: item.category === "THEME" ? "Theme applied — enjoy the vibe" : "Frame equipped",
           duration: 3500,
           style: {
             borderLeft: `3px solid ${primaryColor}`,

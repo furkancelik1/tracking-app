@@ -14,6 +14,10 @@ import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AlertTriangle } from "lucide-react";
 
+function isMissingColumnError(err: unknown): boolean {
+  return err instanceof Error && /column .* does not exist/i.test(err.message);
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "dashboard.metadata" });
@@ -56,21 +60,65 @@ export default async function DashboardPage({
     thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
 
     const [raw, userXpData] = await Promise.all([
-      prisma.routine
-        .findMany({
-          where: { userId, isActive: true },
-          include: {
-            logs: {
-              where: { completedAt: { gte: thirtyDaysAgo } },
-              select: { id: true, completedAt: true, note: true },
-              orderBy: { completedAt: "desc" },
-              take: 30,
+      (async () => {
+        try {
+          return await prisma.routine.findMany({
+            where: { userId, isActive: true },
+            include: {
+              logs: {
+                where: { completedAt: { gte: thirtyDaysAgo } },
+                select: { id: true, completedAt: true, note: true },
+                orderBy: { completedAt: "desc" },
+                take: 30,
+              },
+              _count: { select: { logs: true } },
             },
-            _count: { select: { logs: true } },
-          },
-          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-        })
-        .catch(() => []),
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          });
+        } catch (err) {
+          if (!isMissingColumnError(err)) {
+            console.error("[DashboardPage] routine query failed:", err);
+            return [];
+          }
+
+          // Legacy fallback: production DB migration'ı henüz uygulanmadıysa.
+          const legacy = await prisma.routine.findMany({
+            where: { userId, isActive: true },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              frequency: true,
+              isActive: true,
+              sortOrder: true,
+              category: true,
+              color: true,
+              icon: true,
+              currentStreak: true,
+              longestStreak: true,
+              createdAt: true,
+              updatedAt: true,
+              logs: {
+                where: { completedAt: { gte: thirtyDaysAgo } },
+                select: { id: true, completedAt: true, note: true },
+                orderBy: { completedAt: "desc" },
+                take: 30,
+              },
+              _count: { select: { logs: true } },
+            },
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          });
+
+          return legacy.map((routine) => ({
+            ...routine,
+            frequencyType: routine.frequency === "DAILY" ? "DAILY" : "WEEKLY",
+            weeklyTarget: routine.frequency === "DAILY" ? 1 : 3,
+            specificDays: [],
+            stackParentId: null,
+            lastCompletedAt: null,
+          }));
+        }
+      })(),
       prisma.user
         .findUnique({ where: { id: userId }, select: { xp: true } })
         .catch(() => null),
@@ -101,7 +149,12 @@ export default async function DashboardPage({
       title: r.title ?? "",
       description: r.description ?? null,
       frequency: r.frequency ?? "DAILY",
-      frequencyType: r.frequencyType ?? "DAILY",
+      frequencyType:
+        r.frequencyType === "SPECIFIC_DAYS"
+          ? "SPECIFIC_DAYS"
+          : r.frequencyType === "WEEKLY"
+            ? "WEEKLY"
+            : "DAILY",
       weeklyTarget: r.weeklyTarget ?? 1,
       specificDays: r.specificDays ?? [],
       stackParentId: r.stackParentId ?? null,

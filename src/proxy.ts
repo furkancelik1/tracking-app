@@ -1,4 +1,4 @@
-﻿import createMiddleware from "next-intl/middleware";
+import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
@@ -6,18 +6,15 @@ import { routing } from "@/i18n/routing";
 const intlMiddleware = createMiddleware(routing);
 
 /**
- * MIDDLEWARE â€” Locale detection + Session kontrolÃ¼
+ * Proxy — Locale detection + session check
  *
- * 1. next-intl locale prefix'ini iÅŸler (redirect / rewrite)
- * 2. KorumalÄ± route'lar iÃ§in session cookie kontrolÃ¼ yapar
- *
- * NextAuth "database" session stratejisi â†’ JWT yok.
- * Middleware sadece hÄ±zlÄ± "cookie var mÄ±?" kontrolÃ¼ yapar.
+ * 1. Handles locale prefixes via next-intl (redirect/rewrite)
+ * 2. Performs lightweight cookie-based auth checks on protected paths
  */
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // API ve statik dosyalarÄ± atla
+  // Skip API and static assets
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
@@ -26,8 +23,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // --- Auth kontrolÃ¼ ---
-  // Locale prefix'ini Ã§Ä±karÄ±p asÄ±l path'i bul
+  // --- Auth check ---
   const segments = pathname.split("/");
   const locales = routing.locales as readonly string[];
   const pathWithoutLocale =
@@ -49,7 +45,6 @@ export async function middleware(req: NextRequest) {
     const sessionToken = req.cookies.get(cookieName)?.value;
 
     if (!sessionToken) {
-      // Locale-aware login redirect
       const locale =
         segments.length > 1 && locales.includes(segments[1] as string)
           ? segments[1]
@@ -66,7 +61,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    // Statik dosyalarÄ±, Clerk public route'larÄ± ve PWA varlÄ±klarÄ±nÄ± middleware'den hariÃ§ tut
     "/((?!api/cron|api/auth|api/webhook|_next/static|_next/image|favicon\\.ico|sw\\.js|workbox-.*|manifest\\.json|.*\\.png|.*\\.jpg|.*\\.ico|.*\\.svg|sign-in|sign-up).*)",
   ],
 };

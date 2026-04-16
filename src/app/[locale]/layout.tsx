@@ -9,11 +9,12 @@ import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
 const SITE_URL = "https://furkancelik.online";
 
 type Props = {
-  children: React.ReactNode;
+  children: ReactNode;
   params: Promise<{ locale: string }>;
 };
 
@@ -149,13 +150,6 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   const messages = await getMessages();
 
-  // Hydration fix: Only render children after mount
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
@@ -171,23 +165,21 @@ export default async function LocaleLayout({ children, params }: Props) {
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <body suppressHydrationWarning>
-        {mounted ? (
-          <NextIntlClientProvider messages={messages}>
-            <QueryProvider>
-              <AuthProvider>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="system"
-                  enableSystem
-                  disableTransitionOnChange
-                >
-                  {children}
-                  <Toaster />
-                </ThemeProvider>
-              </AuthProvider>
-            </QueryProvider>
-          </NextIntlClientProvider>
-        ) : null}
+        <NextIntlClientProvider messages={messages}>
+          <QueryProvider>
+            <AuthProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                {children}
+                <Toaster />
+              </ThemeProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </NextIntlClientProvider>
         <SpeedInsights />
         <Analytics />
       </body>

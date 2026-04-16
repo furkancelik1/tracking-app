@@ -9,9 +9,6 @@
     "lint": "next lint",
     "seed": "npx tsx prisma/seed.ts"
   },
-  "prisma": {
-    "seed": "npx tsx prisma/seed.ts"
-  },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
     "@google/generative-ai": "^0.24.1",

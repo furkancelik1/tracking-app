@@ -1,30 +1,24 @@
-import React from "react";
+import * as React from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import dynamic from "next/dynamic";
-const MarketplaceContent = dynamic(
-  () => import("@/components/dashboard/MarketplaceContent").then(mod => mod.MarketplaceContent),
-  { ssr: false }
-);
+import { MarketplaceContent } from "@/components/dashboard/MarketplaceContent";
 import { getMarketplaceItems } from "@/actions/shop.actions";
-
 
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = params;
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "marketplace.metadata" });
   return { title: t("title"), description: t("description") };
 }
 
-
 export default async function MarketplacePage({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = params;
+  const { locale } = await params;
   setRequestLocale(locale);
 
   const data = await getMarketplaceItems();

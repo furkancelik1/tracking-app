@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+// DİKKAT: 'import * as React' veya 'import React' satırını TAMAMEN SİLİYORUZ.
 import { useState } from "react";
 import { toast } from "sonner";
 import { Coins, Check, Loader2, Package, Lock } from "lucide-react";
@@ -13,6 +13,8 @@ import {
   unequipItem,
 } from "@/actions/shop.actions";
 import { firePurchaseConfetti } from "@/lib/celebrations";
+
+// ... (dosyanın geri kalanı aynı kalacak)
 
 type MarketplaceItem = {
   id: string;
@@ -143,14 +145,13 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
 
   return (
     <div className="max-w-2xl mx-auto space-y-10">
-      {/* ── Header: title + coin balance ── */}
+      {/* Header */}
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-light tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
 
-        {/* Discipline Points balance */}
         <div className="flex flex-col items-end gap-1.5">
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
             Balance
@@ -164,7 +165,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
         </div>
       </div>
 
-      {/* ── Category filter — minimal pills ── */}
+      {/* Tabs */}
       <div className="flex gap-1.5 flex-wrap">
         {TABS.map(({ value, labelKey }) => (
           <button
@@ -181,7 +182,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
         ))}
       </div>
 
-      {/* ── Item list ── */}
+      {/* Items */}
       {filteredItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <Package className="h-10 w-10 text-muted-foreground/30 mb-3" />
@@ -208,8 +209,6 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
     </div>
   );
 }
-
-// ─── Item Row (Zen list view) ────────────────────────────────────────────────
 
 function ItemRow({
   item,
@@ -242,7 +241,6 @@ function ItemRow({
         item.equipped ? "neon-item-active" : ""
       } ${isLocked ? "opacity-60" : ""}`}
     >
-      {/* Left: swatch + info */}
       <div className="flex items-center gap-4">
         <div className="relative flex-shrink-0">
           <div
@@ -298,7 +296,6 @@ function ItemRow({
         </div>
       </div>
 
-      {/* Right: price + action */}
       <div className="flex items-center gap-4 flex-shrink-0">
         {!item.owned && !isLocked && (
           <div className="flex items-center gap-1 text-xs">
@@ -322,11 +319,7 @@ function ItemRow({
             onClick={onBuy}
             className="h-8 text-xs px-4 min-w-[72px]"
           >
-            {isActioning ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              tShop("buy")
-            )}
+            {isActioning ? <Loader2 className="h-3 w-3 animate-spin" /> : tShop("buy")}
           </Button>
         ) : item.category === "BOOSTER" ? (
           <span className="text-xs text-muted-foreground">{t("owned")}</span>
@@ -338,11 +331,7 @@ function ItemRow({
             onClick={onUnequip}
             className="h-8 text-xs px-4 text-muted-foreground min-w-[72px]"
           >
-            {isActioning ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              t("unequip")
-            )}
+            {isActioning ? <Loader2 className="h-3 w-3 animate-spin" /> : t("unequip")}
           </Button>
         ) : (
           <Button
@@ -352,11 +341,7 @@ function ItemRow({
             onClick={onEquip}
             className="h-8 text-xs px-4 min-w-[72px]"
           >
-            {isActioning ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              t("equip")
-            )}
+            {isActioning ? <Loader2 className="h-3 w-3 animate-spin" /> : t("equip")}
           </Button>
         )}
       </div>

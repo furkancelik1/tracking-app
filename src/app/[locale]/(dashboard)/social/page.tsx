@@ -1,4 +1,3 @@
-import {from "react";
 import { getFollowersAction, getFollowingAction, getPendingRequestsAction } from "@/actions/social.actions";
 import { getChallengesAction, getCompletedChallengesAction, distributeChallengeRewards } from "@/actions/challenge.actions";
 import { getActiveDuelAction, checkAndFinalizeDuels, getPendingPrivateDuel } from "@/actions/duel.actions";

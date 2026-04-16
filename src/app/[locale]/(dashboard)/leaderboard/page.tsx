@@ -1,4 +1,3 @@
-import {from "react";
 
 export const dynamic = "force-dynamic";
 

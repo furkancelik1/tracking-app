@@ -1,4 +1,3 @@
-import {from "react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";

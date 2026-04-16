@@ -65,7 +65,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // CORS ayarlarÄ± (Chrome Extension iÃ§in)
+  transpilePackages: ["lucide-react", "sonner", "next-intl"],
   async headers() {
     return [
       {

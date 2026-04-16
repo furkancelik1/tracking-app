@@ -1,4 +1,4 @@
-import Stripe from "stripe";
+﻿import Stripe from "stripe";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY is not set");
@@ -40,7 +40,7 @@ export function getSubscriptionTier(
   return value === "PRO" ? "PRO" : "FREE";
 }
 
-// ─── Subscription Status Helper ───────────────────────────────────────────────
+// â”€â”€â”€ Subscription Status Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type SubscriptionStatus = {
   tier: SubscriptionTier;
@@ -52,8 +52,8 @@ export type SubscriptionStatus = {
 };
 
 /**
- * Kullanıcı objesinden abonelik durumunu türetir.
- * Server Component / Server Action içinde kullanılır.
+ * KullanÄ±cÄ± objesinden abonelik durumunu tÃ¼retir.
+ * Server Component / Server Action iÃ§inde kullanÄ±lÄ±r.
  */
 export function getSubscriptionStatus(user: {
   subscriptionTier: string;

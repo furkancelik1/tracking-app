@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -8,11 +8,11 @@ import { calculateLevel } from "@/lib/level";
 
 async function requireUser() {
   const session = await getSession();
-  if (!session?.user) throw new Error("Oturum bulunamadı.");
+  if (!session?.user) throw new Error("Oturum bulunamadÄ±.");
   return (session.user as any).id as string;
 }
 
-/** Dükkan ürünlerini getir + kullanıcının coin bakiyesini ve envanterini döndür */
+/** DÃ¼kkan Ã¼rÃ¼nlerini getir + kullanÄ±cÄ±nÄ±n coin bakiyesini ve envanterini dÃ¶ndÃ¼r */
 export async function getShopData() {
   const userId = await requireUser();
 
@@ -36,7 +36,7 @@ export async function getShopData() {
   };
 }
 
-/** Kullanıcının coin bakiyesini döndür */
+/** KullanÄ±cÄ±nÄ±n coin bakiyesini dÃ¶ndÃ¼r */
 export async function getUserCoins(): Promise<number> {
   const userId = await requireUser();
   const user = await prisma.user.findUnique({
@@ -46,7 +46,7 @@ export async function getUserCoins(): Promise<number> {
   return user?.coins ?? 0;
 }
 
-/** Ürün satın al */
+/** ÃœrÃ¼n satÄ±n al */
 export async function buyItem(itemId: string): Promise<{ success: boolean; message: string; coins: number }> {
   const userId = await requireUser();
 
@@ -79,7 +79,7 @@ export async function buyItem(itemId: string): Promise<{ success: boolean; messa
   return { success: true, message: "PURCHASE_SUCCESS", coins: updatedUser?.coins ?? 0 };
 }
 
-/** Kullanıcının envanterindeki belirtilen türden eşya adedini döndür */
+/** KullanÄ±cÄ±nÄ±n envanterindeki belirtilen tÃ¼rden eÅŸya adedini dÃ¶ndÃ¼r */
 export async function getInventoryCount(type: "STREAK_FREEZE"): Promise<number> {
   const userId = await requireUser();
 
@@ -95,7 +95,7 @@ export async function getInventoryCount(type: "STREAK_FREEZE"): Promise<number> 
   return items.reduce((sum, i) => sum + i.count, 0);
 }
 
-/** Streak Freeze kullan — bir adet düş */
+/** Streak Freeze kullan â€” bir adet dÃ¼ÅŸ */
 export async function useStreakFreeze(userId: string): Promise<boolean> {
   const userItem = await prisma.userItem.findFirst({
     where: {
@@ -116,11 +116,11 @@ export async function useStreakFreeze(userId: string): Promise<boolean> {
   return true;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Marketplace — Themes, Frames & Boosters
-// ═══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Marketplace â€” Themes, Frames & Boosters
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-/** Marketplace ürünlerini getir (kategori bazlı filtreleme + sahiplik durumu) */
+/** Marketplace Ã¼rÃ¼nlerini getir (kategori bazlÄ± filtreleme + sahiplik durumu) */
 export async function getMarketplaceItems(category?: ShopItemCategory) {
   const userId = await requireUser();
 
@@ -157,7 +157,7 @@ export async function getMarketplaceItems(category?: ShopItemCategory) {
   };
 }
 
-/** Marketplace ürünü satın al */
+/** Marketplace Ã¼rÃ¼nÃ¼ satÄ±n al */
 export async function buyShopItem(
   shopItemId: string
 ): Promise<{ success: boolean; message: string; coins: number }> {
@@ -199,7 +199,7 @@ export async function buyShopItem(
   return { success: true, message: "PURCHASE_SUCCESS", coins: updatedUser?.coins ?? 0 };
 }
 
-/** Tema veya çerçeve kuşan */
+/** Tema veya Ã§erÃ§eve kuÅŸan */
 export async function equipItem(
   shopItemId: string
 ): Promise<{ success: boolean; message: string }> {
@@ -233,7 +233,7 @@ export async function equipItem(
   return { success: true, message: "EQUIPPED" };
 }
 
-/** Kuşanılmış temayı veya çerçeveyi çıkar */
+/** KuÅŸanÄ±lmÄ±ÅŸ temayÄ± veya Ã§erÃ§eveyi Ã§Ä±kar */
 export async function unequipItem(
   type: "THEME" | "FRAME"
 ): Promise<{ success: boolean }> {
@@ -248,7 +248,7 @@ export async function unequipItem(
   return { success: true };
 }
 
-/** Kullanıcının kuşanılmış tema verisini getir (CSS değişkenleri için) */
+/** KullanÄ±cÄ±nÄ±n kuÅŸanÄ±lmÄ±ÅŸ tema verisini getir (CSS deÄŸiÅŸkenleri iÃ§in) */
 export async function getEquippedTheme() {
   const userId = await requireUser();
 

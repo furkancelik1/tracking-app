@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,7 +33,7 @@ export function ChallengeTracker({ initialData, isPro }: Props) {
   const percent = target > 0 ? Math.min(100, Math.round((progress / target) * 100)) : 0;
   const remaining = target - progress;
 
-  // Completion celebration — fire once
+  // Completion celebration â€” fire once
   useEffect(() => {
     if (isCompleted && !celebrated) {
       setCelebrated(true);
@@ -51,7 +51,7 @@ export function ChallengeTracker({ initialData, isPro }: Props) {
     return "";
   }
 
-  // ── No PRO ───────────────────────────────────────────────
+  // â”€â”€ No PRO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (!isPro) {
     return (
       <div className="rounded-xl border border-dashed border-muted-foreground/30 bg-card/50 p-5">
@@ -66,7 +66,7 @@ export function ChallengeTracker({ initialData, isPro }: Props) {
     );
   }
 
-  // ── No active challenge ──────────────────────────────────
+  // â”€â”€ No active challenge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (!hasChallenge) {
     return (
       <div className="rounded-xl border border-dashed border-muted-foreground/30 bg-card/50 p-5">
@@ -89,7 +89,7 @@ export function ChallengeTracker({ initialData, isPro }: Props) {
 
   const motivationKey = getMotivationKey();
 
-  // ── Completed state ──────────────────────────────────────
+  // â”€â”€ Completed state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (isCompleted) {
     return (
       <motion.div
@@ -145,7 +145,7 @@ export function ChallengeTracker({ initialData, isPro }: Props) {
     );
   }
 
-  // ── Active challenge (in progress) ───────────────────────
+  // â”€â”€ Active challenge (in progress) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -235,7 +235,7 @@ export function ChallengeTracker({ initialData, isPro }: Props) {
                   ? t("remaining", { count: remaining })
                   : ""}
               </span>
-              <span className="text-xs text-muted-foreground">•</span>
+              <span className="text-xs text-muted-foreground">â€¢</span>
               <span className="text-xs font-medium">
                 {t(motivationKey)}
               </span>

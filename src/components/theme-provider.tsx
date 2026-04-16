@@ -1,10 +1,10 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 
-// React 19'un gereksiz yere fırlattığı "script tag" devasa hata ekranını susturuyoruz.
-// Sadece geliştirme modunda çalışır ve projenin mantığını asla bozmaz.
+// React 19'un gereksiz yere fÄ±rlattÄ±ÄŸÄ± "script tag" devasa hata ekranÄ±nÄ± susturuyoruz.
+// Sadece geliÅŸtirme modunda Ã§alÄ±ÅŸÄ±r ve projenin mantÄ±ÄŸÄ±nÄ± asla bozmaz.
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   const origError = console.error;
   console.error = (...args) => {

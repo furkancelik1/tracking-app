@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendRoutineReminderEmail } from "@/lib/mail";
 import { webpush } from "@/lib/web-push";
@@ -9,37 +9,37 @@ import { buildPushPayload, type NotificationSlot } from "@/constants/notificatio
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// ── Sabitler ──────────────────────────────────────────────────────────────────
+// â”€â”€ Sabitler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const EMAIL_BATCH_SIZE = 10;
 const PUSH_BATCH_SIZE = 20;
 const BATCH_DELAY_MS = 200;
 
-// ── Timing-safe secret karşılaştırma ─────────────────────────────────────────
+// â”€â”€ Timing-safe secret karÅŸÄ±laÅŸtÄ±rma â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function isValidSecret(token: string, secret: string): boolean {
   if (token.length !== secret.length) return false;
   return timingSafeEqual(Buffer.from(token), Buffer.from(secret));
 }
 
-// ── Detect notification time slot from UTC hour ─────────────────────────────
+// â”€â”€ Detect notification time slot from UTC hour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function detectSlot(utcHour: number): NotificationSlot {
-  // Cron runs at 06:00, 09:00, 18:00 UTC → maps to slots
+  // Cron runs at 06:00, 09:00, 18:00 UTC â†’ maps to slots
   if (utcHour < 10) return "morning";
   if (utcHour < 15) return "midday";
   return "evening";
 }
 
-// ─── GET /api/cron/reminders ─────────────────────────────────────────────────
-// Master cron: Tek çağrıda hem PRO e-posta hem tüm kullanıcılara push gönderir.
-// Vercel Hobby planı tek cron hakkına sahip olduğu için birleştirildi.
+// â”€â”€â”€ GET /api/cron/reminders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Master cron: Tek Ã§aÄŸrÄ±da hem PRO e-posta hem tÃ¼m kullanÄ±cÄ±lara push gÃ¶nderir.
+// Vercel Hobby planÄ± tek cron hakkÄ±na sahip olduÄŸu iÃ§in birleÅŸtirildi.
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now();
 
-  // ── 1) Güvenlik ───────────────────────────────────────────────────────────
+  // â”€â”€ 1) GÃ¼venlik â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const cronSecret = process.env.CRON_SECRET;
   const isVercelCron = req.headers.get("x-vercel-cron") === "1";
 
-  // Bearer token veya ?secret= query param ile doğrulama
+  // Bearer token veya ?secret= query param ile doÄŸrulama
   const authHeader = req.headers.get("authorization");
   const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
   const queryToken = req.nextUrl.searchParams.get("secret");
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     isVercelCron || (!!cronSecret && !!token && isValidSecret(token, cronSecret));
 
   if (!isAuthorized) {
-    console.warn("[cron] ⛔ Yetkisiz erişim — header/token eşleşmedi.");
+    console.warn("[cron] â›” Yetkisiz eriÅŸim â€” header/token eÅŸleÅŸmedi.");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -65,9 +65,9 @@ export async function GET(req: NextRequest) {
   try {
     const todayStart = startOfDay(new Date());
 
-    // ══════════════════════════════════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     // FAZA 1: PRO E-POSTA HATIRLATICLARI
-    // ══════════════════════════════════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     const proUsers = await prisma.user.findMany({
       where: {
@@ -109,10 +109,10 @@ export async function GET(req: NextRequest) {
       })
       .filter((u) => u.pending.length > 0);
 
-    // ── E-posta batch gönderimi ─────────────────────────────────────────────
+    // â”€â”€ E-posta batch gÃ¶nderimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (let i = 0; i < proWithPending.length; i += EMAIL_BATCH_SIZE) {
       if (Date.now() - startTime > 30_000) {
-        console.warn(`[cron] ⏱ E-posta fazı timeout — ${i}/${proWithPending.length} işlendi`);
+        console.warn(`[cron] â± E-posta fazÄ± timeout â€” ${i}/${proWithPending.length} iÅŸlendi`);
         break;
       }
 
@@ -144,7 +144,7 @@ export async function GET(req: NextRequest) {
             channel: "email",
             error: reason instanceof Error ? reason.message : String(reason),
           });
-          console.error(`[cron] ❌ Email ${user.email}: ${reason}`);
+          console.error(`[cron] âŒ Email ${user.email}: ${reason}`);
         }
       }
 
@@ -153,11 +153,11 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    console.log(`[cron] 📧 E-posta fazı tamamlandı — gönderilen: ${stats.emailSent}, hata: ${stats.emailFailed}`);
+    console.log(`[cron] ğŸ“§ E-posta fazÄ± tamamlandÄ± â€” gÃ¶nderilen: ${stats.emailSent}, hata: ${stats.emailFailed}`);
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // FAZA 2: TÜM KULLANICILARA PUSH BİLDİRİM (FREE + PRO)
-    // ══════════════════════════════════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // FAZA 2: TÃœM KULLANICILARA PUSH BÄ°LDÄ°RÄ°M (FREE + PRO)
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     const slot = detectSlot(new Date().getUTCHours());
 
@@ -197,12 +197,12 @@ export async function GET(req: NextRequest) {
       })
       .filter((u) => u.pending.length > 0);
 
-    console.log(`[cron] 🔔 Push fazı (${slot}) — ${pushUsers.length} abone, ${pushTargets.length} kişinin bekleyen rutini var`);
+    console.log(`[cron] ğŸ”” Push fazÄ± (${slot}) â€” ${pushUsers.length} abone, ${pushTargets.length} kiÅŸinin bekleyen rutini var`);
 
-    // ── Push batch gönderimi ────────────────────────────────────────────────
+    // â”€â”€ Push batch gÃ¶nderimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (let i = 0; i < pushTargets.length; i += PUSH_BATCH_SIZE) {
       if (Date.now() - startTime > 55_000) {
-        console.warn(`[cron] ⏱ Push fazı timeout — ${i}/${pushTargets.length} işlendi`);
+        console.warn(`[cron] â± Push fazÄ± timeout â€” ${i}/${pushTargets.length} iÅŸlendi`);
         break;
       }
 
@@ -233,7 +233,7 @@ export async function GET(req: NextRequest) {
                 stats.subsCleaned++;
               } else {
                 stats.pushFailed++;
-                console.error(`[cron] ❌ Push hatası (${err.statusCode}): ${sub.endpoint.slice(0, 60)}…`);
+                console.error(`[cron] âŒ Push hatasÄ± (${err.statusCode}): ${sub.endpoint.slice(0, 60)}â€¦`);
               }
             }
           });
@@ -241,10 +241,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // ── Sonuç ───────────────────────────────────────────────────────────────
+    // â”€â”€ SonuÃ§ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const duration = Date.now() - startTime;
     console.log(
-      `[cron] ✅ Master cron tamamlandı — email: ${stats.emailSent}, push: ${stats.pushSent}, temizlenen: ${stats.subsCleaned}, süre: ${duration}ms`
+      `[cron] âœ… Master cron tamamlandÄ± â€” email: ${stats.emailSent}, push: ${stats.pushSent}, temizlenen: ${stats.subsCleaned}, sÃ¼re: ${duration}ms`
     );
 
     return NextResponse.json({
@@ -254,7 +254,7 @@ export async function GET(req: NextRequest) {
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (err) {
-    console.error("[cron] 💥 Kritik hata:", err);
+    console.error("[cron] ğŸ’¥ Kritik hata:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -1,11 +1,11 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type DailyCompletionPoint = {
   date: string;
   count: number;
-  label: string; // "01 Nis" gibi kısa etiket
+  label: string; // "01 Nis" gibi kÄ±sa etiket
 };
 
 export type CategoryDistributionPoint = {
@@ -14,7 +14,7 @@ export type CategoryDistributionPoint = {
 };
 
 export type PeakDay = {
-  day: string; // "Pazartesi", "Salı", ...
+  day: string; // "Pazartesi", "SalÄ±", ...
   dayIndex: number; // 0=Pazar, 6=Cumartesi
   count: number;
 };
@@ -37,7 +37,7 @@ export type AnalyticsPayload = {
   summary: AnalyticsSummary;
 };
 
-// ─── Advanced Analytics Types ────────────────────────────────────────────────
+// â”€â”€â”€ Advanced Analytics Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type RoutineSuccessRate = {
   routineId: string;
@@ -76,16 +76,16 @@ export type AdvancedAnalyticsPayload = {
   insights: Insight[];
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const TR_MONTHS_SHORT = [
-  "Oca", "Şub", "Mar", "Nis", "May", "Haz",
-  "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara",
+  "Oca", "Åub", "Mar", "Nis", "May", "Haz",
+  "Tem", "AÄŸu", "Eyl", "Eki", "Kas", "Ara",
 ];
 
 const TR_DAYS = [
-  "Pazar", "Pazartesi", "Salı", "Çarşamba",
-  "Perşembe", "Cuma", "Cumartesi",
+  "Pazar", "Pazartesi", "SalÄ±", "Ã‡arÅŸamba",
+  "PerÅŸembe", "Cuma", "Cumartesi",
 ];
 
 function startOfUtcDay(date: Date) {
@@ -116,7 +116,7 @@ function getLastNDaysWindow(days: number) {
   return { start, end };
 }
 
-// ─── Current streak hesaplama ────────────────────────────────────────────────
+// â”€â”€â”€ Current streak hesaplama â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function calculateCurrentStreak(dayMap: Map<string, number>): number {
   const today = startOfUtcDay(new Date());
@@ -127,7 +127,7 @@ function calculateCurrentStreak(dayMap: Map<string, number>): number {
     const key = toIsoDate(d);
     const count = dayMap.get(key);
     if (count === undefined || count <= 0) {
-      // İlk gün (bugün) 0 ise streak kırılmamış, dünden bak
+      // Ä°lk gÃ¼n (bugÃ¼n) 0 ise streak kÄ±rÄ±lmamÄ±ÅŸ, dÃ¼nden bak
       if (i === 0) continue;
       break;
     }
@@ -136,7 +136,7 @@ function calculateCurrentStreak(dayMap: Map<string, number>): number {
   return streak;
 }
 
-// ─── Peak day hesaplama ──────────────────────────────────────────────────────
+// â”€â”€â”€ Peak day hesaplama â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function calculatePeakDay(logs: { completedAt: Date }[]): PeakDay {
   if (logs.length === 0) {
@@ -158,7 +158,7 @@ function calculatePeakDay(logs: { completedAt: Date }[]): PeakDay {
   };
 }
 
-// ─── Main analytics function ─────────────────────────────────────────────────
+// â”€â”€â”€ Main analytics function â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getUserAnalytics(
   userId: string,
@@ -168,13 +168,13 @@ export async function getUserAnalytics(
     const { start, end } = getLastNDaysWindow(days);
     const endExclusive = addUtcDays(end, 1);
 
-    // Son 30 gün başarı oranı için ayrı pencere
+    // Son 30 gÃ¼n baÅŸarÄ± oranÄ± iÃ§in ayrÄ± pencere
     const month30 = getLastNDaysWindow(30);
     const month30End = addUtcDays(month30.end, 1);
 
     const [logs, totalAggregate, routineAggregate, activeCount, monthlyLogs, allTimeLogs] =
       await Promise.all([
-        // Range içindeki loglar (grafik + kategori)
+        // Range iÃ§indeki loglar (grafik + kategori)
         prisma.routineLog.findMany({
           where: {
             userId,
@@ -199,11 +199,11 @@ export async function getUserAnalytics(
           where: { userId, isActive: true },
           _max: { longestStreak: true, currentStreak: true },
         }),
-        // Aktif rutin sayısı
+        // Aktif rutin sayÄ±sÄ±
         prisma.routine.count({
           where: { userId, isActive: true },
         }),
-        // Son 30 gün logları (monthly success rate)
+        // Son 30 gÃ¼n loglarÄ± (monthly success rate)
         prisma.routineLog.findMany({
           where: {
             userId,
@@ -211,7 +211,7 @@ export async function getUserAnalytics(
           },
           select: { completedAt: true },
         }),
-        // Tüm zamanlar logları (streak hesaplaması için max 400 gün)
+        // TÃ¼m zamanlar loglarÄ± (streak hesaplamasÄ± iÃ§in max 400 gÃ¼n)
         prisma.routineLog.findMany({
           where: {
             userId,
@@ -222,7 +222,7 @@ export async function getUserAnalytics(
         }),
       ]);
 
-    // ── Daily completions map ─────────────────────────────────────────────
+    // â”€â”€ Daily completions map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const dayMap = new Map<string, number>();
     const categoryMap = new Map<string, number>();
@@ -253,12 +253,12 @@ export async function getUserAnalytics(
       .map(([category, count]) => ({ category, count }))
       .sort((a, b) => b.count - a.count);
 
-    // ── Summary hesaplamaları ─────────────────────────────────────────────
+    // â”€â”€ Summary hesaplamalarÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const totalCompletions = totalAggregate._count._all ?? 0;
     const longestStreak = routineAggregate._max.longestStreak ?? 0;
 
-    // Current streak: all-time logların gün bazında unique sayısı
+    // Current streak: all-time loglarÄ±n gÃ¼n bazÄ±nda unique sayÄ±sÄ±
     const allTimeDayMap = new Map<string, number>();
     for (const log of allTimeLogs) {
       const key = toIsoDate(log.completedAt);
@@ -266,11 +266,11 @@ export async function getUserAnalytics(
     }
     const currentStreak = calculateCurrentStreak(allTimeDayMap);
 
-    // Completion rate: kaç günde en az 1 log var
+    // Completion rate: kaÃ§ gÃ¼nde en az 1 log var
     const daysWithActivity = Array.from(dayMap.values()).filter((c) => c > 0).length;
     const completionRate = days > 0 ? Math.round((daysWithActivity / days) * 100) : 0;
 
-    // Monthly success rate: son 30 günde kaç gün aktif
+    // Monthly success rate: son 30 gÃ¼nde kaÃ§ gÃ¼n aktif
     const monthDaySet = new Set<string>();
     for (const log of monthlyLogs) {
       monthDaySet.add(toIsoDate(log.completedAt));
@@ -322,7 +322,7 @@ export async function getUserAnalytics(
   }
 }
 
-// ─── Advanced Analytics ──────────────────────────────────────────────────────
+// â”€â”€â”€ Advanced Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getAdvancedAnalytics(
   userId: string,
@@ -367,7 +367,7 @@ export async function getAdvancedAnalytics(
       }),
     ]);
 
-    // ── Routine Success Rates ───────────────────────────────────────────
+    // â”€â”€ Routine Success Rates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const routineSuccessRates: RoutineSuccessRate[] = routines.map((r) => {
       const routineLogs = logs.filter((l) => l.routineId === r.id);
@@ -395,7 +395,7 @@ export async function getAdvancedAnalytics(
       };
     }).sort((a, b) => b.successRate - a.successRate);
 
-    // ── Weekday Performance ─────────────────────────────────────────────
+    // â”€â”€ Weekday Performance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const weekdayCounts = new Array(7).fill(0) as number[];
     const weekdayOccurrences = new Array(7).fill(0) as number[];
@@ -423,7 +423,7 @@ export async function getAdvancedAnalytics(
           : 0,
     }));
 
-    // ── Monthly Comparison ──────────────────────────────────────────────
+    // â”€â”€ Monthly Comparison â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const thisMonthDays = new Set(logs.map((l) => toIsoDate(l.completedAt))).size;
     const lastMonthDays = new Set(prevLogs.map((l) => toIsoDate(l.completedAt))).size;
@@ -440,7 +440,7 @@ export async function getAdvancedAnalytics(
       changePercent,
     };
 
-    // ── Insights ────────────────────────────────────────────────────────
+    // â”€â”€ Insights â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const insights: Insight[] = [];
 

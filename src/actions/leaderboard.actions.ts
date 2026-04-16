@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type LeaderboardEntry = {
   rank: number;
@@ -22,13 +22,13 @@ export type LeaderboardPayload = {
   totalUsers: number;
 };
 
-// ─── Main Action ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Action â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getLeaderboard(): Promise<LeaderboardPayload> {
   const session = await getSession();
   const currentUserId = (session?.user as any)?.id as string | undefined;
 
-  // Top 10 — sadece public profiller
+  // Top 10 â€” sadece public profiller
   const topUsers = await prisma.user.findMany({
     where: { isPublic: true, xp: { gt: 0 } },
     orderBy: { xp: "desc" },
@@ -59,7 +59,7 @@ export async function getLeaderboard(): Promise<LeaderboardPayload> {
     subscriptionTier: u.subscriptionTier,
   }));
 
-  // Kullanıcının kendi sıralaması
+  // KullanÄ±cÄ±nÄ±n kendi sÄ±ralamasÄ±
   let currentUser: LeaderboardEntry | null = null;
   const totalUsers = await prisma.user.count({ where: { isPublic: true, xp: { gt: 0 } } });
 
@@ -86,7 +86,7 @@ export async function getLeaderboard(): Promise<LeaderboardPayload> {
       });
 
       if (user) {
-        // Rank hesapla: kaç kullanıcının XP'si daha yüksek?
+        // Rank hesapla: kaÃ§ kullanÄ±cÄ±nÄ±n XP'si daha yÃ¼ksek?
         const usersAbove = await prisma.user.count({
           where: {
             isPublic: true,

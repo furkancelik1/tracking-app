@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import {
@@ -52,9 +52,9 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle className="text-base">Kategori Dağılımı</CardTitle>
+            <CardTitle className="text-base">Kategori DaÄŸÄ±lÄ±mÄ±</CardTitle>
             <CardDescription className="mt-0.5">
-              Son {rangeDays} günde tamamlamalar
+              Son {rangeDays} gÃ¼nde tamamlamalar
             </CardDescription>
           </div>
           {hasData && (
@@ -68,7 +68,7 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
       <CardContent>
         {!hasData ? (
           <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
-            Henüz kategori verisi yok
+            HenÃ¼z kategori verisi yok
           </div>
         ) : !mounted ? (
           <div style={{ height: "260px", minHeight: "260px", width: "100%" }}>

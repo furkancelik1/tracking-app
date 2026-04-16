@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import {
@@ -50,7 +50,7 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
     safeData[0] ?? { label: "-", count: 0 }
   );
 
-  // Aralık büyükse her N noktada bir etiket göster
+  // AralÄ±k bÃ¼yÃ¼kse her N noktada bir etiket gÃ¶ster
   const tickInterval =
     rangeDays <= 7 ? 0 : rangeDays <= 30 ? 3 : rangeDays <= 90 ? 6 : 14;
 
@@ -61,7 +61,7 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
           <div>
             <CardTitle className="text-base">Aktivite Trendi</CardTitle>
             <CardDescription className="mt-0.5">
-              Son {rangeDays} günlük tamamlama grafiği
+              Son {rangeDays} gÃ¼nlÃ¼k tamamlama grafiÄŸi
             </CardDescription>
           </div>
           <div className="flex gap-5 text-right shrink-0">
@@ -71,7 +71,7 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
             </div>
             <div>
               <p className="text-lg font-semibold tabular-nums">{avg}</p>
-              <p className="text-[11px] text-muted-foreground">Ort/gün</p>
+              <p className="text-[11px] text-muted-foreground">Ort/gÃ¼n</p>
             </div>
             {best.count > 0 && (
               <div>

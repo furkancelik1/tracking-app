@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,7 +26,7 @@ import {
   type FriendRequest,
 } from "@/actions/social.actions";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Tab = "followers" | "following" | "requests";
 
@@ -36,7 +36,7 @@ type Props = {
   pendingRequests: FriendRequest[];
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -53,7 +53,7 @@ function formatXp(xp: number): string {
   return String(xp);
 }
 
-// ─── User Row ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ User Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function UserRow({
   user,
@@ -91,7 +91,7 @@ function UserRow({
   );
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function SocialTabs({ followers: initFollowers, following: initFollowing, pendingRequests: initRequests }: Props) {
   const t = useTranslations("social");
@@ -174,7 +174,7 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
       </CardHeader>
 
       <CardContent className="pt-4">
-        {/* ── Followers ──────────────────────────────────────── */}
+        {/* â”€â”€ Followers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {tab === "followers" && (
           <div>
             {followers.length === 0 ? (
@@ -203,7 +203,7 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
           </div>
         )}
 
-        {/* ── Following ──────────────────────────────────────── */}
+        {/* â”€â”€ Following â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {tab === "following" && (
           <div>
             {following.length === 0 ? (
@@ -232,7 +232,7 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
           </div>
         )}
 
-        {/* ── Pending Requests ───────────────────────────────── */}
+        {/* â”€â”€ Pending Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {tab === "requests" && (
           <div>
             {requests.length === 0 ? (
@@ -284,7 +284,7 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
   );
 }
 
-// ─── Empty State ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Empty State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function EmptyState({ icon: Icon, text }: { icon: typeof Users; text: string }) {
   return (

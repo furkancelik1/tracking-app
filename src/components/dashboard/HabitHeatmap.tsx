@@ -1,18 +1,18 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 
 type LogEntry = { id: string; completedAt: string; note: string | null };
 
 type Props = {
   logs: LogEntry[];
   color: string;
-  /** Kaç gün geriye bakacağımız (default: 30) */
+  /** KaÃ§ gÃ¼n geriye bakacaÄŸÄ±mÄ±z (default: 30) */
   days?: number;
 };
 
 export function HabitHeatmap({ logs, color, days = 30 }: Props) {
-  // Son N günü oluştur — en eski solda, bugün sağda
+  // Son N gÃ¼nÃ¼ oluÅŸtur â€” en eski solda, bugÃ¼n saÄŸda
   const cells = buildCells(logs, days);
 
   const completed = cells.filter((c) => c.done).length;
@@ -20,10 +20,10 @@ export function HabitHeatmap({ logs, color, days = 30 }: Props) {
 
   return (
     <div className="space-y-1.5">
-      {/* Başlık satırı */}
+      {/* BaÅŸlÄ±k satÄ±rÄ± */}
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-          Son {days} Gün
+          Son {days} GÃ¼n
         </span>
         <span
           className="text-[10px] font-semibold tabular-nums"
@@ -33,7 +33,7 @@ export function HabitHeatmap({ logs, color, days = 30 }: Props) {
         </span>
       </div>
 
-      {/* Kare ızgarası: 10 sütun × 3 satır = 30 hücre */}
+      {/* Kare Ä±zgarasÄ±: 10 sÃ¼tun Ã— 3 satÄ±r = 30 hÃ¼cre */}
       <div className="grid grid-cols-10 gap-[3px]">
         {cells.map((cell) => (
           <div
@@ -51,7 +51,7 @@ export function HabitHeatmap({ logs, color, days = 30 }: Props) {
   );
 }
 
-// ─── Yardımcı tipler ve fonksiyonlar ─────────────────────────────────────────
+// â”€â”€â”€ YardÄ±mcÄ± tipler ve fonksiyonlar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Cell = {
   dateStr: string; // "2025-04-01"
@@ -65,12 +65,12 @@ function buildCells(logs: LogEntry[], days: number): Cell[] {
   const todayUTC = new Date();
   todayUTC.setUTCHours(0, 0, 0, 0);
 
-  // Log'ları YYYY-MM-DD string anahtarıyla set'e al
+  // Log'larÄ± YYYY-MM-DD string anahtarÄ±yla set'e al
   const logMap = new Map<string, string | null>();
   for (const l of logs) {
     const d = new Date(l.completedAt);
     const key = toDateStr(d);
-    // Aynı gün birden fazla log olsa da en son notu tut
+    // AynÄ± gÃ¼n birden fazla log olsa da en son notu tut
     if (!logMap.has(key)) logMap.set(key, l.note);
   }
 
@@ -97,19 +97,19 @@ function toDateStr(d: Date): string {
 }
 
 const TR_MONTHS = [
-  "Oca", "Şub", "Mar", "Nis", "May", "Haz",
-  "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara",
+  "Oca", "Åub", "Mar", "Nis", "May", "Haz",
+  "Tem", "AÄŸu", "Eyl", "Eki", "Kas", "Ara",
 ];
-const TR_DAYS_SHORT = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+const TR_DAYS_SHORT = ["Paz", "Pzt", "Sal", "Ã‡ar", "Per", "Cum", "Cmt"];
 
 function formatLabel(d: Date, isToday: boolean): string {
-  const prefix = isToday ? "Bugün" : `${d.getUTCDate()} ${TR_MONTHS[d.getUTCMonth()]}`;
+  const prefix = isToday ? "BugÃ¼n" : `${d.getUTCDate()} ${TR_MONTHS[d.getUTCMonth()]}`;
   const dayName = TR_DAYS_SHORT[d.getUTCDay()];
   return `${prefix}, ${dayName}`;
 }
 
 function formatTooltip(cell: Cell): string {
-  const status = cell.done ? "✓ Tamamlandı" : "✗ Tamamlanmadı";
-  const note = cell.note ? `\n📝 ${cell.note}` : "";
+  const status = cell.done ? "âœ“ TamamlandÄ±" : "âœ— TamamlanmadÄ±";
+  const note = cell.note ? `\nğŸ“ ${cell.note}` : "";
   return `${cell.label}\n${status}${note}`;
 }

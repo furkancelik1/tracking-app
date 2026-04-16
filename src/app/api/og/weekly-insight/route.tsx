@@ -1,4 +1,4 @@
-import {from "react";
+﻿import React from "react";
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
   const challengeLabel = insight.challengeTitle ?? "";
   const summaryPreview =
     insight.summary.length > 140
-      ? insight.summary.slice(0, 140) + "…"
+      ? insight.summary.slice(0, 140) + "â€¦"
       : insight.summary;
 
   return new ImageResponse(
@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
                 borderRadius: "8px",
               }}
             >
-              ⭐ {highlight}
+              â­ {highlight}
             </span>
           )}
           {challengeLabel && (
@@ -157,7 +157,7 @@ export async function GET(req: NextRequest) {
                 borderRadius: "8px",
               }}
             >
-              🎯 {challengeLabel}
+              ğŸ¯ {challengeLabel}
             </span>
           )}
         </div>

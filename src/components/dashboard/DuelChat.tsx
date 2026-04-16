@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef, useTransition, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +15,7 @@ import {
 import type { DuelMessageEntry } from "@/actions/duel.actions";
 import { fireDuelToast } from "@/lib/duel-notifications";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const POLL_INTERVAL_MS = 5000;
 const BUBBLE_LIFETIME_MS = 5000;
@@ -35,7 +35,7 @@ const QUICK_MESSAGES: QuickMessageKey[] = [
   "quickGoodLuck",
 ];
 
-// ─── Floating Bubble ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Floating Bubble â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function FloatingBubble({
   message,
@@ -83,7 +83,7 @@ function FloatingBubble({
   );
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   duelId: string;
@@ -116,16 +116,16 @@ export function DuelChat({ duelId, currentUserId, isActive }: Props) {
     const result = await getDuelMessages({ duelId });
     setMessages(result);
 
-    // New messages that just arrived → add to floating set
+    // New messages that just arrived â†’ add to floating set
     for (const msg of result) {
       if (!seenIdsRef.current.has(msg.id)) {
         seenIdsRef.current.add(msg.id);
         setFloatingIds((prev) => new Set(prev).add(msg.id));
 
-        // Rakipten gelen yeni mesaj → in-app toast (ilk yüklemeden sonra)
+        // Rakipten gelen yeni mesaj â†’ in-app toast (ilk yÃ¼klemeden sonra)
         if (initialLoadDoneRef.current && msg.senderId !== currentUserId) {
           const preview = msg.content.length > 30
-            ? msg.content.slice(0, 30) + "…"
+            ? msg.content.slice(0, 30) + "â€¦"
             : msg.content;
           fireDuelToast("message", {
             title: t("notifNewMessage"),
@@ -191,7 +191,7 @@ export function DuelChat({ duelId, currentUserId, isActive }: Props) {
 
   return (
     <div className="space-y-2">
-      {/* Floating Bubbles — always visible over arena */}
+      {/* Floating Bubbles â€” always visible over arena */}
       <AnimatePresence mode="popLayout">
         {!expanded &&
           floatingMessages.map((msg) => (

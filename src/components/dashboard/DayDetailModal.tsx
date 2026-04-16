@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useTransition } from "react";
 import {
@@ -115,13 +115,13 @@ export function DayDetailModal({ date, onClose }: Props) {
                 </div>
                 <div>
                   <DialogTitle className="text-base">
-                    {data.day} — {data.date}
+                    {data.day} â€” {data.date}
                   </DialogTitle>
                   <DialogDescription className="flex items-center gap-2 mt-0.5">
                     <span className={cn("font-semibold tabular-nums", config?.color)}>
                       %{data.score}
                     </span>
-                    <span>·</span>
+                    <span>Â·</span>
                     <span>
                       {completedCount}/{totalCount} {t("completed")}
                     </span>

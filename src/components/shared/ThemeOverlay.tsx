@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { getEquippedTheme } from "@/actions/shop.actions";
 
 /**
- * Kuşanılmış temayı <html> elementine CSS custom property olarak uygular.
- * Layout'a bir kez eklenir, tüm uygulamada geçerli olur.
+ * KuÅŸanÄ±lmÄ±ÅŸ temayÄ± <html> elementine CSS custom property olarak uygular.
+ * Layout'a bir kez eklenir, tÃ¼m uygulamada geÃ§erli olur.
  */
 export function ThemeOverlay() {
   const { status } = useSession();
@@ -49,13 +49,13 @@ export function ThemeOverlay() {
           setApplied(false);
         }
       } catch {
-        // Sessizce başarısız ol
+        // Sessizce baÅŸarÄ±sÄ±z ol
       }
     }
 
     applyTheme();
 
-    // Tema değişikliklerinde yeniden uygula
+    // Tema deÄŸiÅŸikliklerinde yeniden uygula
     const handler = () => applyTheme();
     window.addEventListener("theme-changed", handler);
 

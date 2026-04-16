@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getUserAnalytics } from "@/lib/analytics";
 import type { ApiResponse } from "@/types";
 
-// GET /api/v1/stats — son 30 gün analytics
+// GET /api/v1/stats â€” son 30 gÃ¼n analytics
 export async function GET() {
   try {
     const session = await getSession();
@@ -18,7 +18,7 @@ export async function GET() {
     const userId = session.user.id;
     if (typeof userId !== "string" || userId.length === 0) {
       return NextResponse.json<ApiResponse<never>>(
-        { success: false, error: "Geçersiz kullanıcı kimliği", code: "BAD_REQUEST" },
+        { success: false, error: "GeÃ§ersiz kullanÄ±cÄ± kimliÄŸi", code: "BAD_REQUEST" },
         { status: 400 }
       );
     }
@@ -34,7 +34,7 @@ export async function GET() {
     return NextResponse.json<ApiResponse<never>>(
       {
         success: false,
-        error: err instanceof Error ? err.message : "Sunucu hatası",
+        error: err instanceof Error ? err.message : "Sunucu hatasÄ±",
         code: "INTERNAL_ERROR",
       },
       { status: 500 }

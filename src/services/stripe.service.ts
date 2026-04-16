@@ -1,4 +1,4 @@
-import { stripe, STRIPE_PLANS } from "@/lib/stripe";
+﻿import { stripe, STRIPE_PLANS } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import type Stripe from "stripe";
 
@@ -21,7 +21,7 @@ async function resolveUserIdFromSubscription(sub: Stripe.Subscription): Promise<
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-// ─── Checkout ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Checkout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function createCheckoutSession(
   userId: string,
@@ -66,7 +66,7 @@ export async function createCheckoutSession(
   return session.url;
 }
 
-// ─── Billing Portal ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Billing Portal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function createBillingPortalSession(
   userId: string
@@ -86,7 +86,7 @@ export async function createBillingPortalSession(
   return session.url;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getPeriodEnd(sub: Stripe.Subscription): Date | null {
   const ts = (sub as any).current_period_end;
@@ -97,7 +97,7 @@ function getCustomerId(customer: string | Stripe.Customer | Stripe.DeletedCustom
   return typeof customer === "string" ? customer : customer?.id ?? null;
 }
 
-// ─── Webhook Handlers ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Webhook Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
   switch (event.type) {

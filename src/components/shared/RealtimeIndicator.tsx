@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-// RealtimeIndicator — stub, Supabase realtime removed from this app.
+// RealtimeIndicator â€” stub, Supabase realtime removed from this app.
 export function RealtimeIndicator() {
   return null;
 }

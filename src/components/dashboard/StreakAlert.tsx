@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
@@ -11,7 +11,7 @@ type Props = {
   routines: RoutineWithMeta[];
 };
 
-/** Bugün tamamlanmamış ve aktif serisi olan rutinleri döner */
+/** BugÃ¼n tamamlanmamÄ±ÅŸ ve aktif serisi olan rutinleri dÃ¶ner */
 function getAtRiskRoutines(routines: RoutineWithMeta[]): RoutineWithMeta[] {
   const todayUTC = new Date();
   todayUTC.setUTCHours(0, 0, 0, 0);
@@ -64,7 +64,7 @@ export function StreakAlert({ routines }: Props) {
                 style={{ backgroundColor: r.color }}
               />
               <span className="font-medium">{r.title}</span>
-              <span className="text-red-500">🔥{r.currentStreak}</span>
+              <span className="text-red-500">ğŸ”¥{r.currentStreak}</span>
             </span>
           ))}
         </p>

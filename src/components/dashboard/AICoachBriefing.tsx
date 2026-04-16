@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -70,7 +70,7 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
       )
     : 0;
 
-  // Developer mode — API key yok
+  // Developer mode â€” API key yok
   if (coach && !coach.hasApiKey) {
     return (
       <motion.div
@@ -106,7 +106,7 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
       <div className="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
 
       <div className="p-5 space-y-4">
-        {/* ── Header ──────────────────────────────────────────── */}
+        {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20">
             <Bot className="size-5 text-indigo-400" />
@@ -120,7 +120,7 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
           </div>
         </div>
 
-        {/* ── Daily Message ───────────────────────────────────── */}
+        {/* â”€â”€ Daily Message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <AnimatePresence mode="wait">
           {loading ? (
             <motion.div
@@ -157,7 +157,7 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
           )}
         </AnimatePresence>
 
-        {/* ── Challenge + Coach Tip Row ────────────────────────── */}
+        {/* â”€â”€ Challenge + Coach Tip Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="grid gap-3 sm:grid-cols-2">
           {/* Weekly Challenge Progress */}
           <div className="rounded-lg bg-card/60 border border-border/50 p-3 space-y-2">
@@ -201,7 +201,7 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
             )}
           </div>
 
-          {/* Coach Tip — Legend Progress */}
+          {/* Coach Tip â€” Legend Progress */}
           <div className="rounded-lg bg-card/60 border border-border/50 p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-medium">
               <Trophy className="size-3.5 text-amber-400" />

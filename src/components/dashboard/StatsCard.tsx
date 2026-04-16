@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 
 import { motion } from "framer-motion";
 import {
@@ -18,7 +18,7 @@ type StatsCardProps = {
   subtitle?: string;
   description?: string;
   icon?: ReactNode;
-  trend?: number; // pozitif = yukarı, negatif = aşağı, 0 = nötr
+  trend?: number; // pozitif = yukarÄ±, negatif = aÅŸaÄŸÄ±, 0 = nÃ¶tr
 };
 
 export function StatsCard({
@@ -59,7 +59,7 @@ export function StatsCard({
                 trend > 0 ? "text-emerald-500" : "text-red-400"
               )}
             >
-              {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%
+              {trend > 0 ? "â†‘" : "â†“"} {Math.abs(trend)}%
             </span>
           )}
         </div>

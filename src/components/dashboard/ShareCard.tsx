@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { forwardRef } from "react";
 import { Shield, Flame, Trophy, Zap, Target, Award, Star, Sunrise } from "lucide-react";
 import { calculateLevel } from "@/lib/level";
 import { useTranslations, useLocale } from "next-intl";
 
-// ─── Props ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type ShareCardVariant = "level-up" | "weekly-summary" | "single-routine";
 export type ShareCardLayout = "landscape" | "portrait";
@@ -16,18 +16,18 @@ export type ShareCardProps = {
   userName: string | null;
   userImage: string | null;
   xp: number;
-  /** weekly-summary ek alanları */
+  /** weekly-summary ek alanlarÄ± */
   weeklyRate?: number;
   currentStreak?: number;
   totalCompletions?: number;
-  /** single-routine ek alanları */
+  /** single-routine ek alanlarÄ± */
   routineName?: string;
   routineIcon?: string;
   routineColor?: string;
   routineStreak?: number;
 };
 
-// ─── Achievement Sticker Logic ───────────────────────────────────────────────
+// â”€â”€â”€ Achievement Sticker Logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Sticker = { key: string; icon: React.ReactNode; color: string };
 
@@ -53,7 +53,7 @@ function getStickers(
   return stickers.slice(0, 3); // max 3
 }
 
-// ─── Bileşen ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ BileÅŸen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
   function ShareCard(
@@ -104,7 +104,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
         }}
         className="relative overflow-hidden flex flex-col"
       >
-        {/* ── BG Gradient ──────────────────────────────────────────────── */}
+        {/* â”€â”€ BG Gradient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0f0b2e] via-[#1a1145] to-[#0d0a26]" />
 
         {/* Dekoratif blur'lar */}
@@ -122,13 +122,13 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           }}
         />
 
-        {/* ── İçerik ───────────────────────────────────────────────────── */}
+        {/* â”€â”€ Ä°Ã§erik â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div
           className={`relative z-10 flex flex-col h-full ${
             isPortrait ? "px-12 py-16" : "px-16 py-12"
           }`}
         >
-          {/* Üst Bar: Logo + Rütbe rozeti */}
+          {/* Ãœst Bar: Logo + RÃ¼tbe rozeti */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="size-10 rounded-full bg-indigo-500 flex items-center justify-center">
@@ -150,13 +150,13 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             </div>
           </div>
 
-          {/* Ana İçerik */}
+          {/* Ana Ä°Ã§erik */}
           <div
             className={`flex-1 flex ${
               isPortrait ? "flex-col items-center gap-10 mt-12" : "items-center gap-12 mt-4"
             }`}
           >
-            {/* Avatar + İsim */}
+            {/* Avatar + Ä°sim */}
             <div
               className={`flex flex-col items-center gap-4 shrink-0 ${
                 isPortrait ? "" : ""
@@ -191,9 +191,9 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
               </div>
             </div>
 
-            {/* Kart içeriği */}
+            {/* Kart iÃ§eriÄŸi */}
             <div className={`${isPortrait ? "w-full" : "flex-1"} space-y-6`}>
-              {/* ── Level Up Variant ──────────────────────────────────── */}
+              {/* â”€â”€ Level Up Variant â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               {variant === "level-up" && (
                 <>
                   <div className={isPortrait ? "text-center" : ""}>
@@ -250,7 +250,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 </>
               )}
 
-              {/* ── Weekly Summary Variant ────────────────────────────── */}
+              {/* â”€â”€ Weekly Summary Variant â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               {variant === "weekly-summary" && (
                 <>
                   <div className={isPortrait ? "text-center" : ""}>
@@ -288,7 +288,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     <div className="flex justify-between text-xs">
                       <span className="text-white/50">{t("weeklySummary.totalXp", { xp })}</span>
                       <span className="text-white/50 tabular-nums">
-                        {currentLevelXp}/{xpForNextLevel} XP → Level {level + 1}
+                        {currentLevelXp}/{xpForNextLevel} XP â†’ Level {level + 1}
                       </span>
                     </div>
                     <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
@@ -304,7 +304,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 </>
               )}
 
-              {/* ── Single Routine Variant ────────────────────────────── */}
+              {/* â”€â”€ Single Routine Variant â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               {variant === "single-routine" && (
                 <>
                   <div className={isPortrait ? "text-center" : ""}>
@@ -320,7 +320,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                         }}
                       >
                         <span className="text-2xl" style={{ color: routineColor ?? "#3b82f6" }}>
-                          {routineIcon ?? "✓"}
+                          {routineIcon ?? "âœ“"}
                         </span>
                       </div>
                       <div className={isPortrait ? "text-center" : ""}>
@@ -356,7 +356,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             </div>
           </div>
 
-          {/* ── Achievement Stickers ──────────────────────────────────── */}
+          {/* â”€â”€ Achievement Stickers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {stickers.length > 0 && (
             <div className={`flex gap-2.5 ${isPortrait ? "justify-center mt-8" : "mt-4"}`}>
               {stickers.map((s) => (
@@ -380,7 +380,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           {/* Alt Bar */}
           <div className={`flex items-center justify-between mt-auto ${isPortrait ? "pt-8" : "pt-4"}`}>
             <p className="text-white/30 text-xs">
-              {tCommon("site")} • {t("footerBrand")}
+              {tCommon("site")} â€¢ {t("footerBrand")}
             </p>
             <p className="text-white/30 text-xs">
               {new Date().toLocaleDateString(locale, {
@@ -396,7 +396,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
   }
 );
 
-// ─── Yardımcı: Stat Box ──────────────────────────────────────────────────────
+// â”€â”€â”€ YardÄ±mcÄ±: Stat Box â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function StatBox({
   icon,

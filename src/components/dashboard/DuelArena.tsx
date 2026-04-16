@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useTransition, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,7 +28,7 @@ import {
   X,
 } from "lucide-react";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -49,7 +49,7 @@ function formatTimeLeft(ms: number): { h: number; m: number; s: number } {
   };
 }
 
-// ─── VS Badge ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ VS Badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function VsBadge() {
   return (
@@ -74,7 +74,7 @@ function VsBadge() {
   );
 }
 
-// ─── Player Card ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Player Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PlayerCard({
   player,
@@ -152,7 +152,7 @@ function PlayerCard({
   );
 }
 
-// ─── Countdown Timer ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Countdown Timer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Countdown({ endTimeMs }: { endTimeMs: number }) {
   const t = useTranslations("duel");
@@ -167,7 +167,7 @@ function Countdown({ endTimeMs }: { endTimeMs: number }) {
   const ms = Math.max(0, endTimeMs - now);
   const { h, m, s } = formatTimeLeft(ms);
 
-  // Son 1 saat uyarısı (bir kez)
+  // Son 1 saat uyarÄ±sÄ± (bir kez)
   const ONE_HOUR = 60 * 60 * 1000;
   useEffect(() => {
     if (ms > 0 && ms <= ONE_HOUR && !lastHourFiredRef.current) {
@@ -209,7 +209,7 @@ function Countdown({ endTimeMs }: { endTimeMs: number }) {
   );
 }
 
-// ─── Duel Result Banner ──────────────────────────────────────────────────────
+// â”€â”€â”€ Duel Result Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ResultBanner({
   duel,
@@ -256,7 +256,7 @@ function ResultBanner({
   );
 }
 
-// ─── Pending Duel Actions ────────────────────────────────────────────────────
+// â”€â”€â”€ Pending Duel Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PendingActions({
   duel,
@@ -308,7 +308,7 @@ function PendingActions({
   );
 }
 
-// ─── Share Button ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Share Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ShareButton({ duel }: { duel: DuelEntry }) {
   const t = useTranslations("duel");
@@ -320,7 +320,7 @@ function ShareButton({ duel }: { duel: DuelEntry }) {
       opponentScore: duel.opponentScore,
     });
 
-    // Web Share API ile text paylaşımı
+    // Web Share API ile text paylaÅŸÄ±mÄ±
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
@@ -328,7 +328,7 @@ function ShareButton({ duel }: { duel: DuelEntry }) {
           text,
         });
       } catch {
-        // Kullanıcı iptal etti veya desteklenmiyor
+        // KullanÄ±cÄ± iptal etti veya desteklenmiyor
       }
     }
   }, [duel, t]);
@@ -341,7 +341,7 @@ function ShareButton({ duel }: { duel: DuelEntry }) {
   );
 }
 
-// ─── Empty state ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function DuelEmptyState() {
   const t = useTranslations("duel");
@@ -356,7 +356,7 @@ function DuelEmptyState() {
   );
 }
 
-// ─── Main DuelArena ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Main DuelArena â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   duel: DuelEntry | null;
@@ -366,7 +366,7 @@ export function DuelArena({ duel }: Props) {
   const t = useTranslations("duel");
   const [, setTick] = useState(0);
 
-  // Canlı skor takibi için polling olabilir ama şimdilik page reload'a dayalı
+  // CanlÄ± skor takibi iÃ§in polling olabilir ama ÅŸimdilik page reload'a dayalÄ±
   // Confetti on first mount if winner is current user
   useEffect(() => {
     if (!duel) return;
@@ -423,7 +423,7 @@ export function DuelArena({ duel }: Props) {
         {(isActive || isFinished) && <ShareButton duel={duel} />}
       </div>
 
-      {/* Arena — Two players side by side with VS in the middle */}
+      {/* Arena â€” Two players side by side with VS in the middle */}
       <div className="relative">
         <div className="grid grid-cols-2 gap-4">
           <PlayerCard
@@ -445,7 +445,7 @@ export function DuelArena({ duel }: Props) {
         <VsBadge />
       </div>
 
-      {/* Progress Bars — "Disiplin Çubukları" */}
+      {/* Progress Bars â€” "Disiplin Ã‡ubuklarÄ±" */}
       {(isActive || isFinished) && (
         <div className="space-y-3">
           <div className="space-y-1">

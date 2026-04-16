@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const addToBasketSchema = z.object({
   cardId: z.string().cuid("Invalid card ID"),

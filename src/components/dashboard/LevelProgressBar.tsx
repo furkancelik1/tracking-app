@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ export function LevelProgressBar({ xp, className }: Props) {
 
   return (
     <div className={cn("rounded-xl border bg-card p-4", className)}>
-      {/* Üst bilgi satırı */}
+      {/* Ãœst bilgi satÄ±rÄ± */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div
@@ -34,7 +34,7 @@ export function LevelProgressBar({ xp, className }: Props) {
             <span className="text-sm font-bold" style={{ color: rankColor }}>
               Level {level}
             </span>
-            <span className="text-xs text-muted-foreground">• {localizedRank}</span>
+            <span className="text-xs text-muted-foreground">â€¢ {localizedRank}</span>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export function LevelProgressBar({ xp, className }: Props) {
         />
       </div>
 
-      {/* XP sayacı — barın hemen altında */}
+      {/* XP sayacÄ± â€” barÄ±n hemen altÄ±nda */}
       <div className="flex items-center justify-between mt-1.5">
         <span className="text-[11px] tabular-nums font-semibold" style={{ color: rankColor }}>
           {currentLevelXp}

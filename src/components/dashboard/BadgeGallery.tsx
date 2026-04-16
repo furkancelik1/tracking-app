@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
@@ -95,7 +95,7 @@ export function BadgeGallery({ open, onOpenChange }: Props) {
           </div>
         ) : (
           <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-            {/* Kazanılan rozetler */}
+            {/* KazanÄ±lan rozetler */}
             {earned.length > 0 && (
               <div>
                 <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">

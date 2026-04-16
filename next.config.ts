@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+﻿import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import withPWAInit from "@ducanh2912/next-pwa";
 
@@ -20,7 +20,7 @@ const withPWA = withPWAInit({
     skipWaiting: true,
     clientsClaim: true,
     runtimeCaching: [
-      // App Shell — HTML pages (NetworkFirst → stale offline)
+      // App Shell â€” HTML pages (NetworkFirst â†’ stale offline)
       {
         urlPattern: /^https?.*\/(dashboard|leaderboard|settings|login).*/i,
         handler: "NetworkFirst",
@@ -30,7 +30,7 @@ const withPWA = withPWAInit({
           networkTimeoutSeconds: 3,
         },
       },
-      // API data — stale-while-revalidate for fast reads
+      // API data â€” stale-while-revalidate for fast reads
       {
         urlPattern: /^https?.*\/api\/v1\/.*/i,
         handler: "StaleWhileRevalidate",
@@ -39,7 +39,7 @@ const withPWA = withPWAInit({
           expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 },
         },
       },
-      // Static assets — CacheFirst
+      // Static assets â€” CacheFirst
       {
         urlPattern: /\.(?:js|css|woff2?|png|jpg|jpeg|gif|svg|ico|webp)$/i,
         handler: "CacheFirst",
@@ -65,7 +65,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // CORS ayarları (Chrome Extension için)
+  // CORS ayarlarÄ± (Chrome Extension iÃ§in)
   async headers() {
     return [
       {

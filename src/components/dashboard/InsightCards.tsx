@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 
 import {
   Card,
@@ -81,7 +81,7 @@ export function InsightCards({ insights, monthlyComparison }: Props) {
                   thisMonth: monthlyComparison.thisMonth,
                   lastMonth: monthlyComparison.lastMonth,
                   percent: Math.abs(monthlyComparison.changePercent),
-                  direction: monthlyComparison.changePercent >= 0 ? "↑" : "↓",
+                  direction: monthlyComparison.changePercent >= 0 ? "â†‘" : "â†“",
                 })}
               </p>
             </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import {
@@ -54,9 +54,9 @@ export function WeeklyProgressChart({ data }: Props) {
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle className="text-base">Haftalık İlerleme</CardTitle>
+            <CardTitle className="text-base">HaftalÄ±k Ä°lerleme</CardTitle>
             <CardDescription className="mt-0.5">
-              Son 7 günde tamamlanan rutinler
+              Son 7 gÃ¼nde tamamlanan rutinler
             </CardDescription>
           </div>
           <div className="flex gap-5 text-right shrink-0">
@@ -66,7 +66,7 @@ export function WeeklyProgressChart({ data }: Props) {
             </div>
             <div>
               <p className="text-lg font-semibold tabular-nums">{avg}</p>
-              <p className="text-[11px] text-muted-foreground">Ort/gün</p>
+              <p className="text-[11px] text-muted-foreground">Ort/gÃ¼n</p>
             </div>
             {bestDay.completed > 0 && (
               <div>

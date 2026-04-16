@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
@@ -12,17 +12,17 @@ import {
   getDay,
 } from "date-fns";
 
-// ─── Rate-limit cooldown (module-level, survives across requests in same process) ──
-let _geminiCooldownUntil = 0; // epoch ms — skip Gemini calls until this time
+// â”€â”€â”€ Rate-limit cooldown (module-level, survives across requests in same process) â”€â”€
+let _geminiCooldownUntil = 0; // epoch ms â€” skip Gemini calls until this time
 const COOLDOWN_MS = 5 * 60 * 1000; // 5 min cooldown after a 429
 
-// ─── Dual-Model Yapılandırması ───────────────────────────────────────────────
+// â”€â”€â”€ Dual-Model YapÄ±landÄ±rmasÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const MODEL_FLASH = "gemini-2.5-flash";
 const MODEL_PRO   = "gemini-2.5-pro";
 
 type AnalysisDepth = "weekly" | "deep";
 
-/** Ay sonuna yakınlık kontrolü — son 5 gün ise deep analiz */
+/** Ay sonuna yakÄ±nlÄ±k kontrolÃ¼ â€” son 5 gÃ¼n ise deep analiz */
 function resolveAnalysisDepth(): AnalysisDepth {
   const now = new Date();
   const dayOfMonth = now.getUTCDate();
@@ -35,18 +35,18 @@ function pickModel(depth: AnalysisDepth): string {
   return depth === "deep" ? MODEL_PRO : MODEL_FLASH;
 }
 
-// ─── Motive Edici Mentor — Sabit Kişilik Sistemi ────────────────────────────
-const MENTOR_SYSTEM_PROMPT = `Sen tutkulu, duygusal zekâsı yüksek bir Motive Edici Mentor'sun — kısmen yaşam koçu, kısmen amigo, kısmen bilge bir dost. Kullanıcının gelişimini gerçekten önemsiyorsun ve her başarıyı kendi başarın gibi kutluyorsun.
+// â”€â”€â”€ Motive Edici Mentor â€” Sabit KiÅŸilik Sistemi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const MENTOR_SYSTEM_PROMPT = `Sen tutkulu, duygusal zekÃ¢sÄ± yÃ¼ksek bir Motive Edici Mentor'sun â€” kÄ±smen yaÅŸam koÃ§u, kÄ±smen amigo, kÄ±smen bilge bir dost. KullanÄ±cÄ±nÄ±n geliÅŸimini gerÃ§ekten Ã¶nemsiyorsun ve her baÅŸarÄ±yÄ± kendi baÅŸarÄ±n gibi kutluyorsun.
 
-KİŞİLİK KURALLARIN:
-- Tamamlama oranı YÜKSEK (≥%75): HEYECANLI ve kutlamacı ol. "İnanılmaz bir hafta geçirdin!" gibi enerjik dil kullan.
-- Tamamlama oranı ORTA (%40-74): Sıcak ve cesaretlendirici ol. Çabayı kabul et, iyi gideni vurgula, nazikçe geliştirme öner.
-- Tamamlama oranı DÜŞÜK (<%40): ASLA yargılama veya eleştirme. "Bazen planlar değişebilir, önemli olan bugün küçük bir adımla yeniden başlaman. Ben sana inanıyorum." de.
-- Her zaman kullanıcının arkasında duran güvenilir bir mentor gibi konuş.
-- Emoji kullan (maks 3-4) ama doğal olsun.
-- Markdown başlıkları KULLANMA. Düz metin ve satır sonları kullan.
+KÄ°ÅÄ°LÄ°K KURALLARIN:
+- Tamamlama oranÄ± YÃœKSEK (â‰¥%75): HEYECANLI ve kutlamacÄ± ol. "Ä°nanÄ±lmaz bir hafta geÃ§irdin!" gibi enerjik dil kullan.
+- Tamamlama oranÄ± ORTA (%40-74): SÄ±cak ve cesaretlendirici ol. Ã‡abayÄ± kabul et, iyi gideni vurgula, nazikÃ§e geliÅŸtirme Ã¶ner.
+- Tamamlama oranÄ± DÃœÅÃœK (<%40): ASLA yargÄ±lama veya eleÅŸtirme. "Bazen planlar deÄŸiÅŸebilir, Ã¶nemli olan bugÃ¼n kÃ¼Ã§Ã¼k bir adÄ±mla yeniden baÅŸlaman. Ben sana inanÄ±yorum." de.
+- Her zaman kullanÄ±cÄ±nÄ±n arkasÄ±nda duran gÃ¼venilir bir mentor gibi konuÅŸ.
+- Emoji kullan (maks 3-4) ama doÄŸal olsun.
+- Markdown baÅŸlÄ±klarÄ± KULLANMA. DÃ¼z metin ve satÄ±r sonlarÄ± kullan.
 
-IMPORTANT: You MUST provide ALL analysis, feedback, messages, challenges, and every piece of text in the language requested by the user. If the user requests locale "tr", respond ENTIRELY in Turkish. If locale is "en", respond ENTIRELY in English. This is a STRICT requirement — never mix languages. Turkish responses must use proper Turkish characters (ğ, ş, ı, ö, ç, ü, İ, Ğ, Ş, Ç, Ö, Ü).`;
+IMPORTANT: You MUST provide ALL analysis, feedback, messages, challenges, and every piece of text in the language requested by the user. If the user requests locale "tr", respond ENTIRELY in Turkish. If locale is "en", respond ENTIRELY in English. This is a STRICT requirement â€” never mix languages. Turkish responses must use proper Turkish characters (ÄŸ, ÅŸ, Ä±, Ã¶, Ã§, Ã¼, Ä°, Ä, Å, Ã‡, Ã–, Ãœ).`;
 
 /** UTC midnight of today */
 function todayUTC(): Date {
@@ -55,7 +55,7 @@ function todayUTC(): Date {
   return d;
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type WeeklySummaryData = {
   totalRoutines: number;
@@ -101,7 +101,7 @@ export type DailyCoachPayload = {
   hasApiKey: boolean;
 };
 
-// ─── Hafta anahtarı ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Hafta anahtarÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getCurrentWeekKey(): string {
   const now = new Date();
@@ -110,14 +110,14 @@ function getCurrentWeekKey(): string {
   return `${year}-W${String(week).padStart(2, "0")}`;
 }
 
-const DAY_NAMES_TR = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+const DAY_NAMES_TR = ["Pazar", "Pazartesi", "SalÄ±", "Ã‡arÅŸamba", "PerÅŸembe", "Cuma", "Cumartesi"];
 const DAY_NAMES_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-// ─── Haftalık veri toplama ───────────────────────────────────────────────────
+// â”€â”€â”€ HaftalÄ±k veri toplama â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
   const today = todayUTC();
-  const weekAgo = subDays(today, 6); // son 7 gün (bugün dahil)
+  const weekAgo = subDays(today, 6); // son 7 gÃ¼n (bugÃ¼n dahil)
 
   const [routines, logs] = await Promise.all([
     prisma.routine.findMany({
@@ -143,13 +143,13 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
     }),
   ]);
 
-  // DAILY rutinler için 7 gün X rutin sayısı
+  // DAILY rutinler iÃ§in 7 gÃ¼n X rutin sayÄ±sÄ±
   const dailyRoutines = routines.filter((r) => r.frequency === "DAILY");
   const possibleCompletions = dailyRoutines.length * 7;
   const totalCompletions = logs.length;
   const completionRate = possibleCompletions > 0 ? Math.round((totalCompletions / possibleCompletions) * 100) : 0;
 
-  // Gün bazlı dağılım
+  // GÃ¼n bazlÄ± daÄŸÄ±lÄ±m
   const days = eachDayOfInterval({ start: weekAgo, end: today });
   const dayCompletions = days.map((d) => {
     const dayStart = new Date(d);
@@ -169,7 +169,7 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
     ? dayCompletions.reduce((a, b) => (b.count < a.count ? b : a))
     : undefined;
 
-  // Kategori bazlı
+  // Kategori bazlÄ±
   const catMap = new Map<string, { completed: number; total: number }>();
   for (const r of dailyRoutines) {
     const cat = r.category;
@@ -190,12 +190,12 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
     rate: d.total > 0 ? Math.round((d.completed / d.total) * 100) : 0,
   }));
 
-  // Aksatılan günler (dailyRoutines var ama 0 tamamlanan)
+  // AksatÄ±lan gÃ¼nler (dailyRoutines var ama 0 tamamlanan)
   const missedDays = dayCompletions
     .filter((d) => d.count === 0 && dailyRoutines.length > 0)
     .map((d) => format(d.date, "yyyy-MM-dd"));
 
-  // En iyi & en zayıf rutin
+  // En iyi & en zayÄ±f rutin
   const routineCompletionMap = new Map<string, number>();
   for (const log of logs) {
     routineCompletionMap.set(log.routineId, (routineCompletionMap.get(log.routineId) ?? 0) + 1);
@@ -232,11 +232,11 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
     possibleCompletions,
     completionRate,
     bestDay: {
-      day: best ? (DAY_NAMES_EN[best.dayIndex] ?? "—") : "—",
+      day: best ? (DAY_NAMES_EN[best.dayIndex] ?? "â€”") : "â€”",
       count: best?.count ?? 0,
     },
     worstDay: {
-      day: worst ? (DAY_NAMES_EN[worst.dayIndex] ?? "—") : "—",
+      day: worst ? (DAY_NAMES_EN[worst.dayIndex] ?? "â€”") : "â€”",
       count: worst?.count ?? 0,
     },
     longestActiveStreak,
@@ -247,7 +247,7 @@ async function collectWeeklyData(userId: string): Promise<WeeklySummaryData> {
   };
 }
 
-// ─── LLM Insight Oluşturma ──────────────────────────────────────────────────
+// â”€â”€â”€ LLM Insight OluÅŸturma â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type TrendContext = {
   dailyScores: { day: string; score: number }[];
@@ -258,9 +258,9 @@ type TrendContext = {
   biggestSurge: { from: string; to: string; delta: number } | null;
 };
 
-/** Inline trend context hesapla (stats.actions bağımlılığı olmadan) */
+/** Inline trend context hesapla (stats.actions baÄŸÄ±mlÄ±lÄ±ÄŸÄ± olmadan) */
 async function buildTrendContext(userId: string, locale: string): Promise<TrendContext> {
-  const SHORT_DAYS_TR = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+  const SHORT_DAYS_TR = ["Paz", "Pzt", "Sal", "Ã‡ar", "Per", "Cum", "Cmt"];
   const SHORT_DAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const dayNames = locale === "tr" ? SHORT_DAYS_TR : SHORT_DAYS_EN;
 
@@ -332,7 +332,7 @@ async function generateInsightWithAI(
   });
 
   const langInstruction = locale === "tr"
-    ? "LANGUAGE: Yanıtını tamamen Türkçe yaz. Tüm JSON değerleri Türkçe olmalı. İngilizce kelime kullanma."
+    ? "LANGUAGE: YanÄ±tÄ±nÄ± tamamen TÃ¼rkÃ§e yaz. TÃ¼m JSON deÄŸerleri TÃ¼rkÃ§e olmalÄ±. Ä°ngilizce kelime kullanma."
     : "LANGUAGE: Write your response entirely in English. All JSON values must be in English.";
 
   // Find weakest category for challenge targeting
@@ -356,15 +356,15 @@ RULES FOR INSIGHT:
 - Keep the response between ${depth === "deep" ? "200-300" : "150-250"} words.
 - Use 2-3 short paragraphs.
 - Start with an emotionally appropriate greeting based on performance level.
-- Reference specific data (category rates, streaks, best/worst days) but wrap them in human, empathetic language — not cold statistics.
+- Reference specific data (category rates, streaks, best/worst days) but wrap them in human, empathetic language â€” not cold statistics.
 - End with 1-2 actionable, concrete tips framed as exciting opportunities, not obligations.
 - Make the user feel SEEN and VALUED regardless of their performance.
 
 RULES FOR CHALLENGE:
 - Create an INSPIRING challenge for next week targeting the weakest area.
 - Target: (${weakestCategory ? `weakest: ${weakestCategory.category} at ${weakestCategory.rate}%` : "general improvement"}).
-- The challenge TITLE must be inspiring and empowering (3-6 words). Examples: "Disiplin Maratonu", "Potansiyelini Uyandır", "Unstoppable Week", "Unleash Your Power", "Sınırlarını Aş", "Rise & Conquer".
-- NEVER use generic titles like "Weekly Challenge" or "Haftalık Görev".
+- The challenge TITLE must be inspiring and empowering (3-6 words). Examples: "Disiplin Maratonu", "Potansiyelini UyandÄ±r", "Unstoppable Week", "Unleash Your Power", "SÄ±nÄ±rlarÄ±nÄ± AÅŸ", "Rise & Conquer".
+- NEVER use generic titles like "Weekly Challenge" or "HaftalÄ±k GÃ¶rev".
 - The description should be 1-2 motivational sentences that make the user WANT to do it.
 - The target should be a number of completions (between 3 and 7).
 - The category must be one of the user's existing categories.
@@ -381,12 +381,12 @@ USER WEEKLY DATA:
 - Weakest routine: ${data.weakestRoutine ? `${data.weakestRoutine.title} (${data.weakestRoutine.completions}/7, missed ${data.weakestRoutine.missed} days)` : "N/A"}
 
 DAILY DISCIPLINE TREND (chart data):
-${trendCtx ? `- Daily scores: ${trendCtx.dailyScores.map((d) => `${d.day}: ${d.score}%`).join(" → ")}
+${trendCtx ? `- Daily scores: ${trendCtx.dailyScores.map((d) => `${d.day}: ${d.score}%`).join(" â†’ ")}
 - Week average: ${trendCtx.avgScore}%
-- Trend direction: ${trendCtx.trend === "up" ? "📈 IMPROVING" : trendCtx.trend === "down" ? "📉 DECLINING" : "➡️ STABLE"}
-- Consecutive days ≥50%: ${trendCtx.streakDays}
-${trendCtx.biggestDrop ? `- ⚠️ Biggest drop: ${trendCtx.biggestDrop.from} → ${trendCtx.biggestDrop.to} (${trendCtx.biggestDrop.delta}%)` : "- No significant drops"}
-${trendCtx.biggestSurge ? `- 🚀 Biggest surge: ${trendCtx.biggestSurge.from} → ${trendCtx.biggestSurge.to} (+${trendCtx.biggestSurge.delta}%)` : "- No significant surges"}` : "- Trend data not available"}
+- Trend direction: ${trendCtx.trend === "up" ? "ğŸ“ˆ IMPROVING" : trendCtx.trend === "down" ? "ğŸ“‰ DECLINING" : "â¡ï¸ STABLE"}
+- Consecutive days â‰¥50%: ${trendCtx.streakDays}
+${trendCtx.biggestDrop ? `- âš ï¸ Biggest drop: ${trendCtx.biggestDrop.from} â†’ ${trendCtx.biggestDrop.to} (${trendCtx.biggestDrop.delta}%)` : "- No significant drops"}
+${trendCtx.biggestSurge ? `- ğŸš€ Biggest surge: ${trendCtx.biggestSurge.from} â†’ ${trendCtx.biggestSurge.to} (+${trendCtx.biggestSurge.delta}%)` : "- No significant surges"}` : "- Trend data not available"}
 
 IMPORTANT: If there is a big drop in the daily scores, acknowledge it empathetically and suggest how to prevent it. If there is a surge, celebrate it enthusiastically!
 
@@ -394,16 +394,16 @@ RULES FOR SUCCESS HIGHLIGHT:
 - Identify the single most impressive achievement of the week from the data.
 - Examples: "Best: Tuesday 8/8" or "Health %100" or "5 Day Streak" or "Gym 7/7 Perfect".
 - MUST be max 30 characters. This is a short badge text, not a sentence.
-- ${locale === "tr" ? "Türkçe yaz. Örnek: \"Salı 8/8 Mükemmel\" veya \"Sağlık %100\"" : "Write in English."}
+- ${locale === "tr" ? "TÃ¼rkÃ§e yaz. Ã–rnek: \"SalÄ± 8/8 MÃ¼kemmel\" veya \"SaÄŸlÄ±k %100\"" : "Write in English."}
 
 RULES FOR CHART ANALYSIS (Grafik Analizi):
 - Write 2-3 concise sentences analyzing the daily discipline trend chart pattern.
 - Reference specific days and score changes visible in the chart data.
 - Identify patterns: consistency, mid-week dips, weekend drops, recovery arcs, etc.
 - Make it feel like a coach observing the graph and giving visual commentary.
-- ${locale === "tr" ? "Tamamen Türkçe yaz." : "Write in English."}
+- ${locale === "tr" ? "Tamamen TÃ¼rkÃ§e yaz." : "Write in English."}
 
-CRITICAL REMINDER: ALL values in the JSON response (insight, challenge title, challenge description, successHighlight, chartAnalysis) MUST be in ${locale === "tr" ? "TURKISH (Türkçe)" : "ENGLISH"}. Locale="${locale}".
+CRITICAL REMINDER: ALL values in the JSON response (insight, challenge title, challenge description, successHighlight, chartAnalysis) MUST be in ${locale === "tr" ? "TURKISH (TÃ¼rkÃ§e)" : "ENGLISH"}. Locale="${locale}".
 
 RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 {
@@ -425,7 +425,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      console.log(`[AI Coach] 📤 İstek Gönderiliyor... (attempt ${attempt + 1}/${MAX_RETRIES + 1}, model: ${currentModel}, depth: ${depth}, locale:`, locale, ")");
+      console.log(`[AI Coach] ğŸ“¤ Ä°stek GÃ¶nderiliyor... (attempt ${attempt + 1}/${MAX_RETRIES + 1}, model: ${currentModel}, depth: ${depth}, locale:`, locale, ")");
       const activeModel = genAI.getGenerativeModel({
         model: currentModel,
         systemInstruction: MENTOR_SYSTEM_PROMPT,
@@ -433,33 +433,33 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
       const result = await activeModel.generateContent(prompt);
       const response = result?.response;
       text = response?.text() ?? "";
-      console.log(`[AI Coach] ✅ Yanıt Alındı! (model: ${currentModel}) Response length:`, text?.length ?? 0);
+      console.log(`[AI Coach] âœ… YanÄ±t AlÄ±ndÄ±! (model: ${currentModel}) Response length:`, text?.length ?? 0);
       lastError = null;
       break;
     } catch (apiError: any) {
       lastError = apiError;
       const status = apiError?.status ?? apiError?.code ?? "unknown";
       const msg = apiError?.message ?? String(apiError);
-      // URL'yi hata mesajından çıkar
+      // URL'yi hata mesajÄ±ndan Ã§Ä±kar
       const urlMatch = msg.match(/https:\/\/[^\s:]+/);
       const failedUrl = urlMatch ? urlMatch[0] : "unknown";
-      console.error(`[AI Insight] Gemini API call FAILED (attempt ${attempt + 1}, model: ${currentModel}) — status: ${status}`);
-      console.error(`[AI Insight] 404 Hatası Alınan URL: ${failedUrl}`);
+      console.error(`[AI Insight] Gemini API call FAILED (attempt ${attempt + 1}, model: ${currentModel}) â€” status: ${status}`);
+      console.error(`[AI Insight] 404 HatasÄ± AlÄ±nan URL: ${failedUrl}`);
       console.error(`[AI Insight] Error message: ${msg}`);
 
       const is404 = String(status) === "404" || msg.includes("404") || msg.toLowerCase().includes("not found");
       const is429 = msg.includes("429") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("quota");
 
-      // 404 = model bulunamadı → hemen Flash'a düş
+      // 404 = model bulunamadÄ± â†’ hemen Flash'a dÃ¼ÅŸ
       if (is404 && currentModel !== MODEL_FLASH && attempt < MAX_RETRIES) {
-        console.warn(`[AI Insight] ⚠️ Model '${currentModel}' bulunamadı (404) — ${MODEL_FLASH} modeline geri dönülüyor...`);
+        console.warn(`[AI Insight] âš ï¸ Model '${currentModel}' bulunamadÄ± (404) â€” ${MODEL_FLASH} modeline geri dÃ¶nÃ¼lÃ¼yor...`);
         currentModel = MODEL_FLASH;
         continue;
       }
 
-      // Pro model failed → fallback to Flash
+      // Pro model failed â†’ fallback to Flash
       if (currentModel === MODEL_PRO && attempt < MAX_RETRIES) {
-        console.warn(`[AI Insight] ⚠️ ${MODEL_PRO} başarısız — ${MODEL_FLASH} modeline geri dönülüyor (fallback)...`);
+        console.warn(`[AI Insight] âš ï¸ ${MODEL_PRO} baÅŸarÄ±sÄ±z â€” ${MODEL_FLASH} modeline geri dÃ¶nÃ¼lÃ¼yor (fallback)...`);
         currentModel = MODEL_FLASH;
         if (is429) {
           const delayMatch = msg.match(/retry in ([\d.]+)s/i);
@@ -499,7 +499,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     throw new Error("AI returned an empty response");
   }
 
-  // Parse JSON response — strip possible code fences
+  // Parse JSON response â€” strip possible code fences
   const cleaned = text.trim().replace(/^```json?\s*/i, "").replace(/```\s*$/i, "").trim();
   try {
     const parsed = JSON.parse(cleaned);
@@ -527,9 +527,9 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     return {
       insight: text.trim(),
       challenge: {
-        title: locale === "tr" ? "Potansiyelini Uyandır" : "Unleash Your Power",
+        title: locale === "tr" ? "Potansiyelini UyandÄ±r" : "Unleash Your Power",
         description: locale === "tr"
-          ? `Bu hafta ${weakestCategory?.category || "rutinlerine"} odaklanarak sınırlarını zorla. Sen yapabilirsin!`
+          ? `Bu hafta ${weakestCategory?.category || "rutinlerine"} odaklanarak sÄ±nÄ±rlarÄ±nÄ± zorla. Sen yapabilirsin!`
           : `Push your limits by focusing on ${weakestCategory?.category || "your routines"} this week. You've got this!`,
         category: weakestCategory?.category || "HEALTH",
         target: 5,
@@ -540,7 +540,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
   }
 }
 
-// ─── Ana Action: Haftalık Insight Al (Cached) ───────────────────────────────
+// â”€â”€â”€ Ana Action: HaftalÄ±k Insight Al (Cached) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getWeeklyInsightAction(
   options?: { force?: boolean; locale?: string }
@@ -551,9 +551,9 @@ export async function getWeeklyInsightAction(
   const weekKey = getCurrentWeekKey();
   const force = options?.force ?? false;
 
-  console.log(`[AI Insight] getWeeklyInsightAction called — userId: ${userId}, weekKey: ${weekKey}, locale: ${locale}, force: ${force}`);
+  console.log(`[AI Insight] getWeeklyInsightAction called â€” userId: ${userId}, weekKey: ${weekKey}, locale: ${locale}, force: ${force}`);
 
-  // 1) Cache'de var mı kontrol et
+  // 1) Cache'de var mÄ± kontrol et
   const cached = await prisma.weeklyInsight.findUnique({
     where: { userId_weekKey: { userId, weekKey } },
   });
@@ -561,10 +561,10 @@ export async function getWeeklyInsightAction(
   console.log(`[AI Insight] Cache lookup result: ${cached ? `FOUND (id: ${cached.id}, summary length: ${cached.summary?.length})` : "NOT FOUND"}`);
 
   if (cached && !force && cached.locale === locale) {
-    // Challenge yoksa — AI ile oluştur ve kaydet
+    // Challenge yoksa â€” AI ile oluÅŸtur ve kaydet
     if (!cached.challengeTitle && !cached.challengeCompleted) {
       try {
-        console.log("[AI Insight] Cache hit but no challenge — generating challenge via AI...");
+        console.log("[AI Insight] Cache hit but no challenge â€” generating challenge via AI...");
         const data = await collectWeeklyData(userId);
         const { challenge } = await generateInsightWithAI(data, locale);
         await prisma.weeklyInsight.update({
@@ -592,7 +592,7 @@ export async function getWeeklyInsightAction(
         };
       } catch (challengeErr) {
         console.error("[AI Insight] Failed to back-fill challenge:", challengeErr);
-        // AI başarısızsa mevcut veriyi dön
+        // AI baÅŸarÄ±sÄ±zsa mevcut veriyi dÃ¶n
       }
     }
 
@@ -612,7 +612,7 @@ export async function getWeeklyInsightAction(
     };
   }
 
-  // 2) Yeterli veri var mı? (en az 1 aktif rutin + 1 log)
+  // 2) Yeterli veri var mÄ±? (en az 1 aktif rutin + 1 log)
   const [routineCount, logCount] = await Promise.all([
     prisma.routine.count({ where: { userId, isActive: true } }),
     prisma.routineLog.count({
@@ -620,10 +620,10 @@ export async function getWeeklyInsightAction(
     }),
   ]);
 
-  console.log(`[AI Insight] Data check — activeRoutines: ${routineCount}, logsLast7Days: ${logCount}`);
+  console.log(`[AI Insight] Data check â€” activeRoutines: ${routineCount}, logsLast7Days: ${logCount}`);
 
   if (routineCount === 0 || logCount === 0) {
-    console.log("[AI Insight] Insufficient data — returning empty payload.");
+    console.log("[AI Insight] Insufficient data â€” returning empty payload.");
     return {
       id: null, insight: null, weekKey, generatedAt: null,
       chartAnalysis: null,
@@ -633,10 +633,10 @@ export async function getWeeklyInsightAction(
     };
   }
 
-  // 3) Rate-limit cooldown kontrolü
+  // 3) Rate-limit cooldown kontrolÃ¼
   if (Date.now() < _geminiCooldownUntil) {
     const secsLeft = Math.ceil((_geminiCooldownUntil - Date.now()) / 1000);
-    console.warn(`[AI Insight] ⏳ Gemini cooldown active — ${secsLeft}s remaining. Returning empty.`);
+    console.warn(`[AI Insight] â³ Gemini cooldown active â€” ${secsLeft}s remaining. Returning empty.`);
     return {
       id: null, insight: null, weekKey, generatedAt: null,
       chartAnalysis: null,
@@ -651,10 +651,10 @@ export async function getWeeklyInsightAction(
     console.log("[AI Insight] Generating fresh insight via Gemini...");
     const data = await collectWeeklyData(userId);
     const trendCtx = await buildTrendContext(userId, locale);
-    console.log(`[AI Insight] Weekly data collected — completionRate: ${data.completionRate}%, totalCompletions: ${data.totalCompletions}/${data.possibleCompletions}, trend: ${trendCtx.trend}`);
+    console.log(`[AI Insight] Weekly data collected â€” completionRate: ${data.completionRate}%, totalCompletions: ${data.totalCompletions}/${data.possibleCompletions}, trend: ${trendCtx.trend}`);
     const { insight, challenge, successHighlight, chartAnalysis } = await generateInsightWithAI(data, locale, undefined, trendCtx);
 
-    // 5) Cache'e kaydet (upsert — race condition koruması)
+    // 5) Cache'e kaydet (upsert â€” race condition korumasÄ±)
     const saved = await prisma.weeklyInsight.upsert({
       where: { userId_weekKey: { userId, weekKey } },
       create: {
@@ -677,7 +677,7 @@ export async function getWeeklyInsightAction(
       },
     });
 
-    console.log(`[AI Insight] ✅ Insight başarıyla kaydedildi! (id: ${saved.id}, weekKey: ${weekKey}, userId: ${userId})`);
+    console.log(`[AI Insight] âœ… Insight baÅŸarÄ±yla kaydedildi! (id: ${saved.id}, weekKey: ${weekKey}, userId: ${userId})`);
 
     return {
       id: saved.id,
@@ -694,17 +694,17 @@ export async function getWeeklyInsightAction(
       successHighlight,
     };
   } catch (error: any) {
-    console.error("[AI Insight] ✘ FULL ERROR generating insight:");
+    console.error("[AI Insight] âœ˜ FULL ERROR generating insight:");
     console.error("[AI Insight] Error name:", error?.name);
     console.error("[AI Insight] Error message:", error?.message);
     console.error("[AI Insight] Error stack:", error?.stack?.slice(0, 500));
-    if (error?.status) console.error(`[AI Insight] HTTP status: ${error.status} — requested URL: ${error?.url ?? error?.requestUrl ?? "unknown"}`);
+    if (error?.status) console.error(`[AI Insight] HTTP status: ${error.status} â€” requested URL: ${error?.url ?? error?.requestUrl ?? "unknown"}`);
     if (error?.errorDetails) console.error("[AI Insight] Error details:", JSON.stringify(error.errorDetails));
 
-    // Dummy data fallback — kullanıcıya statik mesaj dön
+    // Dummy data fallback â€” kullanÄ±cÄ±ya statik mesaj dÃ¶n
     const dummyInsight = locale === "tr"
-      ? "Şu an koçluk verilerine ulaşılamıyor. Verileriniz hazır olduğunda AI Koç devreye girecek. Bu arada rutinlerinizi tamamlamaya devam edin! 💪"
-      : "Coaching data is temporarily unavailable. Your AI Coach will activate once your data is ready. Keep completing your routines! 💪";
+      ? "Åu an koÃ§luk verilerine ulaÅŸÄ±lamÄ±yor. Verileriniz hazÄ±r olduÄŸunda AI KoÃ§ devreye girecek. Bu arada rutinlerinizi tamamlamaya devam edin! ğŸ’ª"
+      : "Coaching data is temporarily unavailable. Your AI Coach will activate once your data is ready. Keep completing your routines! ğŸ’ª";
 
     return {
       id: null, insight: dummyInsight, weekKey, generatedAt: null,
@@ -716,7 +716,7 @@ export async function getWeeklyInsightAction(
   }
 }
 
-// ─── Cron için: Toplu Insight Üretme (PRO kullanıcılar) ─────────────────────
+// â”€â”€â”€ Cron iÃ§in: Toplu Insight Ãœretme (PRO kullanÄ±cÄ±lar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function generateWeeklyInsightsForProUsers(): Promise<{
   generated: number;
@@ -735,7 +735,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
   });
 
   for (const user of proUsers) {
-    // Zaten bu hafta üretilmiş mi?
+    // Zaten bu hafta Ã¼retilmiÅŸ mi?
     const existing = await prisma.weeklyInsight.findUnique({
       where: { userId_weekKey: { userId: user.id, weekKey } },
     });
@@ -745,7 +745,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
       continue;
     }
 
-    // En az 1 log var mı?
+    // En az 1 log var mÄ±?
     const logCount = await prisma.routineLog.count({
       where: {
         userId: user.id,
@@ -786,7 +786,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
         },
       });
 
-      console.log(`[AI Cron] ✅ Insight başarıyla kaydedildi! (userId: ${user.id}, weekKey: ${weekKey})`);
+      console.log(`[AI Cron] âœ… Insight baÅŸarÄ±yla kaydedildi! (userId: ${user.id}, weekKey: ${weekKey})`);
       stats.generated++;
     } catch (cronErr: any) {
       console.error(`[AI Cron] Failed for user ${user.id}:`, cronErr?.message ?? cronErr);
@@ -797,7 +797,7 @@ export async function generateWeeklyInsightsForProUsers(): Promise<{
   return stats;
 }
 
-// ─── AI Challenge İlerleme Güncelle ──────────────────────────────────────────
+// â”€â”€â”€ AI Challenge Ä°lerleme GÃ¼ncelle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const CHALLENGE_XP_REWARD = 75;
 const CHALLENGE_COIN_REWARD = 30;
@@ -812,17 +812,17 @@ export async function updateAIChallengeProgress(
     where: { userId_weekKey: { userId, weekKey } },
   });
 
-  // Aktif challenge yoksa veya zaten tamamlandıysa çık
+  // Aktif challenge yoksa veya zaten tamamlandÄ±ysa Ã§Ä±k
   if (!insight || !insight.challengeCategory || insight.challengeCompleted) return;
 
-  // Kategori eşleşmiyor → çık
+  // Kategori eÅŸleÅŸmiyor â†’ Ã§Ä±k
   if (insight.challengeCategory.toUpperCase() !== routineCategory.toUpperCase()) return;
 
   const newProgress = insight.challengeProgress + 1;
   const isCompleted = newProgress >= insight.challengeTarget;
 
   if (isCompleted) {
-    // Tamamlandı: ilerlemeyi güncelle + ödül ver
+    // TamamlandÄ±: ilerlemeyi gÃ¼ncelle + Ã¶dÃ¼l ver
     await prisma.$transaction([
       prisma.weeklyInsight.update({
         where: { id: insight.id },
@@ -844,13 +844,13 @@ export async function updateAIChallengeProgress(
   }
 }
 
-// ─── API Key Kontrolü ────────────────────────────────────────────────────────
+// â”€â”€â”€ API Key KontrolÃ¼ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function checkAIAvailable(): Promise<boolean> {
   return !!process.env.GEMINI_API_KEY;
 }
 
-// ─── Günlük Koç Mesajı (Cached) ─────────────────────────────────────────────
+// â”€â”€â”€ GÃ¼nlÃ¼k KoÃ§ MesajÄ± (Cached) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getTodayKey(): string {
   return format(new Date(), "yyyy-MM-dd");
@@ -885,7 +885,7 @@ export async function getDailyCoachMessage(
     };
   }
 
-  // 2) Bugünkü rutinleri topla
+  // 2) BugÃ¼nkÃ¼ rutinleri topla
   const todayStart = todayUTC();
   const todayEnd = new Date(todayStart);
   todayEnd.setUTCHours(23, 59, 59, 999);
@@ -919,7 +919,7 @@ export async function getDailyCoachMessage(
   const LEGEND_XP = 5000;
   const xpToLegend = Math.max(0, LEGEND_XP - userXp);
 
-  // 3) AI ile mesaj üret
+  // 3) AI ile mesaj Ã¼ret
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
@@ -928,11 +928,11 @@ export async function getDailyCoachMessage(
     });
 
     const langInstruction = locale === "tr"
-      ? "LANGUAGE: Yanıtını tamamen Türkçe yaz. Tüm JSON değerleri Türkçe olmalı. İngilizce kelime kullanma."
+      ? "LANGUAGE: YanÄ±tÄ±nÄ± tamamen TÃ¼rkÃ§e yaz. TÃ¼m JSON deÄŸerleri TÃ¼rkÃ§e olmalÄ±. Ä°ngilizce kelime kullanma."
       : "LANGUAGE: Write your response entirely in English. All JSON values must be in English.";
 
     const greeting = userName
-      ? (locale === "tr" ? `Kullanıcının adı: ${userName}` : `User's name: ${userName}`)
+      ? (locale === "tr" ? `KullanÄ±cÄ±nÄ±n adÄ±: ${userName}` : `User's name: ${userName}`)
       : "";
 
     const prompt = `Greet the user and provide daily motivation.
@@ -953,7 +953,7 @@ CONTEXT:
 RULES:
 - Start each message with an energetic, positive greeting. Make mornings exciting!
 - If there are pending routines: be enthusiastic about the opportunity ahead, mention specific routine names, and hype them up.
-- If a routine has a high streak (≥5): express excitement about the streak AND urgency about protecting it. E.g. "14 günlük serin inanılmaz, bugün bozma!" / "Your 14-day streak is fire, don't let it slip!"
+- If a routine has a high streak (â‰¥5): express excitement about the streak AND urgency about protecting it. E.g. "14 gÃ¼nlÃ¼k serin inanÄ±lmaz, bugÃ¼n bozma!" / "Your 14-day streak is fire, don't let it slip!"
 - If all routines are already completed: celebrate wildly! Make the user feel like a hero.
 - If routines have been missed recently: be SUPPORTIVE, never guilt-trip. Frame it as a fresh start.
 - Use 1-2 emojis naturally for warmth and energy.
@@ -961,11 +961,11 @@ RULES:
 
 RULES FOR COACH TIP:
 - A quick, inspiring tip about progressing toward "Legend" rank.
-- Frame it as an exciting journey, not a grind. E.g. "Her rutin seni Efsane'ye bir adım yaklaştırıyor!" / "Every routine completed brings you one step closer to Legend!"
+- Frame it as an exciting journey, not a grind. E.g. "Her rutin seni Efsane'ye bir adÄ±m yaklaÅŸtÄ±rÄ±yor!" / "Every routine completed brings you one step closer to Legend!"
 - Mention XP remaining if relevant.
 - Keep it actionable and motivating. 1 emoji max.
 
-CRITICAL REMINDER: ALL values in the JSON response (message, coachTip) MUST be in ${locale === "tr" ? "TURKISH (Türkçe). Türkçe karakterler kullan: ğ, ş, ı, ö, ç, ü" : "ENGLISH"}. Locale="${locale}".
+CRITICAL REMINDER: ALL values in the JSON response (message, coachTip) MUST be in ${locale === "tr" ? "TURKISH (TÃ¼rkÃ§e). TÃ¼rkÃ§e karakterler kullan: ÄŸ, ÅŸ, Ä±, Ã¶, Ã§, Ã¼" : "ENGLISH"}. Locale="${locale}".
 
 RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
 {
@@ -973,10 +973,10 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
   "coachTip": "Your coach tip here..."
 }`;
 
-    console.log(`[AI Coach] 📤 Günlük koç mesajı isteği gönderiliyor... (model: ${MODEL_FLASH})`);
+    console.log(`[AI Coach] ğŸ“¤ GÃ¼nlÃ¼k koÃ§ mesajÄ± isteÄŸi gÃ¶nderiliyor... (model: ${MODEL_FLASH})`);
     const result = await model.generateContent(prompt);
     const text = result?.response?.text() ?? "";
-    console.log("[AI Coach] ✅ Günlük koç mesajı yanıtı alındı! Length:", text?.length ?? 0);
+    console.log("[AI Coach] âœ… GÃ¼nlÃ¼k koÃ§ mesajÄ± yanÄ±tÄ± alÄ±ndÄ±! Length:", text?.length ?? 0);
     const cleaned = text.trim().replace(/^```json?\s*/i, "").replace(/```\s*$/i, "").trim();
     if (!cleaned) throw new Error("Empty AI response");
     const parsed = JSON.parse(cleaned);
@@ -1001,12 +1001,12 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
     console.error("[AI Coach] Daily message error:");
     console.error("[AI Coach] Error name:", error?.name);
     console.error("[AI Coach] Error message:", errMsg);
-    if (error?.status) console.error(`[AI Coach] HTTP status: ${error.status} — URL: ${failedUrl}`);
+    if (error?.status) console.error(`[AI Coach] HTTP status: ${error.status} â€” URL: ${failedUrl}`);
 
-    // Dummy fallback — kullanıcıya statik mesaj dön
+    // Dummy fallback â€” kullanÄ±cÄ±ya statik mesaj dÃ¶n
     const dummyMessage = locale === "tr"
-      ? "Günaydın! Şu an koçluk verilerine ulaşılamıyor ama rutinlerin seni bekliyor. Bugün küçük bir adımla başla! 💪"
-      : "Good morning! Coaching data is temporarily unavailable, but your routines are waiting. Start with a small step today! 💪";
+      ? "GÃ¼naydÄ±n! Åu an koÃ§luk verilerine ulaÅŸÄ±lamÄ±yor ama rutinlerin seni bekliyor. BugÃ¼n kÃ¼Ã§Ã¼k bir adÄ±mla baÅŸla! ğŸ’ª"
+      : "Good morning! Coaching data is temporarily unavailable, but your routines are waiting. Start with a small step today! ğŸ’ª";
 
     return { message: dummyMessage, coachTip: null, dayKey, hasApiKey: true };
   }

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useRef } from "react";
 
@@ -91,7 +91,7 @@ export function useSoundEffect() {
       osc.start(now);
       osc.stop(now + durationSec);
     } catch {
-      // AudioContext may be blocked — fail silently
+      // AudioContext may be blocked â€” fail silently
     }
   }, []);
 

@@ -1,11 +1,11 @@
-import confetti from "canvas-confetti";
+﻿import confetti from "canvas-confetti";
 
-// ─── Tema renkleri ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Tema renkleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const THEME_COLORS = ["#6366f1", "#818cf8", "#a855f7", "#c084fc", "#e879f9"];
 const GOLD_COLORS = ["#FFD700", "#FFA500", "#FF8C00", "#FFE066", "#a855f7"];
 
-// ─── Hafif patlama — tek rutin tamamlandığında ──────────────────────────────
+// â”€â”€â”€ Hafif patlama â€” tek rutin tamamlandÄ±ÄŸÄ±nda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function fireConfetti() {
   confetti({
@@ -20,7 +20,7 @@ export function fireConfetti() {
   });
 }
 
-// ─── Büyük kutlama — tüm rutinler tamamlandığında ──────────────────────────
+// â”€â”€â”€ BÃ¼yÃ¼k kutlama â€” tÃ¼m rutinler tamamlandÄ±ÄŸÄ±nda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function fireAllDoneConfetti() {
   const defaults = {
@@ -40,7 +40,7 @@ export function fireAllDoneConfetti() {
     origin: { x: 0, y: 0.6 },
   });
 
-  // Sağ taraftan
+  // SaÄŸ taraftan
   confetti({
     ...defaults,
     particleCount: 80,
@@ -61,7 +61,7 @@ export function fireAllDoneConfetti() {
   }, 150);
 }
 
-// ─── Haptic feedback — mobil cihazlar için ──────────────────────────────────
+// â”€â”€â”€ Haptic feedback â€” mobil cihazlar iÃ§in â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function hapticTap() {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) {
@@ -75,7 +75,7 @@ export function hapticSuccess() {
   }
 }
 
-// ─── Level Up kutlaması — büyük altın/mor patlama ───────────────────────────
+// â”€â”€â”€ Level Up kutlamasÄ± â€” bÃ¼yÃ¼k altÄ±n/mor patlama â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function fireLevelUpConfetti() {
   const defaults = {
@@ -86,7 +86,7 @@ export function fireLevelUpConfetti() {
     disableForReducedMotion: true,
   };
 
-  // Yıldız patlaması — ortadan
+  // YÄ±ldÄ±z patlamasÄ± â€” ortadan
   confetti({
     ...defaults,
     particleCount: 120,
@@ -96,7 +96,7 @@ export function fireLevelUpConfetti() {
     shapes: ["star", "circle"],
   });
 
-  // Sol ve sağ — kademeli
+  // Sol ve saÄŸ â€” kademeli
   setTimeout(() => {
     confetti({
       ...defaults,
@@ -115,7 +115,7 @@ export function fireLevelUpConfetti() {
   }, 200);
 }
 
-// ─── Satın alma kutlaması — altın coin efekti ───────────────────────────────
+// â”€â”€â”€ SatÄ±n alma kutlamasÄ± â€” altÄ±n coin efekti â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function firePurchaseConfetti() {
   confetti({

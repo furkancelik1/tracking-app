@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,7 +30,7 @@ import {
   type UserSearchResult,
 } from "@/actions/social.actions";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   friends: FriendEntry[];
@@ -38,7 +38,7 @@ type Props = {
   onChallengeClick?: (friendId: string, friendName: string | null) => void;
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -55,7 +55,7 @@ function formatXp(xp: number): string {
   return String(xp);
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function FriendList({ friends: initialFriends, pendingRequests: initialRequests, onChallengeClick }: Props) {
   const t = useTranslations("social");
@@ -68,7 +68,7 @@ export function FriendList({ friends: initialFriends, pendingRequests: initialRe
   const [friends, setFriends] = useState(initialFriends);
   const [requests, setRequests] = useState(initialRequests);
 
-  // ── Search ──────────────────────────────────────────────────
+  // â”€â”€ Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     if (query.trim().length < 2) {
@@ -89,7 +89,7 @@ export function FriendList({ friends: initialFriends, pendingRequests: initialRe
     });
   };
 
-  // ── Follow ──────────────────────────────────────────────────
+  // â”€â”€ Follow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleFollow = (targetId: string) => {
     startTransition(async () => {
       await followUserAction(targetId);
@@ -99,7 +99,7 @@ export function FriendList({ friends: initialFriends, pendingRequests: initialRe
     });
   };
 
-  // ── Accept ──────────────────────────────────────────────────
+  // â”€â”€ Accept â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleAccept = (friendshipId: string) => {
     startTransition(async () => {
       await acceptFollowAction(friendshipId);
@@ -107,7 +107,7 @@ export function FriendList({ friends: initialFriends, pendingRequests: initialRe
     });
   };
 
-  // ── Reject ──────────────────────────────────────────────────
+  // â”€â”€ Reject â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleReject = (friendshipId: string) => {
     startTransition(async () => {
       await rejectFollowAction(friendshipId);
@@ -115,7 +115,7 @@ export function FriendList({ friends: initialFriends, pendingRequests: initialRe
     });
   };
 
-  // ── Unfollow ────────────────────────────────────────────────
+  // â”€â”€ Unfollow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleUnfollow = (targetId: string) => {
     startTransition(async () => {
       await unfollowAction(targetId);
@@ -125,7 +125,7 @@ export function FriendList({ friends: initialFriends, pendingRequests: initialRe
 
   return (
     <div className="space-y-6">
-      {/* ── Search Bar ─────────────────────────────────────────── */}
+      {/* â”€â”€ Search Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <Card>
         <CardContent className="pt-6">
           <div className="relative">
@@ -215,7 +215,7 @@ export function FriendList({ friends: initialFriends, pendingRequests: initialRe
         </CardContent>
       </Card>
 
-      {/* ── Pending Requests ───────────────────────────────────── */}
+      {/* â”€â”€ Pending Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {requests.length > 0 && (
         <Card className="border-amber-500/30">
           <CardHeader className="pb-3">
@@ -268,7 +268,7 @@ export function FriendList({ friends: initialFriends, pendingRequests: initialRe
         </Card>
       )}
 
-      {/* ── Friends List ───────────────────────────────────────── */}
+      {/* â”€â”€ Friends List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">

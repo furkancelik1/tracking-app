@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import type { WeeklyInsightPayload } from "@/actions/ai.actions";
 
-// ─── Social Icons (inline SVG) ──────────────────────────────────────────────
+// â”€â”€â”€ Social Icons (inline SVG) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function XIcon({ className }: { className?: string }) {
   return (
@@ -41,7 +41,7 @@ function LinkedInIcon({ className }: { className?: string }) {
   );
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ShareInsightModalProps {
   open: boolean;
@@ -49,7 +49,7 @@ interface ShareInsightModalProps {
   data: WeeklyInsightPayload;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function ShareInsightModal({
   open,
@@ -152,7 +152,7 @@ export function ShareInsightModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
           >
             <div className="pointer-events-auto w-full max-w-md rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-gray-950 via-indigo-950/50 to-gray-950 shadow-2xl shadow-indigo-500/10 overflow-hidden">
-              {/* ── Header ── */}
+              {/* â”€â”€ Header â”€â”€ */}
               <div className="flex items-center justify-between px-5 pt-5 pb-3">
                 <div className="flex items-center gap-2">
                   <Share2 className="h-4.5 w-4.5 text-indigo-400" />
@@ -168,7 +168,7 @@ export function ShareInsightModal({
                 </button>
               </div>
 
-              {/* ── OG Image Preview ── */}
+              {/* â”€â”€ OG Image Preview â”€â”€ */}
               <div className="mx-5 mb-4">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
                   {t("sharePreview")}
@@ -184,7 +184,7 @@ export function ShareInsightModal({
                     <div className="flex items-center justify-center bg-gradient-to-br from-indigo-950 via-violet-950 to-indigo-950 aspect-[1200/630]">
                       <div className="flex flex-col items-center gap-2 text-indigo-300/50">
                         <ImageIcon className="h-6 w-6 animate-pulse" />
-                        <span className="text-[10px]">{t("sharePreview")}…</span>
+                        <span className="text-[10px]">{t("sharePreview")}â€¦</span>
                       </div>
                     </div>
                   )}
@@ -200,7 +200,7 @@ export function ShareInsightModal({
                 </motion.div>
               </div>
 
-              {/* ── Social Buttons ── */}
+              {/* â”€â”€ Social Buttons â”€â”€ */}
               <div className="px-5 pb-3">
                 <div className="grid grid-cols-3 gap-2">
                   {/* X (Twitter) */}
@@ -244,7 +244,7 @@ export function ShareInsightModal({
                 </div>
               </div>
 
-              {/* ── Copy Link + Native Share ── */}
+              {/* â”€â”€ Copy Link + Native Share â”€â”€ */}
               <div className="px-5 pb-5 flex gap-2">
                 <Button
                   variant="outline"

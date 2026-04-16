@@ -1,4 +1,4 @@
-// src/lib/auth.ts
+﻿// src/lib/auth.ts
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { getServerSession } from "next-auth";
@@ -11,7 +11,7 @@ import type {
   AdapterAccount,
 } from "next-auth/adapters";
 
-// ─── Custom Prisma Adapter (Prisma v6 uyumlu) ────────────────────────────────
+// â”€â”€â”€ Custom Prisma Adapter (Prisma v6 uyumlu) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function CustomPrismaAdapter(): Adapter {
   return {
@@ -90,7 +90,7 @@ function CustomPrismaAdapter(): Adapter {
   };
 }
 
-// ─── NextAuth Options ────────────────────────────────────────────────────────
+// â”€â”€â”€ NextAuth Options â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const authOptions: NextAuthOptions = {
   adapter: CustomPrismaAdapter(),
@@ -123,19 +123,19 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
 
-    // FIX: Önceki versiyon TÜM redirect'leri /dashboard'a zorluyordu.
+    // FIX: Ã–nceki versiyon TÃœM redirect'leri /dashboard'a zorluyordu.
     // Bu, NextAuth'un dahili OAuth callback redirect'lerini bozuyordu.
-    // Doğru yaklaşım: sadece harici URL'leri engelle, dahili URL'lere izin ver.
+    // DoÄŸru yaklaÅŸÄ±m: sadece harici URL'leri engelle, dahili URL'lere izin ver.
     async redirect({ url, baseUrl }) {
-      // Aynı origin'deki URL'lere izin ver (OAuth callback dahil)
+      // AynÄ± origin'deki URL'lere izin ver (OAuth callback dahil)
       if (url.startsWith(baseUrl)) {
         return url;
       }
-      // Göreceli yollara izin ver
+      // GÃ¶receli yollara izin ver
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`;
       }
-      // Harici URL'leri dashboard'a yönlendir
+      // Harici URL'leri dashboard'a yÃ¶nlendir
       return `${baseUrl}/dashboard`;
     },
   },
@@ -149,19 +149,19 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-// ─── Helper Functions ────────────────────────────────────────────────────────
+// â”€â”€â”€ Helper Functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Server-side session getter.
- * Kullanım: API route'larında ve Server Component'larda.
+ * KullanÄ±m: API route'larÄ±nda ve Server Component'larda.
  */
 export async function getSession() {
   return await getServerSession(authOptions);
 }
 
 /**
- * Oturum zorunlu olan sayfalarda kullanılır.
- * Oturum yoksa /login'e yönlendirir.
+ * Oturum zorunlu olan sayfalarda kullanÄ±lÄ±r.
+ * Oturum yoksa /login'e yÃ¶nlendirir.
  */
 export async function requireAuth() {
   const session = await getSession();
@@ -180,8 +180,8 @@ export async function requireAuth() {
 }
 
 /**
- * Admin sayfaları için guard.
- * Oturum yoksa /login'e, admin değilse /dashboard'a yönlendirir.
+ * Admin sayfalarÄ± iÃ§in guard.
+ * Oturum yoksa /login'e, admin deÄŸilse /dashboard'a yÃ¶nlendirir.
  */
 export async function requireAdmin() {
   const session = await getSession();

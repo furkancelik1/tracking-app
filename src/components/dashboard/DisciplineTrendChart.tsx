@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -30,7 +30,7 @@ type Props = {
   chartAnalysis?: string | null;
 };
 
-// ─── Status → Neon Renk Mapping ─────────────────────────────────────────────
+// â”€â”€â”€ Status â†’ Neon Renk Mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const STATUS_COLORS: Record<string, string> = {
   fire: "#22d3ee",  // cyan-400
@@ -39,7 +39,7 @@ const STATUS_COLORS: Record<string, string> = {
   miss: "#f87171",  // red-400
 };
 
-// ─── Custom Dot (Neon Glow) ─────────────────────────────────────────────────
+// â”€â”€â”€ Custom Dot (Neon Glow) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function NeonDot(props: any) {
   const { cx, cy, payload, onClick } = props;
@@ -67,7 +67,7 @@ function NeonActiveDot(props: any) {
   );
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
   const t = useTranslations("disciplineTrend");
@@ -236,7 +236,7 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                   variant="outline"
                   className="border-emerald-500/30 text-emerald-400 bg-emerald-500/5 text-[11px]"
                 >
-                  🚀 {biggestSurge.from} → {biggestSurge.to} +{biggestSurge.delta}%
+                  ğŸš€ {biggestSurge.from} â†’ {biggestSurge.to} +{biggestSurge.delta}%
                 </Badge>
               )}
               {biggestDrop && (
@@ -244,7 +244,7 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                   variant="outline"
                   className="border-red-500/30 text-red-400 bg-red-500/5 text-[11px]"
                 >
-                  ⚠️ {biggestDrop.from} → {biggestDrop.to} {biggestDrop.delta}%
+                  âš ï¸ {biggestDrop.from} â†’ {biggestDrop.to} {biggestDrop.delta}%
                 </Badge>
               )}
             </div>

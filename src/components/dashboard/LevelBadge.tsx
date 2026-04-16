@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -9,7 +9,7 @@ import { Shield } from "lucide-react";
 
 type Props = {
   xp: number;
-  /** Sadece seviye numarası göster (compact) */
+  /** Sadece seviye numarasÄ± gÃ¶ster (compact) */
   compact?: boolean;
   className?: string;
 };
@@ -41,7 +41,7 @@ export function LevelBadge({ xp, compact = false, className }: Props) {
     >
       <Shield className="size-3.5" />
       <span className="text-xs font-bold tabular-nums">Lvl {level}</span>
-      <span className="text-[10px] font-medium opacity-80">• {localizedRank}</span>
+      <span className="text-[10px] font-medium opacity-80">â€¢ {localizedRank}</span>
     </div>
   );
 }

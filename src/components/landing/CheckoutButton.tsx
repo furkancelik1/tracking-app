@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -23,12 +23,12 @@ export function CheckoutButton({ isLoggedIn }: Props) {
       const res = await fetch("/api/v1/stripe/checkout", { method: "POST" });
       const json = await res.json();
       if (!json.success) {
-        toast.error(json.error ?? "Ödeme başlatılamadı.");
+        toast.error(json.error ?? "Ã–deme baÅŸlatÄ±lamadÄ±.");
         return;
       }
       window.location.href = json.data.url;
     } catch {
-      toast.error("Bir hata oluştu, lütfen tekrar dene.");
+      toast.error("Bir hata oluÅŸtu, lÃ¼tfen tekrar dene.");
     } finally {
       setLoading(false);
     }

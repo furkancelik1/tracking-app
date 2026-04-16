@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,9 +12,9 @@ type Props = {
 };
 
 const RANGE_OPTIONS: Array<{ value: StatsRangeValue; label: string }> = [
-  { value: "7d", label: "Son 7 Gün" },
-  { value: "30d", label: "Son 30 Gün" },
-  { value: "all", label: "Tüm Zamanlar" },
+  { value: "7d", label: "Son 7 GÃ¼n" },
+  { value: "30d", label: "Son 30 GÃ¼n" },
+  { value: "all", label: "TÃ¼m Zamanlar" },
 ];
 
 export function StatsRangeTabs({ value }: Props) {

@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { toast } from "sonner";
 import { Swords, MessageCircle, Timer } from "lucide-react";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type DuelToastType = "score" | "message" | "ending";
 
@@ -14,7 +14,7 @@ interface DuelToastOptions {
   onAction?: () => void;
 }
 
-// ─── Icon Map ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Icon Map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ICON_MAP: Record<DuelToastType, React.ReactNode> = {
   score: <Swords className="size-4 text-violet-500 shrink-0" />,
@@ -28,7 +28,7 @@ const BORDER_MAP: Record<DuelToastType, string> = {
   ending: "border-l-4 border-l-red-500",
 };
 
-// ─── Custom Toast Content ────────────────────────────────────────────────────
+// â”€â”€â”€ Custom Toast Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function DuelToastContent({
   id,
@@ -63,7 +63,7 @@ function DuelToastContent({
             }}
             className="mt-2 text-xs font-semibold text-violet-500 hover:text-violet-600 transition-colors"
           >
-            {actionLabel} →
+            {actionLabel} â†’
           </button>
         )}
       </div>
@@ -71,7 +71,7 @@ function DuelToastContent({
   );
 }
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function fireDuelToast(
   type: DuelToastType,

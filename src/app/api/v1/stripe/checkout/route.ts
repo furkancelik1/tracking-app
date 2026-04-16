@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { createCheckoutSession } from "@/services/stripe.service";
 import type { ApiResponse } from "@/types";

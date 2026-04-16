@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSubscriptionTier } from "@/lib/stripe";
@@ -9,16 +9,16 @@ import type { Routine, RoutineFrequency } from "@prisma/client";
 const FREE_ROUTINE_LIMIT = 3;
 
 const createRoutineSchema = z.object({
-  title: z.string().min(1, "Başlık zorunludur").max(100),
+  title: z.string().min(1, "BaÅŸlÄ±k zorunludur").max(100),
   description: z.string().max(500).optional(),
   frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).default("DAILY"),
   category: z.string().max(50).default("Genel"),
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Geçersiz renk").default("#3b82f6"),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "GeÃ§ersiz renk").default("#3b82f6"),
   icon: z.string().max(50).default("CheckCircle"),
   sortOrder: z.number().int().min(0).default(0),
 });
 
-// GET /api/v1/routines — kullanıcının rutinlerini listele
+// GET /api/v1/routines â€” kullanÄ±cÄ±nÄ±n rutinlerini listele
 export async function GET() {
   try {
     const session = await getSession();
@@ -57,7 +57,7 @@ export async function GET() {
     return NextResponse.json<ApiResponse<never>>(
       {
         success: false,
-        error: err instanceof Error ? err.message : "Sunucu hatası",
+        error: err instanceof Error ? err.message : "Sunucu hatasÄ±",
         code: "INTERNAL_ERROR",
       },
       { status: 500 }
@@ -65,7 +65,7 @@ export async function GET() {
   }
 }
 
-// POST /api/v1/routines — yeni rutin oluştur
+// POST /api/v1/routines â€” yeni rutin oluÅŸtur
 export async function POST(req: Request) {
   try {
     const session = await getSession();
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     const userId = session.user.id;
     const subscriptionTier = getSubscriptionTier(session.user.subscriptionTier);
 
-    // FREE tier limiti kontrolü
+    // FREE tier limiti kontrolÃ¼
     if (subscriptionTier === "FREE") {
       const count = await prisma.routine.count({
         where: { userId, isActive: true },
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
         return NextResponse.json<ApiResponse<never>>(
           {
             success: false,
-            error: `Ücretsiz planda en fazla ${FREE_ROUTINE_LIMIT} rutin oluşturabilirsiniz. PRO'ya geçerek sınırsız rutin ekleyin.`,
+            error: `Ãœcretsiz planda en fazla ${FREE_ROUTINE_LIMIT} rutin oluÅŸturabilirsiniz. PRO'ya geÃ§erek sÄ±nÄ±rsÄ±z rutin ekleyin.`,
             code: "PLAN_LIMIT_REACHED",
           },
           { status: 403 }
@@ -99,7 +99,7 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => null);
     if (!body) {
       return NextResponse.json<ApiResponse<never>>(
-        { success: false, error: "Geçersiz JSON gövdesi", code: "BAD_REQUEST" },
+        { success: false, error: "GeÃ§ersiz JSON gÃ¶vdesi", code: "BAD_REQUEST" },
         { status: 400 }
       );
     }
@@ -133,7 +133,7 @@ export async function POST(req: Request) {
     return NextResponse.json<ApiResponse<never>>(
       {
         success: false,
-        error: err instanceof Error ? err.message : "Sunucu hatası",
+        error: err instanceof Error ? err.message : "Sunucu hatasÄ±",
         code: "INTERNAL_ERROR",
       },
       { status: 500 }
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
   }
 }
 
-// OPTIONS — CORS preflight
+// OPTIONS â€” CORS preflight
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 });
 }

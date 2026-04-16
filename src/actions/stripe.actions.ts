@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { getSession } from "@/lib/auth";
 import {
@@ -6,7 +6,7 @@ import {
   createBillingPortalSession,
 } from "@/services/stripe.service";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function requireUser() {
   const session = await getSession();
@@ -14,11 +14,11 @@ async function requireUser() {
   return session.user as { id: string; email: string | null };
 }
 
-// ─── Server Actions ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Server Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Kullanıcıyı Stripe Checkout sayfasına yönlendirir.
- * Dönen URL'ye client tarafında `window.location.href` ile redirect yapılır.
+ * KullanÄ±cÄ±yÄ± Stripe Checkout sayfasÄ±na yÃ¶nlendirir.
+ * DÃ¶nen URL'ye client tarafÄ±nda `window.location.href` ile redirect yapÄ±lÄ±r.
  */
 export async function createCheckoutAction(): Promise<{ url: string }> {
   const user = await requireUser();
@@ -28,8 +28,8 @@ export async function createCheckoutAction(): Promise<{ url: string }> {
 }
 
 /**
- * Kullanıcıyı Stripe Billing Portal'a yönlendirir.
- * Abonelik yönetimi (iptal, kart değiştirme, fatura görüntüleme) için kullanılır.
+ * KullanÄ±cÄ±yÄ± Stripe Billing Portal'a yÃ¶nlendirir.
+ * Abonelik yÃ¶netimi (iptal, kart deÄŸiÅŸtirme, fatura gÃ¶rÃ¼ntÃ¼leme) iÃ§in kullanÄ±lÄ±r.
  */
 export async function createCustomerPortalAction(): Promise<{ url: string }> {
   const user = await requireUser();

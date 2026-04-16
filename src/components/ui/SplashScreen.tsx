@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -53,7 +53,7 @@ export function SplashScreen() {
               priority
             />
 
-            {/* Glow scan — sweeps top-to-bottom once on mount, then repeats */}
+            {/* Glow scan â€” sweeps top-to-bottom once on mount, then repeats */}
             <motion.div
               className="absolute inset-x-0 h-16 pointer-events-none"
               style={{
@@ -76,7 +76,7 @@ export function SplashScreen() {
             />
           </motion.div>
 
-          {/* Brand name — fades in under the logo */}
+          {/* Brand name â€” fades in under the logo */}
           <motion.p
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}

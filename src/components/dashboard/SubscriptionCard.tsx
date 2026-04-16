@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -86,7 +86,7 @@ export function SubscriptionCard({ tier, hasStripeCustomer, plan, periodEnd }: P
             <ul className="space-y-1.5">
               {plan.features.map((f) => (
                 <li key={f} className="flex items-center gap-2 text-sm">
-                  <span className="text-green-500">✓</span>
+                  <span className="text-green-500">âœ“</span>
                   {f}
                 </li>
               ))}

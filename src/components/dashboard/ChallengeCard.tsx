@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
@@ -25,7 +25,7 @@ import {
   type ChallengeEntry,
 } from "@/actions/challenge.actions";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -37,7 +37,7 @@ function getInitials(name: string | null): string {
     .toUpperCase();
 }
 
-// ─── VS Badge Animation ─────────────────────────────────────────────────────
+// â”€â”€â”€ VS Badge Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function VsBadge() {
   return (
@@ -67,7 +67,7 @@ function VsBadge() {
   );
 }
 
-// ─── Sparkle Effect for Winner ───────────────────────────────────────────────
+// â”€â”€â”€ Sparkle Effect for Winner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function WinnerSparkle({ children }: { children: React.ReactNode }) {
   return (
@@ -101,7 +101,7 @@ function WinnerSparkle({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Player Side ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Player Side â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PlayerSide({
   name,
@@ -187,7 +187,7 @@ function PlayerSide({
   return content;
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   challenge: ChallengeEntry;
@@ -215,7 +215,7 @@ export function ChallengeCard({ challenge }: Props) {
       try {
         await acceptChallengeAction(challenge.id);
         setStatus("ACTIVE");
-        toast.success("⚔️");
+        toast.success("âš”ï¸");
       } catch {
         toast.error("Error");
       }
@@ -246,7 +246,7 @@ export function ChallengeCard({ challenge }: Props) {
           }
         }
         setCheckedIn(true);
-        if (!res.alreadyCheckedIn) toast.success("✅");
+        if (!res.alreadyCheckedIn) toast.success("âœ…");
       } catch {
         toast.error("Error");
       }
@@ -308,7 +308,7 @@ export function ChallengeCard({ challenge }: Props) {
             </Badge>
           </div>
 
-          {/* ── VS Layout ─────────────────────────────────── */}
+          {/* â”€â”€ VS Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="flex items-center justify-between gap-2 py-2">
             <PlayerSide
               name={challenge.challenger.name}

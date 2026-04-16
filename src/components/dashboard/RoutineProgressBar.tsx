@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
@@ -10,19 +10,19 @@ type Props = {
   routines: RoutineWithMeta[];
 };
 
-/** Bugünün UTC başlangıcı ile karşılaştır — 30 günlük loglardan sadece bugünküleri say */
+/** BugÃ¼nÃ¼n UTC baÅŸlangÄ±cÄ± ile karÅŸÄ±laÅŸtÄ±r â€” 30 gÃ¼nlÃ¼k loglardan sadece bugÃ¼nkÃ¼leri say */
 function isTodayCompleted(routine: RoutineWithMeta): boolean {
   const todayUTC = new Date();
   todayUTC.setUTCHours(0, 0, 0, 0);
   return routine.logs.some((l) => new Date(l.completedAt) >= todayUTC);
 }
 
-/** 0-100 arası yüzdeyi renk geçişine çevir: kırmızı → turuncu → sarı → yeşil */
+/** 0-100 arasÄ± yÃ¼zdeyi renk geÃ§iÅŸine Ã§evir: kÄ±rmÄ±zÄ± â†’ turuncu â†’ sarÄ± â†’ yeÅŸil */
 function getProgressColor(pct: number): string {
-  if (pct <= 25) return `hsl(${pct * 1.2}, 85%, 50%)`;       // kırmızı → turuncu
-  if (pct <= 50) return `hsl(${30 + (pct - 25) * 0.8}, 85%, 50%)`; // turuncu → sarı
-  if (pct <= 75) return `hsl(${50 + (pct - 50) * 1.2}, 80%, 45%)`; // sarı → yeşil-sarı
-  return `hsl(${80 + (pct - 75) * 1.6}, 75%, 42%)`;            // yeşil-sarı → yeşil
+  if (pct <= 25) return `hsl(${pct * 1.2}, 85%, 50%)`;       // kÄ±rmÄ±zÄ± â†’ turuncu
+  if (pct <= 50) return `hsl(${30 + (pct - 25) * 0.8}, 85%, 50%)`; // turuncu â†’ sarÄ±
+  if (pct <= 75) return `hsl(${50 + (pct - 50) * 1.2}, 80%, 45%)`; // sarÄ± â†’ yeÅŸil-sarÄ±
+  return `hsl(${80 + (pct - 75) * 1.6}, 75%, 42%)`;            // yeÅŸil-sarÄ± â†’ yeÅŸil
 }
 
 export function RoutineProgressBar({ routines }: Props) {

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition, useEffect, useRef, Component, type ReactNode, type ErrorInfo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { getWeeklyInsightAction, type WeeklyInsightPayload } from "@/actions/ai.
 import { fireAllDoneConfetti } from "@/lib/celebrations";
 import { ShareInsightModal } from "@/components/dashboard/ShareInsightModal";
 
-// ─── Error Boundary ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Error Boundary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -45,7 +45,7 @@ class WeeklyInsightErrorBoundary extends Component<
           <CardContent className="flex flex-col items-center justify-center gap-3 py-8 text-center">
             <AlertTriangle className="h-8 w-8 text-destructive/60" />
             <p className="text-sm text-muted-foreground max-w-xs">
-              AI Koç bileşeni yüklenemedi. Dashboard çalışmaya devam ediyor.
+              AI KoÃ§ bileÅŸeni yÃ¼klenemedi. Dashboard Ã§alÄ±ÅŸmaya devam ediyor.
             </p>
             <Button
               variant="outline"
@@ -62,7 +62,7 @@ class WeeklyInsightErrorBoundary extends Component<
   }
 }
 
-// ─── Analiz Animasyonu ───────────────────────────────────────────────────────
+// â”€â”€â”€ Analiz Animasyonu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function AnalyzingAnimation({ text }: { text: string }) {
   return (
@@ -89,26 +89,26 @@ function AnalyzingAnimation({ text }: { text: string }) {
           animate={{ opacity: [0, 1, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          ●
+          â—
         </motion.span>
         <motion.span
           animate={{ opacity: [0, 1, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
         >
-          ●
+          â—
         </motion.span>
         <motion.span
           animate={{ opacity: [0, 1, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
         >
-          ●
+          â—
         </motion.span>
       </div>
     </motion.div>
   );
 }
 
-// ─── Ana Bileşen ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Ana BileÅŸen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface WeeklyInsightCardProps {
   initialData: WeeklyInsightPayload | null;
@@ -132,7 +132,7 @@ function WeeklyInsightCardInner({ initialData, isPro }: WeeklyInsightCardProps) 
   const [error, setError] = useState<string | null>(null);
   const confettiFired = useRef(false);
 
-  // Görev tamamlandığında confetti
+  // GÃ¶rev tamamlandÄ±ÄŸÄ±nda confetti
   useEffect(() => {
     if (data?.challengeCompleted && !confettiFired.current) {
       confettiFired.current = true;
@@ -172,7 +172,7 @@ function WeeklyInsightCardInner({ initialData, isPro }: WeeklyInsightCardProps) 
     });
   };
 
-  // ── PRO Gate ──────────────────────────────────────────────────────────────
+  // â”€â”€ PRO Gate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (!isPro) {
     return (
       <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-indigo-500/5">
@@ -269,7 +269,7 @@ function WeeklyInsightCardInner({ initialData, isPro }: WeeklyInsightCardProps) 
                 ))}
               </div>
 
-              {/* ── AI Success Highlight ── */}
+              {/* â”€â”€ AI Success Highlight â”€â”€ */}
               {data!.successHighlight && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -287,7 +287,7 @@ function WeeklyInsightCardInner({ initialData, isPro }: WeeklyInsightCardProps) 
                 </motion.div>
               )}
 
-              {/* ── AI Challenge Section ── */}
+              {/* â”€â”€ AI Challenge Section â”€â”€ */}
               {data!.challengeTitle && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -51,7 +51,7 @@ export function OnboardingDialog() {
     try {
       const result = await completeTour();
       setOpen(false);
-      // Navbar coin göstergesini anında güncelle
+      // Navbar coin gÃ¶stergesini anÄ±nda gÃ¼ncelle
       window.dispatchEvent(new CustomEvent("coins-updated"));
       router.refresh();
       toast.success(t("rewardToast"), { duration: 5000 });

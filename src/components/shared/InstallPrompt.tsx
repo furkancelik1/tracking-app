@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { usePWA } from "@/hooks/useInstallPrompt";
 import { Download, X } from "lucide-react";

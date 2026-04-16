@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+﻿import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
   addSeconds,
@@ -7,12 +7,12 @@ import {
   intervalToDuration,
 } from "date-fns";
 export type ResetType = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "ROLLING" | "FIXED";
-// ─── Shadcn default ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Shadcn default â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// ─── Timer Utilities ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Timer Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Computes nextResetAt for a BasketItem on activation.
@@ -46,7 +46,7 @@ export function isTimerExpired(
 export function formatCountdown(
   nextResetAt: Date | null | undefined
 ): string {
-  if (!nextResetAt) return "—";
+  if (!nextResetAt) return "â€”";
   const target = new Date(nextResetAt);
   const now = new Date();
   if (now >= target) return "Expired";

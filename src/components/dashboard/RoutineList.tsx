@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { useOptimistic, useTransition, useMemo, useState, useRef, useEffect } from "react";
@@ -26,7 +26,7 @@ import type { ShareCardProps } from "@/components/dashboard/ShareCard";
 import { BadgeCelebration } from "@/components/dashboard/BadgeCelebration";
 import { LevelUpModal } from "@/components/dashboard/LevelUpModal";
 
-// ─── Optimistic reducer ───────────────────────────────────────────────────────
+// â”€â”€â”€ Optimistic reducer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type OptimisticAction =
   | { type: "toggle"; id: string; completed: boolean; note?: string }
@@ -45,14 +45,14 @@ function optimisticReducer(
       return state.map((r) => {
         if (r.id !== action.id) return r;
         if (action.completed) {
-          // Geri al: bugünkü log kaldır, streak azalt
+          // Geri al: bugÃ¼nkÃ¼ log kaldÄ±r, streak azalt
           return {
             ...r,
             logs: r.logs.filter((l) => l.completedAt < todayISO),
             currentStreak: Math.max(0, r.currentStreak - 1),
           };
         }
-        // Tamamla: log ekle, streak artır
+        // Tamamla: log ekle, streak artÄ±r
         return {
           ...r,
           logs: [{ id: "_opt", completedAt: todayISO, note: action.note ?? null }, ...r.logs],
@@ -69,7 +69,7 @@ function optimisticReducer(
   }
 }
 
-// ─── Bileşen ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ BileÅŸen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = { initialRoutines: RoutineWithMeta[] };
 
@@ -94,13 +94,13 @@ export function RoutineList({ initialRoutines }: Props) {
     rankColor: string;
   } | null>(null);
 
-  // Sunucu verisi (TanStack Query — polling + refetch)
+  // Sunucu verisi (TanStack Query â€” polling + refetch)
   const { data: serverRoutines = [], isLoading } = useRoutines(initialRoutines);
-  // Server Action tamamlandıktan sonra TQ cache'ini temizle
+  // Server Action tamamlandÄ±ktan sonra TQ cache'ini temizle
   const { invalidate } = useRoutineQueryClient();
 
-  // ── useOptimistic: serverRoutines baz alınır, dispatch ile anında güncellenir.
-  //    Transition bitince serverRoutines'e (sunucu doğrusu) döner.
+  // â”€â”€ useOptimistic: serverRoutines baz alÄ±nÄ±r, dispatch ile anÄ±nda gÃ¼ncellenir.
+  //    Transition bitince serverRoutines'e (sunucu doÄŸrusu) dÃ¶ner.
   const [optimisticRoutines, dispatch] = useOptimistic(serverRoutines, optimisticReducer);
 
   // Reset allDone flag when server data refreshes (new day / undo)
@@ -114,8 +114,8 @@ export function RoutineList({ initialRoutines }: Props) {
     if (!allDone) allDoneFiredRef.current = false;
   }, [serverRoutines]);
 
-  // ── useTransition: async Server Action'ı sarar (isPending kullanılmıyor —
-  //    görsel durum pendingId üzerinden yönetilir)
+  // â”€â”€ useTransition: async Server Action'Ä± sarar (isPending kullanÄ±lmÄ±yor â€”
+  //    gÃ¶rsel durum pendingId Ã¼zerinden yÃ¶netilir)
   const [, startToggle] = useTransition();
   const [, startDelete] = useTransition();
 
@@ -123,23 +123,23 @@ export function RoutineList({ initialRoutines }: Props) {
   const isPro = auth.status === "authenticated" && auth.isPro;
   const atLimit = !isPro && serverRoutines.length >= 3;
 
-  // ── Handler'lar ────────────────────────────────────────────────────────────
+  // â”€â”€ Handler'lar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /**
    * Tamamla / Geri Al
    *
-   * Akış:
-   *  1. dispatch → useOptimistic anında UI günceller (0 ms)
-   *  2. Server Action → Prisma + revalidatePath (ağ gecikmesi)
-   *  3. invalidate → TQ cache temizlenir → refetch başlar
-   *  4. Hata → useOptimistic otomatik eski state'e döner + toast
+   * AkÄ±ÅŸ:
+   *  1. dispatch â†’ useOptimistic anÄ±nda UI gÃ¼nceller (0 ms)
+   *  2. Server Action â†’ Prisma + revalidatePath (aÄŸ gecikmesi)
+   *  3. invalidate â†’ TQ cache temizlenir â†’ refetch baÅŸlar
+   *  4. Hata â†’ useOptimistic otomatik eski state'e dÃ¶ner + toast
    */
   function handleToggle(id: string, completed: boolean, note?: string) {
     setPendingId(id);
     startToggle(async () => {
       dispatch({ type: "toggle", id, completed, note });
 
-      // ── All Done detection (optimistic) ────────────────────────────
+      // â”€â”€ All Done detection (optimistic) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (!completed) {
         const todayUTC = new Date();
         todayUTC.setUTCHours(0, 0, 0, 0);
@@ -154,14 +154,14 @@ export function RoutineList({ initialRoutines }: Props) {
         if (allDone && !allDoneFiredRef.current) {
           allDoneFiredRef.current = true;
           hapticSuccess();
-          // Küçük gecikme — tek rutin konfetisi bittikten sonra büyük kutlama
+          // KÃ¼Ã§Ã¼k gecikme â€” tek rutin konfetisi bittikten sonra bÃ¼yÃ¼k kutlama
           setTimeout(() => {
             fireAllDoneConfetti();
             toast.success(t("allDone"), { duration: 4000 });
           }, 400);
         }
       } else {
-        // Geri al durumunda allDone sıfırla
+        // Geri al durumunda allDone sÄ±fÄ±rla
         allDoneFiredRef.current = false;
       }
 
@@ -173,10 +173,10 @@ export function RoutineList({ initialRoutines }: Props) {
         } else {
           const result = await completeRoutineAction(id, note);
           toast.success(t("completed"));
-          // Navbar coin göstergesini güncelle
+          // Navbar coin gÃ¶stergesini gÃ¼ncelle
           window.dispatchEvent(new CustomEvent("coins-updated"));
 
-          // ── Düello skor bildirimi ──────────────────────────────────
+          // â”€â”€ DÃ¼ello skor bildirimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (result?.duelScoreUpdated && result.duelOpponentName) {
             fireDuelToast("score", {
               title: td("notifOpponentScored"),
@@ -186,12 +186,12 @@ export function RoutineList({ initialRoutines }: Props) {
             });
           }
 
-          // ── Rozet kutlaması ───────────────────────────────────────
+          // â”€â”€ Rozet kutlamasÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (result?.newBadges && result.newBadges.length > 0) {
             setTimeout(() => setCelebrationBadge(result.newBadges[0]), 1800);
           }
 
-          // ── Level-up algıla ────────────────────────────────────────
+          // â”€â”€ Level-up algÄ±la â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (result && didLevelUp(result.totalXp - result.xpGain, result.totalXp)) {
             const { level, rank, rankColor } = calculateLevel(result.totalXp);
             setTimeout(() => {
@@ -227,7 +227,7 @@ export function RoutineList({ initialRoutines }: Props) {
     });
   }
 
-  // ── Türev veriler (optimistic veriden beslenir) ────────────────────────────
+  // â”€â”€ TÃ¼rev veriler (optimistic veriden beslenir) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(optimisticRoutines.map((r) => r.category))).sort();
@@ -245,7 +245,7 @@ export function RoutineList({ initialRoutines }: Props) {
   // Display label for ALL category
   const getCategoryLabel = (cat: string) => cat === ALL ? t("allCategories") : cat;
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return (
     <div className="space-y-6">
@@ -266,11 +266,11 @@ export function RoutineList({ initialRoutines }: Props) {
         </Button>
       </div>
 
-      {/* FREE limit uyarısı */}
+      {/* FREE limit uyarÄ±sÄ± */}
       {atLimit && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 px-4 py-3 flex items-center justify-between gap-4 text-sm">
           <p className="text-amber-800 dark:text-amber-200">
-            <span className="font-semibold">3/3</span> — {t("limitWarning", { count: 3, max: 3 })}
+            <span className="font-semibold">3/3</span> â€” {t("limitWarning", { count: 3, max: 3 })}
           </p>
           <Button size="sm" asChild>
             <a href="/settings">{t("upgradeCta")}</a>
@@ -278,12 +278,12 @@ export function RoutineList({ initialRoutines }: Props) {
         </div>
       )}
 
-      {/* Progress bar — optimistic veriden beslenir → anında güncellenir */}
+      {/* Progress bar â€” optimistic veriden beslenir â†’ anÄ±nda gÃ¼ncellenir */}
       {optimisticRoutines.length > 0 && (
         <RoutineProgressBar routines={optimisticRoutines} />
       )}
 
-      {/* Kategori filtre tabs — optimistic veriden beslenir */}
+      {/* Kategori filtre tabs â€” optimistic veriden beslenir */}
       {categories.length > 2 && (
         <div className="flex gap-1.5 flex-wrap">
           {categories.map((cat) => {
@@ -406,7 +406,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center gap-4">
       <div className="size-12 rounded-full bg-muted flex items-center justify-center text-2xl">
-        ✓
+        âœ“
       </div>
       <div>
         <p className="font-medium">{t("emptyTitle")}</p>

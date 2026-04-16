@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 
@@ -77,7 +77,7 @@ export function usePWA() {
   }, []);
 
   const installApp = useCallback(async () => {
-    // iOS doesn't support beforeinstallprompt — show guide modal
+    // iOS doesn't support beforeinstallprompt â€” show guide modal
     if (platform === "ios") {
       setShowIOSGuide(true);
       return false;

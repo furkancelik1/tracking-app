@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import {
@@ -44,13 +44,13 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle className="text-base">Haftalık İstatistikler</CardTitle>
+            <CardTitle className="text-base">HaftalÄ±k Ä°statistikler</CardTitle>
             <CardDescription className="mt-0.5">
-              Son 7 günde tamamlanan rutinler
+              Son 7 gÃ¼nde tamamlanan rutinler
             </CardDescription>
           </div>
 
-          {/* Özet sayılar — sadece PRO */}
+          {/* Ã–zet sayÄ±lar â€” sadece PRO */}
           {isPro && totalThisWeek > 0 && (
             <div className="flex gap-5 text-right shrink-0">
               <div>
@@ -59,7 +59,7 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
               </div>
               <div>
                 <p className="text-lg font-semibold tabular-nums">{bestDay.count}</p>
-                <p className="text-xs text-muted-foreground">En iyi gün</p>
+                <p className="text-xs text-muted-foreground">En iyi gÃ¼n</p>
               </div>
             </div>
           )}
@@ -67,7 +67,7 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
       </CardHeader>
 
       <CardContent className="pb-6 relative">
-        {/* Grafik — FREE'de blur */}
+        {/* Grafik â€” FREE'de blur */}
         <div
           className={cn(
             "transition-[filter]",
@@ -159,10 +159,10 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
             <div className="rounded-xl border bg-card/90 backdrop-blur-sm px-6 py-4 text-center shadow-sm space-y-3">
               <p className="text-sm font-medium">
-                Gelişmiş istatistikler PRO&apos;ya özeldir
+                GeliÅŸmiÅŸ istatistikler PRO&apos;ya Ã¶zeldir
               </p>
               <Button size="sm" asChild>
-                <a href="/settings">PRO&apos;ya Geç</a>
+                <a href="/settings">PRO&apos;ya GeÃ§</a>
               </Button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ export type RoutineWithMeta = {
   lastCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  /** Son 30 günün logları (heatmap + isCompleted hesabı için) */
+  /** Son 30 gÃ¼nÃ¼n loglarÄ± (heatmap + isCompleted hesabÄ± iÃ§in) */
   logs: { id: string; completedAt: string; note: string | null }[];
   _count: { logs: number };
 };
@@ -63,7 +63,7 @@ export function useCreateRoutine() {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ROUTINES_KEY });
-      toast.success("Rutin oluşturuldu.");
+      toast.success("Rutin oluÅŸturuldu.");
     },
     onError: (err: Error) => {
       toast.error(err.message);
@@ -72,8 +72,8 @@ export function useCreateRoutine() {
 }
 
 /**
- * TQ cache'ini dışarıdan temizlemek için utility.
- * RoutineList'te Server Action bittikten sonra çağrılır.
+ * TQ cache'ini dÄ±ÅŸarÄ±dan temizlemek iÃ§in utility.
+ * RoutineList'te Server Action bittikten sonra Ã§aÄŸrÄ±lÄ±r.
  */
 export function useRoutineQueryClient() {
   const qc = useQueryClient();

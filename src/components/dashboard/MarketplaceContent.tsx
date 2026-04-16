@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { toast } from "sonner";
 import { Coins, Check, Loader2, Package, Lock } from "lucide-react";
-// ... gerisi aynı
+// ... gerisi aynÄ±
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -100,7 +100,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
         const primaryColor = item.metadata?.primary ?? "#818cf8";
         const glowColor = item.metadata?.glow ?? "rgba(129,140,248,0.4)";
         toast.success(`${item.name} activated`, {
-          description: item.category === "THEME" ? "Theme applied — enjoy the vibe" : "Frame equipped",
+          description: item.category === "THEME" ? "Theme applied â€” enjoy the vibe" : "Frame equipped",
           duration: 3500,
           style: {
             borderLeft: `3px solid ${primaryColor}`,

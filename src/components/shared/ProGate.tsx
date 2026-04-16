@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -77,7 +77,7 @@ export function ProGate({ children, feature }: Props) {
           <ul className="space-y-2 py-2">
             {STRIPE_PLANS.PRO.features.map((f) => (
               <li key={f} className="flex items-center gap-2 text-sm">
-                <span className="text-green-500">✓</span>
+                <span className="text-green-500">âœ“</span>
                 {f}
               </li>
             ))}
@@ -87,7 +87,7 @@ export function ProGate({ children, feature }: Props) {
             <span className="font-bold text-foreground text-lg">
               {STRIPE_PLANS.PRO.price}
             </span>
-            /{STRIPE_PLANS.PRO.interval} — {t("cancelAnytime")}
+            /{STRIPE_PLANS.PRO.interval} â€” {t("cancelAnytime")}
           </p>
 
           <DialogFooter>

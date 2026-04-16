@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createClient } from "@supabase/supabase-js";
 
 let browserClient: ReturnType<typeof createClient> | null = null;
 
@@ -21,8 +21,8 @@ function getSupabaseUrl() {
   return supabaseUrl;
 }
 
-// Public client — browser-safe, used for Realtime Broadcast subscriptions only
-// We do NOT use Supabase as a database — MySQL (PlanetScale) is the source of truth
+// Public client â€” browser-safe, used for Realtime Broadcast subscriptions only
+// We do NOT use Supabase as a database â€” MySQL (PlanetScale) is the source of truth
 export function getBrowserSupabaseClient() {
   if (browserClient) return browserClient;
 
@@ -61,7 +61,7 @@ export function createAdminSupabaseClient() {
   });
 }
 
-// Consistent channel name factory — publisher and subscriber must use the same name
+// Consistent channel name factory â€” publisher and subscriber must use the same name
 export const REALTIME_CHANNELS = {
   userBasket: (userId: string) => `basket:${userId}`,
   adminBroadcast: "admin:broadcast",

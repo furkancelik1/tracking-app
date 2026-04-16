@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { useState, useTransition } from "react";
@@ -14,11 +14,11 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { getFriendsLeaderboardAction } from "@/actions/social.actions";
 
-// ─── Podium renkleri ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Podium renkleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PODIUM = [
-  { ring: "ring-yellow-400", bg: "bg-yellow-400/10", text: "text-yellow-400", icon: Crown, label: "Altın" },
-  { ring: "ring-zinc-300", bg: "bg-zinc-300/10", text: "text-zinc-300", icon: Medal, label: "Gümüş" },
+  { ring: "ring-yellow-400", bg: "bg-yellow-400/10", text: "text-yellow-400", icon: Crown, label: "AltÄ±n" },
+  { ring: "ring-zinc-300", bg: "bg-zinc-300/10", text: "text-zinc-300", icon: Medal, label: "GÃ¼mÃ¼ÅŸ" },
   { ring: "ring-amber-600", bg: "bg-amber-600/10", text: "text-amber-600", icon: Medal, label: "Bronz" },
 ] as const;
 
@@ -37,7 +37,7 @@ function formatXp(xp: number): string {
   return String(xp);
 }
 
-// ─── Seviye Bazlı Avatar Çerçevesi ──────────────────────────────────────────
+// â”€â”€â”€ Seviye BazlÄ± Avatar Ã‡erÃ§evesi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function FramedAvatar({
   xp,
@@ -52,7 +52,7 @@ function FramedAvatar({
   fallback: string;
   className?: string;
   fallbackClassName?: string;
-  /** Podium gibi özel ring sınıfı kullanmak için */
+  /** Podium gibi Ã¶zel ring sÄ±nÄ±fÄ± kullanmak iÃ§in */
   ringOverride?: string;
 }) {
   const frame = getAvatarFrame(xp);
@@ -99,11 +99,11 @@ function FramedAvatar({
   return avatar;
 }
 
-// ─── Podium Bileşeni (Top 3) ────────────────────────────────────────────────
+// â”€â”€â”€ Podium BileÅŸeni (Top 3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Podium({ entries }: { entries: LeaderboardEntry[] }) {
   const t = useTranslations("common");
-  // Sıralama: 2. | 1. | 3. (görsel podyum düzeni)
+  // SÄ±ralama: 2. | 1. | 3. (gÃ¶rsel podyum dÃ¼zeni)
   const order = [entries[1], entries[0], entries[2]].filter(Boolean) as LeaderboardEntry[];
   const heights = ["h-28", "h-36", "h-24"];
 
@@ -170,7 +170,7 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
   );
 }
 
-// ─── Sıralama Tablosu (4–10) ────────────────────────────────────────────────
+// â”€â”€â”€ SÄ±ralama Tablosu (4â€“10) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
   const t = useTranslations("common");
@@ -228,7 +228,7 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
   );
 }
 
-// ─── Kişisel Panel (altta sabit) ────────────────────────────────────────────
+// â”€â”€â”€ KiÅŸisel Panel (altta sabit) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUsers: number }) {
   const t = useTranslations("common");
@@ -266,7 +266,7 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
   );
 }
 
-// ─── Empty State ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Empty State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function LeaderboardEmpty() {
   const t = useTranslations("leaderboard");
@@ -283,7 +283,7 @@ function LeaderboardEmpty() {
   );
 }
 
-// ─── Ana Bileşen ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Ana BileÅŸen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   data: LeaderboardPayload;

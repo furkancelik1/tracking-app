@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -32,7 +32,7 @@ export function UpgradeBanner({ count, limit }: Props) {
       const res = await fetch("/api/v1/stripe/checkout", { method: "POST" });
       const json = await res.json();
       if (!json.success) {
-        toast.error(json.error ?? "Ödeme başlatılamadı.");
+        toast.error(json.error ?? "Ã–deme baÅŸlatÄ±lamadÄ±.");
         return;
       }
       window.location.href = json.data.url;
@@ -46,20 +46,20 @@ export function UpgradeBanner({ count, limit }: Props) {
       <p className="text-amber-800 dark:text-amber-200">
         {atLimit ? (
           <>
-            <span className="font-semibold">Limit doldu</span> — Ücretsiz planda
-            en fazla {limit} rutin oluşturabilirsin.
+            <span className="font-semibold">Limit doldu</span> â€” Ãœcretsiz planda
+            en fazla {limit} rutin oluÅŸturabilirsin.
           </>
         ) : (
           <>
             <span className="font-semibold">
               {count}/{limit} rutin
             </span>{" "}
-            — Sınırsız rutin için PRO&apos;ya geç.
+            â€” SÄ±nÄ±rsÄ±z rutin iÃ§in PRO&apos;ya geÃ§.
           </>
         )}
       </p>
       <Button size="sm" onClick={handleUpgrade} disabled={loading}>
-        {loading ? "Yönlendiriliyor…" : "PRO'ya Geç"}
+        {loading ? "YÃ¶nlendiriliyorâ€¦" : "PRO'ya GeÃ§"}
       </Button>
     </div>
   );

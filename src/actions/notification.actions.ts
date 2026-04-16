@@ -1,11 +1,11 @@
-"use server";
+﻿"use server";
 
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendRoutineReminderEmail } from "@/lib/mail";
 import { revalidatePath } from "next/cache";
 
-// ─── Bugünkü bekleyen rutinleri çek ──────────────────────────────────────────
+// â”€â”€â”€ BugÃ¼nkÃ¼ bekleyen rutinleri Ã§ek â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function getPendingRoutines(userId: string) {
   const todayStart = new Date();
@@ -34,7 +34,7 @@ async function getPendingRoutines(userId: string) {
     }));
 }
 
-// ─── E-posta Bildirimi Aç/Kapat ───────────────────────────────────────────────
+// â”€â”€â”€ E-posta Bildirimi AÃ§/Kapat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function toggleEmailNotificationsAction(enabled: boolean) {
   const session = await requireAuth();
@@ -46,7 +46,7 @@ export async function toggleEmailNotificationsAction(enabled: boolean) {
   });
 
   if (user?.subscriptionTier !== "PRO") {
-    throw new Error("E-posta hatırlatıcıları yalnızca PRO kullanıcılara özeldir.");
+    throw new Error("E-posta hatÄ±rlatÄ±cÄ±larÄ± yalnÄ±zca PRO kullanÄ±cÄ±lara Ã¶zeldir.");
   }
 
   await prisma.user.update({
@@ -57,7 +57,7 @@ export async function toggleEmailNotificationsAction(enabled: boolean) {
   revalidatePath("/settings");
 }
 
-// ─── Gerçek Hatırlatıcı Gönder (cron / kullanıcı tetiklemeli) ────────────────
+// â”€â”€â”€ GerÃ§ek HatÄ±rlatÄ±cÄ± GÃ¶nder (cron / kullanÄ±cÄ± tetiklemeli) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function sendReminderEmailAction() {
   const session = await requireAuth();
@@ -73,26 +73,26 @@ export async function sendReminderEmailAction() {
     },
   });
 
-  if (!user?.email) throw new Error("Kullanıcı e-postası bulunamadı.");
-  if (user.subscriptionTier !== "PRO") throw new Error("PRO planı gerekli.");
-  if (!user.emailNotificationsEnabled) throw new Error("E-posta bildirimleri kapalı.");
+  if (!user?.email) throw new Error("KullanÄ±cÄ± e-postasÄ± bulunamadÄ±.");
+  if (user.subscriptionTier !== "PRO") throw new Error("PRO planÄ± gerekli.");
+  if (!user.emailNotificationsEnabled) throw new Error("E-posta bildirimleri kapalÄ±.");
 
   const pending = await getPendingRoutines(userId);
 
   if (pending.length === 0) {
-    return { skipped: true, reason: "Tüm rutinler tamamlanmış." };
+    return { skipped: true, reason: "TÃ¼m rutinler tamamlanmÄ±ÅŸ." };
   }
 
   await sendRoutineReminderEmail({
     to: user.email,
-    userName: user.name ?? "Kullanıcı",
+    userName: user.name ?? "KullanÄ±cÄ±",
     pendingRoutines: pending,
   });
 
   return { sent: true };
 }
 
-// ─── Test Maili Gönder (sadece geliştirici kullanımı) ────────────────────────
+// â”€â”€â”€ Test Maili GÃ¶nder (sadece geliÅŸtirici kullanÄ±mÄ±) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const TEST_EMAIL = "furkansteam2022@gmail.com";
 
@@ -107,13 +107,13 @@ export async function sendTestEmailAction() {
 
   const pending = await getPendingRoutines(userId);
 
-  // Test için en az bir rutin göster; gerçekte bekleyen yoksa mock ekle
+  // Test iÃ§in en az bir rutin gÃ¶ster; gerÃ§ekte bekleyen yoksa mock ekle
   const testRoutines =
     pending.length > 0
       ? pending
       : [
           { title: "Test Rutini", currentStreak: 5, color: "#6366f1" },
-          { title: "Sabah Koşusu", currentStreak: 12, color: "#f97316" },
+          { title: "Sabah KoÅŸusu", currentStreak: 12, color: "#f97316" },
         ];
 
   await sendRoutineReminderEmail({

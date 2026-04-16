@@ -1,4 +1,4 @@
-import { createAdminSupabaseClient, REALTIME_CHANNELS } from "@/lib/supabase";
+﻿import { createAdminSupabaseClient, REALTIME_CHANNELS } from "@/lib/supabase";
 
 export type CatalogueEvent = {
   type: "CATALOGUE_UPDATED";
@@ -8,7 +8,7 @@ export type CatalogueEvent = {
 /**
  * Broadcasts a catalogue change to all connected clients.
  * Called after admin CUD operations on cards.
- * Fire-and-forget — never throws.
+ * Fire-and-forget â€” never throws.
  */
 export async function broadcastCatalogueUpdate(
   action: CatalogueEvent["payload"]["action"],

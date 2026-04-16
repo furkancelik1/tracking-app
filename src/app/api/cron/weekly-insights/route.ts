@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendWeeklyInsightEmail } from "@/lib/mail";
 import { generateWeeklyInsightsForProUsers } from "@/actions/ai.actions";
@@ -10,7 +10,7 @@ export const maxDuration = 120;
 
 const EMAIL_BATCH_SIZE = 5;
 
-// ── Timing-safe secret karşılaştırma ─────────────────────────────────────────
+// â”€â”€ Timing-safe secret karÅŸÄ±laÅŸtÄ±rma â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function isValidSecret(token: string, secret: string): boolean {
   if (token.length !== secret.length) return false;
   return timingSafeEqual(Buffer.from(token), Buffer.from(secret));
@@ -23,15 +23,15 @@ function getCurrentWeekKey(): string {
   return `${year}-W${String(week).padStart(2, "0")}`;
 }
 
-// ─── GET /api/cron/weekly-insights ───────────────────────────────────────────
-// Haftada bir kez Pazar günü çalıştırılır.
-// 1) PRO kullanıcılar için AI insight üretir (henüz yoksa).
-// 2) Bildirimleri açık olan PRO kullanıcılara e-posta gönderir.
+// â”€â”€â”€ GET /api/cron/weekly-insights â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Haftada bir kez Pazar gÃ¼nÃ¼ Ã§alÄ±ÅŸtÄ±rÄ±lÄ±r.
+// 1) PRO kullanÄ±cÄ±lar iÃ§in AI insight Ã¼retir (henÃ¼z yoksa).
+// 2) Bildirimleri aÃ§Ä±k olan PRO kullanÄ±cÄ±lara e-posta gÃ¶nderir.
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now();
 
-  // ── 1) Güvenlik ───────────────────────────────────────────────────────────
+  // â”€â”€ 1) GÃ¼venlik â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const cronSecret = process.env.CRON_SECRET;
   const isVercelCron = req.headers.get("x-vercel-cron") === "1";
 
@@ -44,20 +44,20 @@ export async function GET(req: NextRequest) {
     isVercelCron || (!!cronSecret && !!token && isValidSecret(token, cronSecret));
 
   if (!isAuthorized) {
-    console.warn("[weekly-insights] ⛔ Yetkisiz erişim.");
+    console.warn("[weekly-insights] â›” Yetkisiz eriÅŸim.");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const stats = { insightsGenerated: 0, insightsFailed: 0, insightsSkipped: 0, emailSent: 0, emailFailed: 0 };
 
   try {
-    // ── 2) AI Insight Toplu Üretimi ─────────────────────────────────────────
+    // â”€â”€ 2) AI Insight Toplu Ãœretimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const genResult = await generateWeeklyInsightsForProUsers();
     stats.insightsGenerated = genResult.generated;
     stats.insightsFailed = genResult.failed;
     stats.insightsSkipped = genResult.skipped;
 
-    // ── 3) E-posta Gönderimi (PRO + email bildirim açık) ────────────────────
+    // â”€â”€ 3) E-posta GÃ¶nderimi (PRO + email bildirim aÃ§Ä±k) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const weekKey = getCurrentWeekKey();
 
     const usersWithInsights = await prisma.weeklyInsight.findMany({
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
 
     for (let i = 0; i < emailTargets.length; i += EMAIL_BATCH_SIZE) {
       if (Date.now() - startTime > 90_000) {
-        console.warn(`[weekly-insights] ⏱ Timeout — ${i}/${emailTargets.length} e-posta işlendi`);
+        console.warn(`[weekly-insights] â± Timeout â€” ${i}/${emailTargets.length} e-posta iÅŸlendi`);
         break;
       }
 
@@ -109,7 +109,7 @@ export async function GET(req: NextRequest) {
     }
 
     const elapsed = Date.now() - startTime;
-    console.log(`[weekly-insights] ✅ Tamamlandı (${elapsed}ms)`, stats);
+    console.log(`[weekly-insights] âœ… TamamlandÄ± (${elapsed}ms)`, stats);
 
     return NextResponse.json({
       ok: true,
@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
       ...stats,
     });
   } catch (error) {
-    console.error("[weekly-insights] ❌ Beklenmeyen hata:", error);
+    console.error("[weekly-insights] âŒ Beklenmeyen hata:", error);
     return NextResponse.json(
       { error: "Internal server error", ...stats },
       { status: 500 }

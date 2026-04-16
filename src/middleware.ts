@@ -1,4 +1,4 @@
-import createMiddleware from "next-intl/middleware";
+﻿import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
@@ -6,18 +6,18 @@ import { routing } from "@/i18n/routing";
 const intlMiddleware = createMiddleware(routing);
 
 /**
- * MIDDLEWARE — Locale detection + Session kontrolü
+ * MIDDLEWARE â€” Locale detection + Session kontrolÃ¼
  *
- * 1. next-intl locale prefix'ini işler (redirect / rewrite)
- * 2. Korumalı route'lar için session cookie kontrolü yapar
+ * 1. next-intl locale prefix'ini iÅŸler (redirect / rewrite)
+ * 2. KorumalÄ± route'lar iÃ§in session cookie kontrolÃ¼ yapar
  *
- * NextAuth "database" session stratejisi → JWT yok.
- * Middleware sadece hızlı "cookie var mı?" kontrolü yapar.
+ * NextAuth "database" session stratejisi â†’ JWT yok.
+ * Middleware sadece hÄ±zlÄ± "cookie var mÄ±?" kontrolÃ¼ yapar.
  */
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // API ve statik dosyaları atla
+  // API ve statik dosyalarÄ± atla
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
@@ -26,8 +26,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // --- Auth kontrolü ---
-  // Locale prefix'ini çıkarıp asıl path'i bul
+  // --- Auth kontrolÃ¼ ---
+  // Locale prefix'ini Ã§Ä±karÄ±p asÄ±l path'i bul
   const segments = pathname.split("/");
   const locales = routing.locales as readonly string[];
   const pathWithoutLocale =
@@ -66,7 +66,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    // Statik dosyaları, Clerk public route'ları ve PWA varlıklarını middleware'den hariç tut
+    // Statik dosyalarÄ±, Clerk public route'larÄ± ve PWA varlÄ±klarÄ±nÄ± middleware'den hariÃ§ tut
     "/((?!api/cron|api/auth|api/webhook|_next/static|_next/image|favicon\\.ico|sw\\.js|workbox-.*|manifest\\.json|.*\\.png|.*\\.jpg|.*\\.ico|.*\\.svg|sign-in|sign-up).*)",
   ],
 };

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -22,7 +22,7 @@ const MOTTOS = [
 ];
 
 function getDailyMotto(): string {
-  // Deterministic per day — same motto until midnight
+  // Deterministic per day â€” same motto until midnight
   const seed = new Date().toDateString()
     .split("")
     .reduce((acc, c) => acc + c.charCodeAt(0), 0);

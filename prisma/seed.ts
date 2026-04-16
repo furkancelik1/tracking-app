@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+﻿import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,7 @@ const THEMES = [
   },
   {
     name: "Zen Mode Focus",
-    description: "Soft teal — calm clarity for deep work sessions.",
+    description: "Soft teal â€” calm clarity for deep work sessions.",
     price: 350,
     metadata: {
       primary: "#5eead4",
@@ -28,7 +28,7 @@ const THEMES = [
   },
   {
     name: "Ember Overdrive",
-    description: "Aggressive red-orange neon — for warriors who don't stop.",
+    description: "Aggressive red-orange neon â€” for warriors who don't stop.",
     price: 600,
     metadata: {
       primary: "#f97316",
@@ -39,7 +39,7 @@ const THEMES = [
   },
   {
     name: "Arctic Focus",
-    description: "Ice-blue silence — cold clarity, zero distractions.",
+    description: "Ice-blue silence â€” cold clarity, zero distractions.",
     price: 450,
     metadata: {
       primary: "#38bdf8",
@@ -51,7 +51,7 @@ const THEMES = [
   },
   {
     name: "Prestige Gold",
-    description: "Elite golden aura — for those who've earned it.",
+    description: "Elite golden aura â€” for those who've earned it.",
     price: 1000,
     metadata: {
       primary: "#eab308",
@@ -63,7 +63,7 @@ const THEMES = [
   },
   {
     name: "Forest Silence",
-    description: "Soft emerald — breathe deep, move with intention.",
+    description: "Soft emerald â€” breathe deep, move with intention.",
     price: 400,
     metadata: {
       primary: "#34d399",
@@ -91,7 +91,7 @@ async function main() {
           metadata: theme.metadata,
         },
       });
-      console.log(`✓ "${theme.name}" created`);
+      console.log(`âœ“ "${theme.name}" created`);
     } else {
       // Update metadata so pattern/price/description changes propagate
       await prisma.shopItem.update({
@@ -103,11 +103,11 @@ async function main() {
           isActive: true,
         },
       });
-      console.log(`⟳ "${theme.name}" updated`);
+      console.log(`âŸ³ "${theme.name}" updated`);
     }
   }
 
-  console.log("\n✓ Seed complete");
+  console.log("\nâœ“ Seed complete");
 }
 
 main()

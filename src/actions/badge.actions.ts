@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 
 async function requireUser() {
   const session = await getSession();
-  if (!session?.user) throw new Error("Oturum bulunamadı.");
+  if (!session?.user) throw new Error("Oturum bulunamadÄ±.");
   return (session.user as any).id as string;
 }
 
@@ -22,7 +22,7 @@ export type BadgeWithStatus = {
 };
 
 /**
- * Tüm rozetleri getir — kazanılanlar earned:true, diğerleri false.
+ * TÃ¼m rozetleri getir â€” kazanÄ±lanlar earned:true, diÄŸerleri false.
  */
 export async function getAllBadges(): Promise<BadgeWithStatus[]> {
   const userId = await requireUser();
@@ -52,8 +52,8 @@ export async function getAllBadges(): Promise<BadgeWithStatus[]> {
 }
 
 /**
- * Kullanıcının rozetlerini kontrol et ve hak edilenleri ata.
- * Yeni kazanılan rozet adlarını döndür (toast göstermek için).
+ * KullanÄ±cÄ±nÄ±n rozetlerini kontrol et ve hak edilenleri ata.
+ * Yeni kazanÄ±lan rozet adlarÄ±nÄ± dÃ¶ndÃ¼r (toast gÃ¶stermek iÃ§in).
  */
 export async function checkBadges(userId: string): Promise<string[]> {
   const [user, badges, userBadges, totalCompletions, routineCount] =
@@ -75,7 +75,7 @@ export async function checkBadges(userId: string): Promise<string[]> {
 
   const earnedIds = new Set(userBadges.map((ub) => ub.badgeId));
 
-  // En yüksek aktif streak'i bul
+  // En yÃ¼ksek aktif streak'i bul
   const routines = await prisma.routine.findMany({
     where: { userId, isActive: true },
     select: { currentStreak: true, longestStreak: true },
@@ -85,7 +85,7 @@ export async function checkBadges(userId: string): Promise<string[]> {
     0
   );
 
-  // Bugün tüm rutinler tamamlandı mı?
+  // BugÃ¼n tÃ¼m rutinler tamamlandÄ± mÄ±?
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
   const todayLogs = await prisma.routineLog.count({
@@ -93,10 +93,10 @@ export async function checkBadges(userId: string): Promise<string[]> {
   });
   const allDoneToday = routineCount > 0 && todayLogs >= routineCount;
 
-  // Toplam kazanılan coin (xp + coins birlikte yaklaşık = kazanılan toplam coin)
-  // coins alanı harcama sonrası düşer, bu yüzden toplam kazanımı XP'den türetiyoruz
-  // (10 XP = 10 Coin her tamamlamada kazanılıyor)
-  const totalCoinEarned = user.xp; // XP hiç harcanmaz, coin'le 1:1
+  // Toplam kazanÄ±lan coin (xp + coins birlikte yaklaÅŸÄ±k = kazanÄ±lan toplam coin)
+  // coins alanÄ± harcama sonrasÄ± dÃ¼ÅŸer, bu yÃ¼zden toplam kazanÄ±mÄ± XP'den tÃ¼retiyoruz
+  // (10 XP = 10 Coin her tamamlamada kazanÄ±lÄ±yor)
+  const totalCoinEarned = user.xp; // XP hiÃ§ harcanmaz, coin'le 1:1
 
   const newBadges: string[] = [];
 
@@ -122,7 +122,7 @@ export async function checkBadges(userId: string): Promise<string[]> {
         earned = allDoneToday && badge.criteriaValue <= 1;
         break;
       case "TOUR_COMPLETE":
-        // Onboarding tamamlandığında ayrıca atanır
+        // Onboarding tamamlandÄ±ÄŸÄ±nda ayrÄ±ca atanÄ±r
         break;
     }
 
@@ -131,7 +131,7 @@ export async function checkBadges(userId: string): Promise<string[]> {
     }
   }
 
-  // Toplu rozet ataması
+  // Toplu rozet atamasÄ±
   if (newBadges.length > 0) {
     const badgesToCreate = badges
       .filter((b) => newBadges.includes(b.name))
@@ -149,7 +149,7 @@ export async function checkBadges(userId: string): Promise<string[]> {
 }
 
 /**
- * Onboarding tamamlandığında: Explorer rozeti + 50 Coin hediye.
+ * Onboarding tamamlandÄ±ÄŸÄ±nda: Explorer rozeti + 50 Coin hediye.
  */
 export async function completeTour(): Promise<{ newBadges: string[] }> {
   const userId = await requireUser();
@@ -180,7 +180,7 @@ export async function completeTour(): Promise<{ newBadges: string[] }> {
 }
 
 /**
- * Kullanıcının onboarding durumunu kontrol et.
+ * KullanÄ±cÄ±nÄ±n onboarding durumunu kontrol et.
  */
 export async function getOnboardingStatus(): Promise<boolean> {
   const userId = await requireUser();

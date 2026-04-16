@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Share, Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -32,7 +32,7 @@ export function IOSInstallGuide({ open, onOpenChange }: Props) {
     },
     {
       icon: (
-        <span className="text-base font-bold">✓</span>
+        <span className="text-base font-bold">âœ“</span>
       ),
       text: t("step3"),
     },

@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
-  // QueryClient'ın her render'da sıfırdan oluşmasını engellemek için useState içinde tutuyoruz
+  // QueryClient'Ä±n her render'da sÄ±fÄ±rdan oluÅŸmasÄ±nÄ± engellemek iÃ§in useState iÃ§inde tutuyoruz
   const [queryClient] = useState(() => new QueryClient());
 
   return (

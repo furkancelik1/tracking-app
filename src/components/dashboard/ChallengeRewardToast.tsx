@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ export default function ChallengeRewardToast({ rewards }: ChallengeRewardToastPr
   useEffect(() => {
     if (!rewards.length) return;
 
-    // Her ödül için stagger toast göster
+    // Her Ã¶dÃ¼l iÃ§in stagger toast gÃ¶ster
     rewards.forEach((reward, index) => {
       const delay = index * 1200;
 
@@ -32,7 +32,7 @@ export default function ChallengeRewardToast({ rewards }: ChallengeRewardToastPr
           "rewardLoss";
 
         toast(t("challengeRewardTitle"), {
-          description: `${reward.routineTitle} — ${t(messageKey, { xp: reward.xp, coins: reward.coins })}`,
+          description: `${reward.routineTitle} â€” ${t(messageKey, { xp: reward.xp, coins: reward.coins })}`,
           icon,
           duration: 6000,
         });

@@ -1,4 +1,4 @@
-// ─── ZenTrack Notification Templates ──────────────────────────────────────────
+﻿// â”€â”€â”€ ZenTrack Notification Templates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Single source of truth for all push notification copy.
 // Tone: Stoic, direct, minimal. No emojis in body text.
 
@@ -9,7 +9,7 @@ export const NOTIFICATION_BRAND = {
   url: "/dashboard",
 } as const;
 
-// ── Template types ──────────────────────────────────────────────────────────
+// â”€â”€ Template types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type NotificationSlot = "morning" | "midday" | "evening";
 
@@ -22,7 +22,7 @@ type TemplateSet = {
   streakRisk: (days: number) => string;
 };
 
-// ── Templates by locale ─────────────────────────────────────────────────────
+// â”€â”€ Templates by locale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const en: Record<NotificationSlot, TemplateSet> = {
   morning: {
@@ -36,7 +36,7 @@ const en: Record<NotificationSlot, TemplateSet> = {
     streakRisk: (d) => `${d}-day streak at risk. There's still time.`,
   },
   evening: {
-    single: (t) => `"${t}" — last call. Close the day strong.`,
+    single: (t) => `"${t}" â€” last call. Close the day strong.`,
     multiple: (n) => `${n} routines unfinished. The day ends soon.`,
     streakRisk: (d) => `${d}-day streak ends tonight if you don't act.`,
   },
@@ -44,25 +44,25 @@ const en: Record<NotificationSlot, TemplateSet> = {
 
 const tr: Record<NotificationSlot, TemplateSet> = {
   morning: {
-    single: (t) => `"${t}" seni bekliyor. Güne niyetle başla.`,
-    multiple: (n) => `${n} rutin önünde. Disiplinli bir sabah günün tonunu belirler.`,
-    streakRisk: (d) => `${d} günlük seri tehlikede. Zinciri kırma.`,
+    single: (t) => `"${t}" seni bekliyor. GÃ¼ne niyetle baÅŸla.`,
+    multiple: (n) => `${n} rutin Ã¶nÃ¼nde. Disiplinli bir sabah gÃ¼nÃ¼n tonunu belirler.`,
+    streakRisk: (d) => `${d} gÃ¼nlÃ¼k seri tehlikede. Zinciri kÄ±rma.`,
   },
   midday: {
-    single: (t) => `"${t}" hâlâ bekliyor. Öğle kontrolü.`,
-    multiple: (n) => `${n} rutin kaldı. Gün daha bitmedi.`,
-    streakRisk: (d) => `${d} günlük seri risk altında. Hâlâ vakit var.`,
+    single: (t) => `"${t}" hÃ¢lÃ¢ bekliyor. Ã–ÄŸle kontrolÃ¼.`,
+    multiple: (n) => `${n} rutin kaldÄ±. GÃ¼n daha bitmedi.`,
+    streakRisk: (d) => `${d} gÃ¼nlÃ¼k seri risk altÄ±nda. HÃ¢lÃ¢ vakit var.`,
   },
   evening: {
-    single: (t) => `"${t}" — son çağrı. Günü güçlü kapat.`,
-    multiple: (n) => `${n} rutin tamamlanmadı. Gün bitiyor.`,
-    streakRisk: (d) => `${d} günlük seri bu gece sona erer, harekete geç.`,
+    single: (t) => `"${t}" â€” son Ã§aÄŸrÄ±. GÃ¼nÃ¼ gÃ¼Ã§lÃ¼ kapat.`,
+    multiple: (n) => `${n} rutin tamamlanmadÄ±. GÃ¼n bitiyor.`,
+    streakRisk: (d) => `${d} gÃ¼nlÃ¼k seri bu gece sona erer, harekete geÃ§.`,
   },
 };
 
 const templates = { en, tr } as const;
 
-// ── Public API ──────────────────────────────────────────────────────────────
+// â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Locale = "en" | "tr";
 
@@ -106,11 +106,11 @@ export function buildPushPayload(
   };
 }
 
-// ── Test notification ───────────────────────────────────────────────────────
+// â”€â”€ Test notification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function buildTestPayload(locale: Locale) {
   const body = locale === "tr"
-    ? "Push bildirimleri aktif. Her şey yolunda."
+    ? "Push bildirimleri aktif. Her ÅŸey yolunda."
     : "Push notifications active. Everything is working.";
 
   return {

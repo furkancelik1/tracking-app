@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -28,7 +28,7 @@ export function EmailNotificationsToggle({ enabled, isPro }: Props) {
         toast.success(value ? t("enabled") : t("disabled"));
       } catch (err) {
         setChecked(prev); // rollback
-        toast.error(err instanceof Error ? err.message : "İşlem başarısız.");
+        toast.error(err instanceof Error ? err.message : "Ä°ÅŸlem baÅŸarÄ±sÄ±z.");
       }
     });
   }
@@ -57,7 +57,7 @@ export function EmailNotificationsToggle({ enabled, isPro }: Props) {
         checked={isPro ? checked : false}
         onCheckedChange={handleChange}
         disabled={!isPro || isPending}
-        aria-label="E-posta bildirimlerini aç/kapat"
+        aria-label="E-posta bildirimlerini aÃ§/kapat"
       />
     </div>
   );

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button";
 import type { Locale } from "@/i18n/routing";
 
 const LOCALES: { value: Locale; label: string; flag: string }[] = [
-  { value: "en", label: "English", flag: "🇺🇸" },
-  { value: "tr", label: "Türkçe", flag: "🇹🇷" },
+  { value: "en", label: "English", flag: "ğŸ‡ºğŸ‡¸" },
+  { value: "tr", label: "TÃ¼rkÃ§e", flag: "ğŸ‡¹ğŸ‡·" },
 ];
 
 export function LanguageSwitcher() {

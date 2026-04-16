@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+﻿import { Resend } from "resend";
 import * as React from "react";
 import { HabitReminder, type PendingRoutine } from "@/components/emails/HabitReminder";
 import { WeeklyInsightEmail } from "@/components/emails/WeeklyInsightEmail";
@@ -24,8 +24,8 @@ function getEmailTexts(lang: Lang, count: number, firstName: string, atRiskCount
     cta: d.cta,
     footerText: d.footer,
     unsubscribe: d.unsubscribe,
-    dayUnit: lang === "tr" ? "gün" : "days",
-    copyright: `© ${new Date().getFullYear()} ${dictionaries[lang]?.common?.appName ?? "Zenith"}`,
+    dayUnit: lang === "tr" ? "gÃ¼n" : "days",
+    copyright: `Â© ${new Date().getFullYear()} ${dictionaries[lang]?.common?.appName ?? "Zenith"}`,
   };
 }
 
@@ -37,11 +37,11 @@ function getFromName(lang: Lang) {
 
 function getSubject(lang: Lang, count: number) {
   return lang === "tr"
-    ? `🔥 ${count} rutinin bugün seni bekliyor!`
-    : `🔥 ${count} routines are waiting for you today!`;
+    ? `ğŸ”¥ ${count} rutinin bugÃ¼n seni bekliyor!`
+    : `ğŸ”¥ ${count} routines are waiting for you today!`;
 }
 
-// ─── Rutin Hatırlatıcı ────────────────────────────────────────────────────────
+// â”€â”€â”€ Rutin HatÄ±rlatÄ±cÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function sendRoutineReminderEmail({
   to,
@@ -79,7 +79,7 @@ export async function sendRoutineReminderEmail({
   }
 }
 
-// ─── Haftalık AI Insight E-postası ────────────────────────────────────────────
+// â”€â”€â”€ HaftalÄ±k AI Insight E-postasÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function sendWeeklyInsightEmail({
   to,
@@ -97,14 +97,14 @@ export async function sendWeeklyInsightEmail({
   const d = (dictionaries[lang] as any)?.aiInsight ?? (dictionaries.en as any).aiInsight;
 
   const texts = {
-    badge: "🧠 AI Coach",
+    badge: "ğŸ§  AI Coach",
     headerTitle: d.emailTitle,
     greeting: d.emailGreeting.replace("{name}", firstName),
     intro: d.emailIntro,
     cta: d.emailCta,
     footerText: d.emailFooter,
     unsubscribe: dictionaries[lang]?.email?.reminder?.unsubscribe ?? "Unsubscribe",
-    copyright: `© ${new Date().getFullYear()} ${dictionaries[lang]?.common?.appName ?? "Zenith"}`,
+    copyright: `Â© ${new Date().getFullYear()} ${dictionaries[lang]?.common?.appName ?? "Zenith"}`,
   };
 
   const subject = d.emailSubject;

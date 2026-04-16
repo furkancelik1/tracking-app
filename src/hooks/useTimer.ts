@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
@@ -6,12 +6,12 @@ type TimerState = {
   secondsLeft: number;
   isExpired: boolean;
   formatted: string; // "2h 15m 30s"
-  progress: number;  // 0–1, percentage elapsed (for progress bars)
+  progress: number;  // 0â€“1, percentage elapsed (for progress bars)
 };
 
 type UseTimerOptions = {
   nextResetAt: Date | string | null | undefined;
-  totalDuration?: number; // seconds — used to calculate progress
+  totalDuration?: number; // seconds â€” used to calculate progress
   onExpire?: () => void;
 };
 
@@ -37,7 +37,7 @@ export function useTimer({
 
   const computeState = useCallback((): TimerState => {
     if (!nextResetAt) {
-      return { secondsLeft: 0, isExpired: false, formatted: "—", progress: 0 };
+      return { secondsLeft: 0, isExpired: false, formatted: "â€”", progress: 0 };
     }
 
     const target = new Date(nextResetAt).getTime();
@@ -82,7 +82,7 @@ export function useTimer({
   return state;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function formatSeconds(total: number): string {
   if (total <= 0) return "0s";

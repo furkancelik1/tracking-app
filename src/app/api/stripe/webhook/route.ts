@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { handleStripeWebhook } from "@/services/stripe.service";
 
@@ -10,10 +10,10 @@ const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? "";
  * Stripe sends events here. Must:
  *  - Read the RAW body (not parsed JSON) to verify the signature
  *  - Verify with stripe.webhooks.constructEvent()
- *  - Respond 200 quickly — heavy work runs synchronously but should be fast
+ *  - Respond 200 quickly â€” heavy work runs synchronously but should be fast
  *
  * This route is intentionally OUTSIDE /api/v1 (no auth middleware,
- * no CORS headers — Stripe uses its own signature verification).
+ * no CORS headers â€” Stripe uses its own signature verification).
  */
 export async function POST(req: Request) {
   const rawBody = await req.text();

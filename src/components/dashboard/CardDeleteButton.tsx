@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -71,7 +71,7 @@ export function CardDeleteButton({ id, title }: Props) {
               onClick={handleDelete}
               disabled={deleting}
             >
-              {deleting ? "Deleting…" : "Delete"}
+              {deleting ? "Deletingâ€¦" : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

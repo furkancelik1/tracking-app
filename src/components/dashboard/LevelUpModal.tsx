@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,7 +22,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
     if (!open) return;
     const t = setTimeout(onClose, 4000);
 
-    // Minimalist neon confetti patlaması
+    // Minimalist neon confetti patlamasÄ±
     confetti({
       particleCount: 55,
       spread: 70,
@@ -41,7 +41,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
   return (
     <AnimatePresence>
       {open && (
-        // Full-screen positioner — pointer-events: none so the rest of the UI stays interactive
+        // Full-screen positioner â€” pointer-events: none so the rest of the UI stays interactive
         <motion.div
           className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
           initial={{ opacity: 0 }}
@@ -88,7 +88,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
                   animate={{ rotate: [0, 10, -10, 8, -6, 0] }}
                   transition={{ duration: 0.8, delay: 0.15 }}
                 >
-                  🌟
+                  ğŸŒŸ
                 </motion.div>
 
                 {/* "LEVEL UP" label */}
@@ -126,7 +126,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
                 <p className="text-[10px] text-muted-foreground/40 pt-1">tap to dismiss</p>
               </div>
 
-              {/* Bottom progress bar — drains over 4 s to signal auto-dismiss */}
+              {/* Bottom progress bar â€” drains over 4 s to signal auto-dismiss */}
               <motion.div
                 className="absolute bottom-0 left-0 h-[2px] rounded-b-2xl"
                 style={{ backgroundColor: rankColor }}

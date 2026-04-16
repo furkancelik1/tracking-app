@@ -1,10 +1,10 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { sendPushToUserAction } from "@/actions/push.actions";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type FriendEntry = {
   id: string;
@@ -35,7 +35,7 @@ export type UserSearchResult = {
   friendshipStatus: "NONE" | "PENDING" | "ACCEPTED" | "INCOMING";
 };
 
-// ─── Kullanıcı Arama ────────────────────────────────────────────────────────
+// â”€â”€â”€ KullanÄ±cÄ± Arama â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function searchUsersAction(
   query: string
@@ -62,7 +62,7 @@ export async function searchUsersAction(
     orderBy: { xp: "desc" },
   });
 
-  // Mevcut friendship durumlarını kontrol et
+  // Mevcut friendship durumlarÄ±nÄ± kontrol et
   const friendships = await prisma.friendship.findMany({
     where: {
       OR: [
@@ -89,7 +89,7 @@ export async function searchUsersAction(
   }));
 }
 
-// ─── Takip Et ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Takip Et â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function followUserAction(targetId: string) {
   const session = await requireAuth();
@@ -97,7 +97,7 @@ export async function followUserAction(targetId: string) {
 
   if (userId === targetId) throw new Error("Cannot follow yourself");
 
-  // Duplikat kontrolü
+  // Duplikat kontrolÃ¼
   const existing = await prisma.friendship.findUnique({
     where: { followerId_followingId: { followerId: userId, followingId: targetId } },
   });
@@ -108,9 +108,9 @@ export async function followUserAction(targetId: string) {
     include: { follower: { select: { name: true } } },
   });
 
-  // Push bildirim gönder
+  // Push bildirim gÃ¶nder
   await sendPushToUserAction(targetId, {
-    title: "Yeni Takipçi! 👥",
+    title: "Yeni TakipÃ§i! ğŸ‘¥",
     body: `${friendship.follower.name ?? "Birisi"} seni takip etmek istiyor.`,
     url: "/leaderboard",
     tag: `follow-${userId}`,
@@ -119,7 +119,7 @@ export async function followUserAction(targetId: string) {
   return { status: friendship.status };
 }
 
-// ─── Takip İsteği Onayla ─────────────────────────────────────────────────────
+// â”€â”€â”€ Takip Ä°steÄŸi Onayla â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function acceptFollowAction(friendshipId: string) {
   const session = await requireAuth();
@@ -131,10 +131,10 @@ export async function acceptFollowAction(friendshipId: string) {
     include: { following: { select: { name: true } } },
   });
 
-  // Karşıdakine bildirim
+  // KarÅŸÄ±dakine bildirim
   await sendPushToUserAction(friendship.followerId, {
-    title: "Takip Onaylandı! ✅",
-    body: `${friendship.following.name ?? "Kullanıcı"} takip isteğini kabul etti.`,
+    title: "Takip OnaylandÄ±! âœ…",
+    body: `${friendship.following.name ?? "KullanÄ±cÄ±"} takip isteÄŸini kabul etti.`,
     url: "/leaderboard",
     tag: `accept-${userId}`,
   }).catch(() => {});
@@ -142,7 +142,7 @@ export async function acceptFollowAction(friendshipId: string) {
   return { success: true };
 }
 
-// ─── Takip İsteği Reddet ────────────────────────────────────────────────────
+// â”€â”€â”€ Takip Ä°steÄŸi Reddet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function rejectFollowAction(friendshipId: string) {
   const session = await requireAuth();
@@ -155,7 +155,7 @@ export async function rejectFollowAction(friendshipId: string) {
   return { success: true };
 }
 
-// ─── Takibi Bırak ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Takibi BÄ±rak â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function unfollowAction(targetId: string) {
   const session = await requireAuth();
@@ -173,7 +173,7 @@ export async function unfollowAction(targetId: string) {
   return { success: true };
 }
 
-// ─── Arkadaş Listesi ─────────────────────────────────────────────────────────
+// â”€â”€â”€ ArkadaÅŸ Listesi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getFriendsAction(): Promise<FriendEntry[]> {
   const session = await requireAuth();
@@ -233,7 +233,7 @@ export async function getFriendsAction(): Promise<FriendEntry[]> {
   });
 }
 
-// ─── Bekleyen Takip İstekleri ────────────────────────────────────────────────
+// â”€â”€â”€ Bekleyen Takip Ä°stekleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getPendingRequestsAction(): Promise<FriendRequest[]> {
   const session = await requireAuth();
@@ -256,7 +256,7 @@ export async function getPendingRequestsAction(): Promise<FriendRequest[]> {
   }));
 }
 
-// ─── Takipçilerim (beni takip edenler) ───────────────────────────────────────
+// â”€â”€â”€ TakipÃ§ilerim (beni takip edenler) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getFollowersAction(): Promise<FriendEntry[]> {
   const session = await requireAuth();
@@ -295,7 +295,7 @@ export async function getFollowersAction(): Promise<FriendEntry[]> {
   }));
 }
 
-// ─── Takip Ettiklerim ────────────────────────────────────────────────────────
+// â”€â”€â”€ Takip Ettiklerim â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getFollowingAction(): Promise<FriendEntry[]> {
   const session = await requireAuth();
@@ -334,7 +334,7 @@ export async function getFollowingAction(): Promise<FriendEntry[]> {
   }));
 }
 
-// ─── Arkadaş Leaderboard ────────────────────────────────────────────────────
+// â”€â”€â”€ ArkadaÅŸ Leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getFriendsLeaderboardAction() {
   const session = await requireAuth();

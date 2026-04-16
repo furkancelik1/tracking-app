@@ -1,7 +1,7 @@
-import { toPng } from "html-to-image";
+﻿import { toPng } from "html-to-image";
 
 /**
- * DOM elemanını PNG'ye dönüştürüp indirir.
+ * DOM elemanÄ±nÄ± PNG'ye dÃ¶nÃ¼ÅŸtÃ¼rÃ¼p indirir.
  */
 export async function downloadShareCard(
   node: HTMLElement,
@@ -19,7 +19,7 @@ export async function downloadShareCard(
 }
 
 /**
- * DOM elemanını PNG Blob'a çevirir (native share için).
+ * DOM elemanÄ±nÄ± PNG Blob'a Ã§evirir (native share iÃ§in).
  */
 export async function shareCardToBlob(node: HTMLElement): Promise<Blob> {
   const dataUrl = await toPng(node, {
@@ -32,7 +32,7 @@ export async function shareCardToBlob(node: HTMLElement): Promise<Blob> {
 }
 
 /**
- * Web Share API ile PNG paylaşır. Desteklenmiyorsa false döner.
+ * Web Share API ile PNG paylaÅŸÄ±r. Desteklenmiyorsa false dÃ¶ner.
  */
 export async function nativeShareImage(
   blob: Blob,

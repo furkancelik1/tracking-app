@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,9 @@ export function TestEmailButton() {
     setLoading(true);
     try {
       const result = await sendTestEmailAction();
-      toast.success(`Test maili gönderildi → ${result.to}`);
+      toast.success(`Test maili gÃ¶nderildi â†’ ${result.to}`);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Mail gönderilemedi.");
+      toast.error(err instanceof Error ? err.message : "Mail gÃ¶nderilemedi.");
     } finally {
       setLoading(false);
     }
@@ -24,9 +24,9 @@ export function TestEmailButton() {
   return (
     <div className="flex items-center gap-3 rounded-xl border bg-muted/40 px-4 py-3">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">Test E-postası</p>
+        <p className="text-sm font-medium">Test E-postasÄ±</p>
         <p className="text-xs text-muted-foreground mt-0.5">
-          furkansteam2022@gmail.com adresine örnek hatırlatma maili gönderir.
+          furkansteam2022@gmail.com adresine Ã¶rnek hatÄ±rlatma maili gÃ¶nderir.
         </p>
       </div>
       <Button
@@ -37,7 +37,7 @@ export function TestEmailButton() {
         className="shrink-0 gap-1.5"
       >
         <Mail size={14} />
-        {loading ? "Gönderiliyor…" : "Test Gönder"}
+        {loading ? "GÃ¶nderiliyorâ€¦" : "Test GÃ¶nder"}
       </Button>
     </div>
   );

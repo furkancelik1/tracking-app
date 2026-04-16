@@ -1,4 +1,4 @@
-import type { SubscriptionTier } from "@/lib/stripe";
+﻿import type { SubscriptionTier } from "@/lib/stripe";
 import type { DefaultSession } from "next-auth";
 
 declare module "next-auth" {

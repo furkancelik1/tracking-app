@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -52,12 +52,12 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
       const res = await fetch("/api/v1/stripe/checkout", { method: "POST" });
       const json = await res.json();
       if (!json.success) {
-        toast.error(json.error ?? "Checkout başlatılamadı.");
+        toast.error(json.error ?? "Checkout baÅŸlatÄ±lamadÄ±.");
         return;
       }
       window.location.href = json.data.url;
     } catch {
-      toast.error("Checkout başlatılırken bir hata oluştu.");
+      toast.error("Checkout baÅŸlatÄ±lÄ±rken bir hata oluÅŸtu.");
     }
   }
 
@@ -92,7 +92,7 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {/* Önizleme: seçilen ikon + renk */}
+            {/* Ã–nizleme: seÃ§ilen ikon + renk */}
             <span
               className="size-7 rounded-lg flex items-center justify-center shrink-0"
               style={{ backgroundColor: color + "22", color }}

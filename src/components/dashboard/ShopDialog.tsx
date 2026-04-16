@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
@@ -71,7 +71,7 @@ export function ShopDialog({ open, onOpenChange }: Props) {
           )
         );
         toast.success(t("purchaseSuccess"));
-        // Navbar coin göstergesini güncelle
+        // Navbar coin gÃ¶stergesini gÃ¼ncelle
         window.dispatchEvent(new CustomEvent("coins-updated"));
       } else if (result.message === "NOT_ENOUGH_COINS") {
         toast.error(t("notEnoughCoins"));
@@ -107,7 +107,7 @@ export function ShopDialog({ open, onOpenChange }: Props) {
 
         <Separator />
 
-        {/* Ürün listesi */}
+        {/* ÃœrÃ¼n listesi */}
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -124,7 +124,7 @@ export function ShopDialog({ open, onOpenChange }: Props) {
                 key={item.id}
                 className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/50"
               >
-                {/* İkon */}
+                {/* Ä°kon */}
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-accent/60">
                   {ITEM_ICONS[item.type] ?? <Package className="h-8 w-8 text-muted-foreground" />}
                 </div>
@@ -144,7 +144,7 @@ export function ShopDialog({ open, onOpenChange }: Props) {
                   </p>
                 </div>
 
-                {/* Fiyat & satın al */}
+                {/* Fiyat & satÄ±n al */}
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <div className="flex items-center gap-1 text-sm font-semibold text-yellow-600 dark:text-yellow-400">
                     <Coins className="h-3.5 w-3.5" />

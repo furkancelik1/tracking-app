@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -77,7 +77,7 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
         toast.success(t("downloaded"));
       }
     } catch (err) {
-      // AbortError means the user cancelled the share dialog — not an error
+      // AbortError means the user cancelled the share dialog â€” not an error
       if (err instanceof Error && err.name === "AbortError") return;
       toast.error(t("downloadError"));
     } finally {
@@ -115,7 +115,7 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
             className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none overflow-y-auto"
           >
             <div className="pointer-events-auto w-full max-w-2xl flex flex-col gap-4 my-auto">
-              {/* Üst bar: Layout toggle + Kapat */}
+              {/* Ãœst bar: Layout toggle + Kapat */}
               <div className="flex items-center justify-between">
                 {/* Layout Toggle */}
                 <div className="flex items-center gap-1 rounded-full bg-white/10 p-1">
@@ -151,7 +151,7 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
                 </button>
               </div>
 
-              {/* Kart Önizleme — ölçeklenmiş */}
+              {/* Kart Ã–nizleme â€” Ã¶lÃ§eklenmiÅŸ */}
               <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-indigo-500/20 ring-1 ring-white/10">
                 <div
                   style={{
@@ -163,14 +163,14 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
                 >
                   <ShareCard ref={cardRef} {...cardProps} layout={layout} />
                 </div>
-                {/* Ölçeklenmiş boyuta uygun container */}
+                {/* Ã–lÃ§eklenmiÅŸ boyuta uygun container */}
                 <div
                   style={{ paddingBottom: `${(previewH / previewW) * scale * 100}%` }}
                   className="pointer-events-none"
                 />
               </div>
 
-              {/* Aksiyon butonları */}
+              {/* Aksiyon butonlarÄ± */}
               <div className="flex items-center justify-center gap-3">
                 <Button
                   onClick={handleDownload}

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
@@ -6,14 +6,14 @@ import { getSession } from "@/lib/auth";
 import { sendPushToUserAction } from "@/actions/push.actions";
 import { randomBytes } from "crypto";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DUEL_DURATION_MS = 24 * 60 * 60 * 1000; // 24 saat
 const MIN_STAKE = 10;
 const MAX_STAKE = 500;
 const MAX_ACTIVE_DUELS = 3;
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type DuelEntry = {
   id: string;
@@ -48,7 +48,7 @@ export type DuelMessageEntry = {
   createdAt: string;
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function mapDuel(
   d: any,
@@ -105,7 +105,7 @@ const DUEL_SELECT = {
   opponent: { select: { id: true, name: true, image: true, xp: true } },
 } as const;
 
-// ─── 1. Düello Teklifi Oluştur ──────────────────────────────────────────────
+// â”€â”€â”€ 1. DÃ¼ello Teklifi OluÅŸtur â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function createDuelInvitation(input: {
   opponentId: string;
@@ -117,22 +117,22 @@ export async function createDuelInvitation(input: {
 
   const { opponentId, stake } = input;
 
-  // Kendine düello yapılamaz
+  // Kendine dÃ¼ello yapÄ±lamaz
   if (userId === opponentId) {
     return { success: false, error: "SELF_DUEL" };
   }
 
-  // Stake sınır kontrolü
+  // Stake sÄ±nÄ±r kontrolÃ¼
   if (stake < MIN_STAKE || stake > MAX_STAKE) {
     return { success: false, error: "INVALID_STAKE" };
   }
 
-  // Tamsayı kontrolü
+  // TamsayÄ± kontrolÃ¼
   if (!Number.isInteger(stake)) {
     return { success: false, error: "INVALID_STAKE" };
   }
 
-  // Arkadaşlık kontrolü
+  // ArkadaÅŸlÄ±k kontrolÃ¼
   const friendship = await prisma.friendship.findFirst({
     where: {
       status: "ACCEPTED",
@@ -147,7 +147,7 @@ export async function createDuelInvitation(input: {
     return { success: false, error: "NOT_FRIENDS" };
   }
 
-  // Aktif düello limiti
+  // Aktif dÃ¼ello limiti
   const activeDuelCount = await prisma.duel.count({
     where: {
       OR: [{ challengerId: userId }, { opponentId: userId }],
@@ -159,7 +159,7 @@ export async function createDuelInvitation(input: {
     return { success: false, error: "MAX_DUELS" };
   }
 
-  // Coin bakiyesi kontrolü — transaction
+  // Coin bakiyesi kontrolÃ¼ â€” transaction
   const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.findUnique({
       where: { id: userId },
@@ -170,13 +170,13 @@ export async function createDuelInvitation(input: {
       return { success: false as const, error: "INSUFFICIENT_COINS" };
     }
 
-    // Altını dondur (düşür)
+    // AltÄ±nÄ± dondur (dÃ¼ÅŸÃ¼r)
     await tx.user.update({
       where: { id: userId },
       data: { coins: { decrement: stake } },
     });
 
-    // Düello oluştur
+    // DÃ¼ello oluÅŸtur
     const duel = await tx.duel.create({
       data: {
         challengerId: userId,
@@ -195,8 +195,8 @@ export async function createDuelInvitation(input: {
 
   // Push bildirim (hata sessizce yutulur)
   await sendPushToUserAction(opponentId, {
-    title: "Disiplin Düellosu! ⚔️",
-    body: `${userName ?? "Birisi"} sana ${stake} altınlık bir düello teklif etti!`,
+    title: "Disiplin DÃ¼ellosu! âš”ï¸",
+    body: `${userName ?? "Birisi"} sana ${stake} altÄ±nlÄ±k bir dÃ¼ello teklif etti!`,
     url: "/social",
     tag: `duel-invite-${result.duelId}`,
   }).catch(() => {});
@@ -204,7 +204,7 @@ export async function createDuelInvitation(input: {
   return result;
 }
 
-// ─── 2. Düello Teklifine Yanıt Ver ──────────────────────────────────────────
+// â”€â”€â”€ 2. DÃ¼ello Teklifine YanÄ±t Ver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function respondToDuel(input: {
   duelId: string;
@@ -233,7 +233,7 @@ export async function respondToDuel(input: {
     if (duel.status !== "PENDING") return { success: false as const, error: "NOT_PENDING" };
 
     if (!accept) {
-      // Reddetme — altını challenger'a iade et
+      // Reddetme â€” altÄ±nÄ± challenger'a iade et
       await tx.duel.update({
         where: { id: duelId },
         data: { status: "DECLINED" },
@@ -247,7 +247,7 @@ export async function respondToDuel(input: {
       return { success: true as const, challengerId: duel.challengerId };
     }
 
-    // Kabul — rakibin coin bakiyesi kontrolü
+    // Kabul â€” rakibin coin bakiyesi kontrolÃ¼
     const opponent = await tx.user.findUnique({
       where: { id: userId },
       select: { coins: true },
@@ -257,7 +257,7 @@ export async function respondToDuel(input: {
       return { success: false as const, error: "INSUFFICIENT_COINS" };
     }
 
-    // Rakibin altınını dondur
+    // Rakibin altÄ±nÄ±nÄ± dondur
     await tx.user.update({
       where: { id: userId },
       data: { coins: { decrement: duel.stake } },
@@ -275,7 +275,7 @@ export async function respondToDuel(input: {
       },
     });
 
-    // Her iki kullanıcının currentDuelId'sini güncelle
+    // Her iki kullanÄ±cÄ±nÄ±n currentDuelId'sini gÃ¼ncelle
     await tx.user.update({ where: { id: userId }, data: { currentDuelId: duelId } });
     await tx.user.update({ where: { id: duel.challengerId }, data: { currentDuelId: duelId } });
 
@@ -287,11 +287,11 @@ export async function respondToDuel(input: {
   // Push bildirim
   const pushTarget = accept ? (result as any).challengerId : (result as any).challengerId;
   const pushBody = accept
-    ? `${userName ?? "Rakibin"} düellonu kabul etti! Savaş başladı! ⚔️`
-    : `${userName ?? "Rakibin"} düellonu reddetti.`;
+    ? `${userName ?? "Rakibin"} dÃ¼ellonu kabul etti! SavaÅŸ baÅŸladÄ±! âš”ï¸`
+    : `${userName ?? "Rakibin"} dÃ¼ellonu reddetti.`;
 
   await sendPushToUserAction(pushTarget, {
-    title: accept ? "Düello Başladı! 🔥" : "Düello Reddedildi",
+    title: accept ? "DÃ¼ello BaÅŸladÄ±! ğŸ”¥" : "DÃ¼ello Reddedildi",
     body: pushBody,
     url: "/social",
     tag: `duel-response-${duelId}`,
@@ -300,12 +300,12 @@ export async function respondToDuel(input: {
   return { success: true };
 }
 
-// ─── 3. Düello Skoru Güncelle (Rutin tamamlandığında çağrılır) ───────────────
+// â”€â”€â”€ 3. DÃ¼ello Skoru GÃ¼ncelle (Rutin tamamlandÄ±ÄŸÄ±nda Ã§aÄŸrÄ±lÄ±r) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function updateDuelScore(
   userId: string
 ): Promise<{ updated: boolean; opponentName: string | null }> {
-  // Aktif düelloları bul
+  // Aktif dÃ¼ellolarÄ± bul
   const activeDuels = await prisma.duel.findMany({
     where: {
       status: "ACTIVE",
@@ -331,7 +331,7 @@ export async function updateDuelScore(
       where: { id: duel.id },
       data: { [field]: { increment: 1 } },
     });
-    // İlk düellodaki rakip ismini al
+    // Ä°lk dÃ¼ellodaki rakip ismini al
     if (!opponentName) {
       opponentName =
         duel.challengerId === userId
@@ -343,14 +343,14 @@ export async function updateDuelScore(
   return { updated: true, opponentName };
 }
 
-// ─── 4. Düello Durumu Kontrol & Finalize ─────────────────────────────────────
+// â”€â”€â”€ 4. DÃ¼ello Durumu Kontrol & Finalize â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function checkAndFinalizeDuels(
   userId: string
 ): Promise<DuelResult[]> {
   const results: DuelResult[] = [];
 
-  // Süresi dolmuş ama henüz FINISHED olmayan düelloları bul
+  // SÃ¼resi dolmuÅŸ ama henÃ¼z FINISHED olmayan dÃ¼ellolarÄ± bul
   const expiredDuels = await prisma.duel.findMany({
     where: {
       status: "ACTIVE",
@@ -361,7 +361,7 @@ export async function checkAndFinalizeDuels(
 
   for (const duel of expiredDuels) {
     const result = await prisma.$transaction(async (tx) => {
-      // Tekrar kontrol (race-condition güvenliği)
+      // Tekrar kontrol (race-condition gÃ¼venliÄŸi)
       const fresh = await tx.duel.findUnique({
         where: { id: duel.id },
       });
@@ -376,10 +376,10 @@ export async function checkAndFinalizeDuels(
       } else if (fresh.opponentScore > fresh.challengerScore) {
         winnerId = fresh.opponentId;
       }
-      // Eşitlik → draw
+      // EÅŸitlik â†’ draw
 
       if (winnerId) {
-        // Kazanan potu alır
+        // Kazanan potu alÄ±r
         await tx.user.update({
           where: { id: winnerId },
           data: { coins: { increment: totalPot } },
@@ -387,7 +387,7 @@ export async function checkAndFinalizeDuels(
 
         outcome = winnerId === userId ? "win" : "loss";
       } else {
-        // Berabere — herkes altınını geri alır
+        // Berabere â€” herkes altÄ±nÄ±nÄ± geri alÄ±r
         await tx.user.update({
           where: { id: fresh.challengerId },
           data: { coins: { increment: fresh.stake } },
@@ -399,13 +399,13 @@ export async function checkAndFinalizeDuels(
         outcome = "draw";
       }
 
-      // Düelloyu kapat
+      // DÃ¼elloyu kapat
       await tx.duel.update({
         where: { id: duel.id },
         data: { status: "FINISHED", winnerId },
       });
 
-      // Ephemeral: Sohbet mesajlarını temizle
+      // Ephemeral: Sohbet mesajlarÄ±nÄ± temizle
       await tx.duelMessage.deleteMany({ where: { duelId: duel.id } });
 
       // currentDuelId temizle
@@ -424,7 +424,7 @@ export async function checkAndFinalizeDuels(
     if (result) results.push(result);
   }
 
-  // Süresi dolmuş PENDING düelloları expire et (24 saat geçmiş)
+  // SÃ¼resi dolmuÅŸ PENDING dÃ¼ellolarÄ± expire et (24 saat geÃ§miÅŸ)
   const staleThreshold = new Date(Date.now() - DUEL_DURATION_MS);
   const stalePending = await prisma.duel.findMany({
     where: {
@@ -444,7 +444,7 @@ export async function checkAndFinalizeDuels(
         data: { status: "EXPIRED" },
       });
 
-      // Challenger'a altını iade et
+      // Challenger'a altÄ±nÄ± iade et
       await tx.user.update({
         where: { id: fresh.challengerId },
         data: { coins: { increment: fresh.stake } },
@@ -455,7 +455,7 @@ export async function checkAndFinalizeDuels(
   return results;
 }
 
-// ─── 5. Düelloları Getir ─────────────────────────────────────────────────────
+// â”€â”€â”€ 5. DÃ¼ellolarÄ± Getir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getDuelsAction(): Promise<DuelEntry[]> {
   const session = await getSession();
@@ -474,7 +474,7 @@ export async function getDuelsAction(): Promise<DuelEntry[]> {
   return duels.map((d) => mapDuel(d, userId));
 }
 
-// ─── 6. Aktif Düello Getir (Arena için) ──────────────────────────────────────
+// â”€â”€â”€ 6. Aktif DÃ¼ello Getir (Arena iÃ§in) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getActiveDuelAction(): Promise<DuelEntry | null> {
   const session = await getSession();
@@ -495,10 +495,10 @@ export async function getActiveDuelAction(): Promise<DuelEntry | null> {
   return mapDuel(duel, userId);
 }
 
-// ─── 7. Özel Düello Oluştur (Private Duel) ──────────────────────────────────
+// â”€â”€â”€ 7. Ã–zel DÃ¼ello OluÅŸtur (Private Duel) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function generateInviteCode(): string {
-  return randomBytes(4).toString("hex").toUpperCase(); // 8 karakter, örn: "A3F1B2C4"
+  return randomBytes(4).toString("hex").toUpperCase(); // 8 karakter, Ã¶rn: "A3F1B2C4"
 }
 
 export async function createPrivateDuel(input: {
@@ -508,12 +508,12 @@ export async function createPrivateDuel(input: {
   const userId = (session.user as any).id as string;
   const { stake } = input;
 
-  // Stake sınır kontrolü
+  // Stake sÄ±nÄ±r kontrolÃ¼
   if (!Number.isInteger(stake) || stake < MIN_STAKE || stake > MAX_STAKE) {
     return { success: false, error: "INVALID_STAKE" };
   }
 
-  // Aktif düello limiti
+  // Aktif dÃ¼ello limiti
   const activeDuelCount = await prisma.duel.count({
     where: {
       OR: [{ challengerId: userId }, { opponentId: userId }],
@@ -525,7 +525,7 @@ export async function createPrivateDuel(input: {
     return { success: false, error: "MAX_DUELS" };
   }
 
-  // Benzersiz inviteCode üret (collision-safe)
+  // Benzersiz inviteCode Ã¼ret (collision-safe)
   let inviteCode = generateInviteCode();
   let attempts = 0;
   while (attempts < 5) {
@@ -545,13 +545,13 @@ export async function createPrivateDuel(input: {
       return { success: false as const, error: "INSUFFICIENT_COINS" };
     }
 
-    // Altını dondur
+    // AltÄ±nÄ± dondur
     await tx.user.update({
       where: { id: userId },
       data: { coins: { decrement: stake } },
     });
 
-    // Özel düello oluştur (opponent yok henüz)
+    // Ã–zel dÃ¼ello oluÅŸtur (opponent yok henÃ¼z)
     const duel = await tx.duel.create({
       data: {
         challengerId: userId,
@@ -568,7 +568,7 @@ export async function createPrivateDuel(input: {
   return result;
 }
 
-// ─── 8. Davet Koduyla Düelloya Katıl ────────────────────────────────────────
+// â”€â”€â”€ 8. Davet Koduyla DÃ¼elloya KatÄ±l â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function joinDuelByCode(input: {
   inviteCode: string;
@@ -607,12 +607,12 @@ export async function joinDuelByCode(input: {
       return { success: false as const, error: "ALREADY_JOINED" };
     }
 
-    // Kendine düello yapılamaz
+    // Kendine dÃ¼ello yapÄ±lamaz
     if (duel.challengerId === userId) {
       return { success: false as const, error: "SELF_DUEL" };
     }
 
-    // Arkadaşlık kontrolü
+    // ArkadaÅŸlÄ±k kontrolÃ¼
     const friendship = await tx.friendship.findFirst({
       where: {
         status: "ACCEPTED",
@@ -627,7 +627,7 @@ export async function joinDuelByCode(input: {
       return { success: false as const, error: "NOT_FRIENDS" };
     }
 
-    // Aktif düello limiti
+    // Aktif dÃ¼ello limiti
     const activeDuelCount = await tx.duel.count({
       where: {
         OR: [{ challengerId: userId }, { opponentId: userId }],
@@ -639,7 +639,7 @@ export async function joinDuelByCode(input: {
       return { success: false as const, error: "MAX_DUELS" };
     }
 
-    // Coin bakiyesi kontrolü
+    // Coin bakiyesi kontrolÃ¼
     const user = await tx.user.findUnique({
       where: { id: userId },
       select: { coins: true },
@@ -649,7 +649,7 @@ export async function joinDuelByCode(input: {
       return { success: false as const, error: "INSUFFICIENT_COINS" };
     }
 
-    // Rakibin altınını dondur
+    // Rakibin altÄ±nÄ±nÄ± dondur
     await tx.user.update({
       where: { id: userId },
       data: { coins: { decrement: duel.stake } },
@@ -658,7 +658,7 @@ export async function joinDuelByCode(input: {
     const now = new Date();
     const endTime = new Date(now.getTime() + DUEL_DURATION_MS);
 
-    // Düelloyu aktifleştir
+    // DÃ¼elloyu aktifleÅŸtir
     await tx.duel.update({
       where: { id: duel.id },
       data: {
@@ -669,7 +669,7 @@ export async function joinDuelByCode(input: {
       },
     });
 
-    // Her iki kullanıcının currentDuelId'sini güncelle
+    // Her iki kullanÄ±cÄ±nÄ±n currentDuelId'sini gÃ¼ncelle
     await tx.user.update({ where: { id: userId }, data: { currentDuelId: duel.id } });
     await tx.user.update({ where: { id: duel.challengerId }, data: { currentDuelId: duel.id } });
 
@@ -681,8 +681,8 @@ export async function joinDuelByCode(input: {
   // Challenger'a push bildirim
   const challengerId = (result as any).challengerId;
   await sendPushToUserAction(challengerId, {
-    title: "Düello Kabul Edildi! 🔥",
-    body: `${userName ?? "Birisi"} özel düellona katıldı! Savaş başladı! ⚔️`,
+    title: "DÃ¼ello Kabul Edildi! ğŸ”¥",
+    body: `${userName ?? "Birisi"} Ã¶zel dÃ¼ellona katÄ±ldÄ±! SavaÅŸ baÅŸladÄ±! âš”ï¸`,
     url: "/social",
     tag: `duel-joined-${(result as any).duelId}`,
   }).catch(() => {});
@@ -690,7 +690,7 @@ export async function joinDuelByCode(input: {
   return { success: true, duelId: (result as any).duelId };
 }
 
-// ─── 9. Düello Kazananını Hesapla ────────────────────────────────────────────
+// â”€â”€â”€ 9. DÃ¼ello KazananÄ±nÄ± Hesapla â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function calculateDuelWinner(
   duelId: string
@@ -703,7 +703,7 @@ export async function calculateDuelWinner(
     if (!duel || duel.status !== "ACTIVE") return null;
     if (!duel.opponentId) return null;
 
-    // Süre dolmamışsa hesaplama yapma
+    // SÃ¼re dolmamÄ±ÅŸsa hesaplama yapma
     if (duel.endTime && new Date(duel.endTime).getTime() > Date.now()) {
       return null;
     }
@@ -723,7 +723,7 @@ export async function calculateDuelWinner(
         data: { coins: { increment: totalPot } },
       });
     } else {
-      // Berabere — altınları iade et
+      // Berabere â€” altÄ±nlarÄ± iade et
       await tx.user.update({
         where: { id: duel.challengerId },
         data: { coins: { increment: duel.stake } },
@@ -739,7 +739,7 @@ export async function calculateDuelWinner(
       data: { status: "FINISHED", winnerId },
     });
 
-    // Ephemeral: Sohbet mesajlarını temizle
+    // Ephemeral: Sohbet mesajlarÄ±nÄ± temizle
     await tx.duelMessage.deleteMany({ where: { duelId } });
 
     await tx.user.updateMany({
@@ -759,7 +759,7 @@ export async function calculateDuelWinner(
   return result;
 }
 
-// ─── 10. Bekleyen Özel Düelloyu Getir ────────────────────────────────────────
+// â”€â”€â”€ 10. Bekleyen Ã–zel DÃ¼elloyu Getir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getPendingPrivateDuel(): Promise<DuelEntry | null> {
   const session = await getSession();
@@ -781,7 +781,7 @@ export async function getPendingPrivateDuel(): Promise<DuelEntry | null> {
   return mapDuel(duel, userId);
 }
 
-// ─── 11. Düello Mesajlarını Getir ────────────────────────────────────────────
+// â”€â”€â”€ 11. DÃ¼ello MesajlarÄ±nÄ± Getir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const MESSAGE_LIMIT = 50;
 
@@ -792,7 +792,7 @@ export async function getDuelMessages(input: {
   const userId = (session?.user as any)?.id as string | undefined;
   if (!userId) return [];
 
-  // Kullanıcı bu düelloda taraf mı kontrol et
+  // KullanÄ±cÄ± bu dÃ¼elloda taraf mÄ± kontrol et
   const duel = await prisma.duel.findFirst({
     where: {
       id: input.duelId,
@@ -826,7 +826,7 @@ export async function getDuelMessages(input: {
   }));
 }
 
-// ─── 12. Düello Mesajı Gönder ────────────────────────────────────────────────
+// â”€â”€â”€ 12. DÃ¼ello MesajÄ± GÃ¶nder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const MAX_MESSAGE_LENGTH = 200;
 const COOLDOWN_SECONDS = 3;
@@ -839,20 +839,20 @@ export async function sendDuelMessage(input: {
   const session = await requireAuth();
   const userId = (session.user as any).id as string;
 
-  // Mesaj uzunluk kontrolü
+  // Mesaj uzunluk kontrolÃ¼
   const content = input.content.trim();
   if (!content || content.length > MAX_MESSAGE_LENGTH) {
     return { success: false, error: "INVALID_MESSAGE" };
   }
 
-  // Cooldown kontrolü (kullanıcı bazlı)
+  // Cooldown kontrolÃ¼ (kullanÄ±cÄ± bazlÄ±)
   const cooldownKey = `${userId}:${input.duelId}`;
   const lastSent = _lastMessageTime.get(cooldownKey) ?? 0;
   if (Date.now() - lastSent < COOLDOWN_SECONDS * 1000) {
     return { success: false, error: "COOLDOWN" };
   }
 
-  // Düello aktif mi ve kullanıcı taraf mı kontrol et
+  // DÃ¼ello aktif mi ve kullanÄ±cÄ± taraf mÄ± kontrol et
   const duel = await prisma.duel.findFirst({
     where: {
       id: input.duelId,

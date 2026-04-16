@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Swords } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -9,14 +9,14 @@ import type { FriendEntry } from "@/actions/social.actions";
 import { ChallengeCard } from "@/components/dashboard/ChallengeCard";
 import { ChallengeInviteDialog } from "@/components/dashboard/ChallengeInviteDialog";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   challenges: ChallengeEntry[];
   friends: FriendEntry[];
 };
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function ActiveChallenges({ challenges, friends }: Props) {
   const t = useTranslations("challenges");

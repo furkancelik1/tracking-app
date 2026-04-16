@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
@@ -55,7 +55,7 @@ export function DashboardNav() {
     if (auth.status === "authenticated") refreshCoins();
   }, [auth.status, refreshCoins]);
 
-  // Coin değişikliklerini dinle (onboarding, shop, rutin tamamlama vb.)
+  // Coin deÄŸiÅŸikliklerini dinle (onboarding, shop, rutin tamamlama vb.)
   useEffect(() => {
     const handler = () => refreshCoins();
     window.addEventListener("coins-updated", handler);
@@ -78,7 +78,7 @@ export function DashboardNav() {
       <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2 group select-none">
-          {/* Mountain icon — cropped from logo.png (top-center portion) */}
+          {/* Mountain icon â€” cropped from logo.png (top-center portion) */}
           <div className="relative h-8 w-8 overflow-hidden shrink-0 transition-transform duration-200 group-hover:scale-105">
             <Image
               src="/images/logo.png"
@@ -95,7 +95,7 @@ export function DashboardNav() {
           </span>
         </Link>
 
-        {/* Nav links — hidden on mobile, BottomNav handles it */}
+        {/* Nav links â€” hidden on mobile, BottomNav handles it */}
         <nav className="hidden md:flex items-center gap-1">
           {NAV_KEYS.map((item) => (
             <Link
@@ -124,7 +124,7 @@ export function DashboardNav() {
           >
             <Coins className="h-4 w-4" />
             <span className="text-sm font-semibold tabular-nums" suppressHydrationWarning>
-              {coins !== null ? coins.toLocaleString("en-US") : "—"}
+              {coins !== null ? coins.toLocaleString("en-US") : "â€”"}
             </span>
           </Button>
           {/* Badge gallery */}

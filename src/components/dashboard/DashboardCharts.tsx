@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
-import {from "react";
+import React from "react";
 
 import dynamic from "next/dynamic";
 
-// ── ssr:false — "use client" wrapper zorunlu, Server Component'te ssr:false yasak ──
+// â”€â”€ ssr:false â€” "use client" wrapper zorunlu, Server Component'te ssr:false yasak â”€â”€
 
 const DailyDisciplineGauge = dynamic(
   () =>

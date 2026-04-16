@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -78,7 +78,7 @@ export function BadgeCelebration({ badgeName, onDone }: Props) {
                 className="text-[11px] font-semibold uppercase tracking-widest"
                 style={{ color: NEON }}
               >
-                Rozet Kazandın!
+                Rozet KazandÄ±n!
               </motion.p>
               <motion.p
                 initial={{ opacity: 0, y: 8 }}

@@ -1,12 +1,12 @@
-/**
+﻿/**
  * xp-logic.ts
  *
  * Public API for XP / Level / Rank calculations.
- * All core logic lives in `./level.ts` — this file is the canonical import point
+ * All core logic lives in `./level.ts` â€” this file is the canonical import point
  * referenced throughout the app (routine actions, marketplace gating, UI components).
  */
 
-// ─── Re-export level engine ──────────────────────────────────────────────────
+// â”€â”€â”€ Re-export level engine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export {
   calculateLevel,
@@ -17,7 +17,7 @@ export {
   type AvatarFrameConfig,
 } from "./level";
 
-// ─── XP & Coin reward constants ──────────────────────────────────────────────
+// â”€â”€â”€ XP & Coin reward constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** XP awarded for each routine completion. */
 export const XP_PER_COMPLETION = 10;
@@ -31,7 +31,7 @@ export const COINS_PER_COMPLETION = 10;
 /** Bonus coins for the "all done" achievement. */
 export const COINS_ALL_DONE_BONUS = 50;
 
-// ─── Marketplace level gate helper ──────────────────────────────────────────
+// â”€â”€â”€ Marketplace level gate helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Returns true if the user's current XP satisfies the item's minimum level

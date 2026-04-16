@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -122,7 +122,7 @@ export function CardForm({ card }: Props) {
         <textarea
           {...register("description")}
           rows={2}
-          placeholder="One or two sentences about this action…"
+          placeholder="One or two sentences about this actionâ€¦"
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
         />
       </Field>
@@ -136,7 +136,7 @@ export function CardForm({ card }: Props) {
         <textarea
           {...register("content")}
           rows={6}
-          placeholder="## Instructions&#10;&#10;Write detailed content here…"
+          placeholder="## Instructions&#10;&#10;Write detailed content hereâ€¦"
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
         />
       </Field>
@@ -267,8 +267,8 @@ export function CardForm({ card }: Props) {
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting
             ? isEditing
-              ? "Saving…"
-              : "Creating…"
+              ? "Savingâ€¦"
+              : "Creatingâ€¦"
             : isEditing
               ? "Save Changes"
               : "Create Card"}

@@ -1,10 +1,10 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { subDays, format, eachDayOfInterval, getDay } from "date-fns";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type DisciplineTrendStatus = "fire" | "good" | "low" | "miss";
 
@@ -13,7 +13,7 @@ export type DisciplineTrendPoint = {
   date: string;      // "2026-04-06"
   completed: number;
   total: number;
-  score: number;     // 0-100 tamamlanma yüzdesi
+  score: number;     // 0-100 tamamlanma yÃ¼zdesi
   status: DisciplineTrendStatus;
 };
 
@@ -24,7 +24,7 @@ function resolveStatus(score: number): DisciplineTrendStatus {
   return "miss";
 }
 
-// ─── Gün Detay Türleri ──────────────────────────────────────────────────────
+// â”€â”€â”€ GÃ¼n Detay TÃ¼rleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type DayRoutineDetail = {
   id: string;
@@ -47,17 +47,17 @@ export type DisciplineTrendData = {
   weekKey: string;
   avgScore: number;
   trend: "up" | "down" | "stable";
-  streakDays: number;        // kaç gün üst üste ≥ %50
+  streakDays: number;        // kaÃ§ gÃ¼n Ã¼st Ã¼ste â‰¥ %50
   biggestDrop: { from: string; to: string; delta: number } | null;
   biggestSurge: { from: string; to: string; delta: number } | null;
 };
 
-// ─── Gün Adları ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ GÃ¼n AdlarÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const SHORT_DAYS_TR = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+const SHORT_DAYS_TR = ["Paz", "Pzt", "Sal", "Ã‡ar", "Per", "Cum", "Cmt"];
 const SHORT_DAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// ─── Hafta Anahtarı (AI ile aynı) ───────────────────────────────────────────
+// â”€â”€â”€ Hafta AnahtarÄ± (AI ile aynÄ±) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { getISOWeek, getISOWeekYear } from "date-fns";
 
@@ -68,7 +68,7 @@ function getCurrentWeekKey(): string {
   return `${year}-W${String(week).padStart(2, "0")}`;
 }
 
-// ─── Ana Action ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Ana Action â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getDisciplineTrend(
   locale?: string
@@ -125,7 +125,7 @@ export async function getDisciplineTrend(
       ? Math.round(points.reduce((s, p) => s + p.score, 0) / points.length)
       : 0;
 
-  // Trend: ilk yarı vs ikinci yarı
+  // Trend: ilk yarÄ± vs ikinci yarÄ±
   const mid = Math.floor(points.length / 2);
   const firstHalf = points.slice(0, mid);
   const secondHalf = points.slice(mid);
@@ -141,14 +141,14 @@ export async function getDisciplineTrend(
   const trend: "up" | "down" | "stable" =
     diff > 10 ? "up" : diff < -10 ? "down" : "stable";
 
-  // Üst üste ≥%50 gün sayısı (sondan başlayarak)
+  // Ãœst Ã¼ste â‰¥%50 gÃ¼n sayÄ±sÄ± (sondan baÅŸlayarak)
   let streakDays = 0;
   for (let i = points.length - 1; i >= 0; i--) {
     if (points[i]!.score >= 50) streakDays++;
     else break;
   }
 
-  // En büyük düşüş ve artış (ardışık günler arası)
+  // En bÃ¼yÃ¼k dÃ¼ÅŸÃ¼ÅŸ ve artÄ±ÅŸ (ardÄ±ÅŸÄ±k gÃ¼nler arasÄ±)
   let biggestDrop: DisciplineTrendData["biggestDrop"] = null;
   let biggestSurge: DisciplineTrendData["biggestSurge"] = null;
 
@@ -181,7 +181,7 @@ export async function getDisciplineTrend(
   };
 }
 
-// ─── Gün Detay Action ───────────────────────────────────────────────────────
+// â”€â”€â”€ GÃ¼n Detay Action â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getDayDetail(
   date: string,
@@ -219,14 +219,14 @@ export async function getDayDetail(
     routines: routines.map((r) => ({
       id: r.id,
       title: r.title,
-      emoji: r.emoji ?? "📋",
+      emoji: r.emoji ?? "ğŸ“‹",
       category: r.category,
       completed: completedIds.has(r.id),
     })),
   };
 }
 
-// ─── Bugünkü Disiplin Skoru ─────────────────────────────────────────────────
+// â”€â”€â”€ BugÃ¼nkÃ¼ Disiplin Skoru â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type TodayDisciplineScore = {
   completed: number;

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -10,7 +10,7 @@ import {
   type NotificationSlot,
 } from "@/constants/notifications";
 
-// ─── Push Aboneliğini Kaydet ─────────────────────────────────────────────────
+// â”€â”€â”€ Push AboneliÄŸini Kaydet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface PushSubscriptionData {
   endpoint: string;
@@ -43,7 +43,7 @@ export async function subscribePushAction(subscription: PushSubscriptionData) {
   return { success: true };
 }
 
-// ─── Push Aboneliğini Sil ────────────────────────────────────────────────────
+// â”€â”€â”€ Push AboneliÄŸini Sil â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function unsubscribePushAction(endpoint: string) {
   const session = await requireAuth();
@@ -57,7 +57,7 @@ export async function unsubscribePushAction(endpoint: string) {
   return { success: true };
 }
 
-// ─── Tek Kullanıcıya Push Bildirim Gönder ────────────────────────────────────
+// â”€â”€â”€ Tek KullanÄ±cÄ±ya Push Bildirim GÃ¶nder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface PushPayload {
   title: string;
@@ -89,7 +89,7 @@ export async function sendPushToUserAction(userId: string, payload: PushPayload)
       );
       sent++;
     } catch (error: any) {
-      // 410 Gone veya 404 — abonelik artık geçersiz, sil
+      // 410 Gone veya 404 â€” abonelik artÄ±k geÃ§ersiz, sil
       if (error.statusCode === 410 || error.statusCode === 404) {
         await prisma.pushSubscription.delete({ where: { id: sub.id } });
       }
@@ -99,7 +99,7 @@ export async function sendPushToUserAction(userId: string, payload: PushPayload)
   return { sent };
 }
 
-// ─── Test Push Bildirim Gönder (kendine) ─────────────────────────────────────
+// â”€â”€â”€ Test Push Bildirim GÃ¶nder (kendine) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function sendTestPushAction() {
   const session = await requireAuth();
@@ -116,13 +116,13 @@ export async function sendTestPushAction() {
   const result = await sendPushToUserAction(userId, payload);
 
   if (result.sent === 0) {
-    throw new Error("Push aboneliği bulunamadı. Lütfen önce bildirimlere izin verin.");
+    throw new Error("Push aboneliÄŸi bulunamadÄ±. LÃ¼tfen Ã¶nce bildirimlere izin verin.");
   }
 
   return result;
 }
 
-// ─── Bekleyen Rutinler İçin Push Gönder ──────────────────────────────────────
+// â”€â”€â”€ Bekleyen Rutinler Ä°Ã§in Push GÃ¶nder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function sendRoutineReminderPushAction(
   userId: string,

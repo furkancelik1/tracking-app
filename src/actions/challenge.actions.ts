@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
@@ -7,7 +7,7 @@ import { sendPushToUserAction } from "@/actions/push.actions";
 import { getISOWeek, getISOWeekYear } from "date-fns";
 import { unstable_cache } from "next/cache";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type ChallengeEntry = {
   id: string;
@@ -34,7 +34,7 @@ export type ChallengeRewardResult = {
   coins: number;
 };
 
-// ─── Düello Gönder ──────────────────────────────────────────────────────────
+// â”€â”€â”€ DÃ¼ello GÃ¶nder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function sendChallengeAction(input: {
   opponentId: string;
@@ -46,7 +46,7 @@ export async function sendChallengeAction(input: {
 
   if (userId === input.opponentId) throw new Error("Cannot challenge yourself");
 
-  // Arkadaş kontrolü
+  // ArkadaÅŸ kontrolÃ¼
   const friendship = await prisma.friendship.findFirst({
     where: {
       status: "ACCEPTED",
@@ -58,7 +58,7 @@ export async function sendChallengeAction(input: {
   });
   if (!friendship) throw new Error("You can only challenge friends");
 
-  // Aktif düello limiti (max 3)
+  // Aktif dÃ¼ello limiti (max 3)
   const activeCount = await prisma.challenge.count({
     where: {
       status: { in: ["PENDING", "ACTIVE"] },
@@ -79,8 +79,8 @@ export async function sendChallengeAction(input: {
 
   // Push bildirim
   await sendPushToUserAction(input.opponentId, {
-    title: "Düello Daveti! ⚔️",
-    body: `${challenge.challenger.name ?? "Birisi"} sana "${input.routineTitle}" üzerinden ${input.durationDays} günlük düello gönderdi!`,
+    title: "DÃ¼ello Daveti! âš”ï¸",
+    body: `${challenge.challenger.name ?? "Birisi"} sana "${input.routineTitle}" Ã¼zerinden ${input.durationDays} gÃ¼nlÃ¼k dÃ¼ello gÃ¶nderdi!`,
     url: "/leaderboard",
     tag: `challenge-${challenge.id}`,
   }).catch(() => {});
@@ -88,7 +88,7 @@ export async function sendChallengeAction(input: {
   return { id: challenge.id };
 }
 
-// ─── Düello Kabul Et ────────────────────────────────────────────────────────
+// â”€â”€â”€ DÃ¼ello Kabul Et â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function acceptChallengeAction(challengeId: string) {
   const session = await requireAuth();
@@ -111,8 +111,8 @@ export async function acceptChallengeAction(challengeId: string) {
 
   // Push bildirim challengera
   await sendPushToUserAction(challenge.challengerId, {
-    title: "Düello Başladı! 🔥",
-    body: `${updated.opponent.name ?? "Rakibin"} düellonu kabul etti! "${challenge.routineTitle}" başlıyor.`,
+    title: "DÃ¼ello BaÅŸladÄ±! ğŸ”¥",
+    body: `${updated.opponent.name ?? "Rakibin"} dÃ¼ellonu kabul etti! "${challenge.routineTitle}" baÅŸlÄ±yor.`,
     url: "/leaderboard",
     tag: `challenge-start-${challengeId}`,
   }).catch(() => {});
@@ -120,7 +120,7 @@ export async function acceptChallengeAction(challengeId: string) {
   return { success: true };
 }
 
-// ─── Düello Reddet ──────────────────────────────────────────────────────────
+// â”€â”€â”€ DÃ¼ello Reddet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function declineChallengeAction(challengeId: string) {
   const session = await requireAuth();
@@ -134,7 +134,7 @@ export async function declineChallengeAction(challengeId: string) {
   return { success: true };
 }
 
-// ─── Günlük Check-in ────────────────────────────────────────────────────────
+// â”€â”€â”€ GÃ¼nlÃ¼k Check-in â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function challengeCheckInAction(challengeId: string) {
   const session = await requireAuth();
@@ -152,7 +152,7 @@ export async function challengeCheckInAction(challengeId: string) {
     throw new Error("Challenge has ended");
   }
 
-  // Bugün zaten check-in yaptı mı?
+  // BugÃ¼n zaten check-in yaptÄ± mÄ±?
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
   const todayEnd = new Date(todayStart);
@@ -174,7 +174,7 @@ export async function challengeCheckInAction(challengeId: string) {
   return { alreadyCheckedIn: false };
 }
 
-// ─── Aktif/Bekleyen Düelloları Getir ─────────────────────────────────────────
+// â”€â”€â”€ Aktif/Bekleyen DÃ¼ellolarÄ± Getir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getChallengesAction(): Promise<ChallengeEntry[]> {
   const session = await requireAuth();
@@ -220,7 +220,7 @@ export async function getChallengesAction(): Promise<ChallengeEntry[]> {
   });
 }
 
-// ─── Tamamlanan Düelloları Getir ─────────────────────────────────────────────
+// â”€â”€â”€ Tamamlanan DÃ¼ellolarÄ± Getir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getCompletedChallengesAction(): Promise<ChallengeEntry[]> {
   const session = await requireAuth();
@@ -262,20 +262,20 @@ export async function getCompletedChallengesAction(): Promise<ChallengeEntry[]> 
   });
 }
 
-// ─── Ödül Sabitleri ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Ã–dÃ¼l Sabitleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const REWARD_WIN   = { xp: 100, coins: 50 } as const;
 const REWARD_DRAW  = { xp: 40,  coins: 20 } as const;
 const REWARD_LOSS  = { xp: 10,  coins: 0  } as const;
 
-// ─── Biten Düelloları Finalize Et & Ödül Dağıt ──────────────────────────────
+// â”€â”€â”€ Biten DÃ¼ellolarÄ± Finalize Et & Ã–dÃ¼l DaÄŸÄ±t â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Süresi dolmuş ACTIVE düelloları bulur, skorları karşılaştırır,
- * kazanan/berabere belirler, atomik transaction ile XP/Coin dağıtır,
- * challenge'ı COMPLETED + rewardDistributed olarak işaretler.
+ * SÃ¼resi dolmuÅŸ ACTIVE dÃ¼ellolarÄ± bulur, skorlarÄ± karÅŸÄ±laÅŸtÄ±rÄ±r,
+ * kazanan/berabere belirler, atomik transaction ile XP/Coin daÄŸÄ±tÄ±r,
+ * challenge'Ä± COMPLETED + rewardDistributed olarak iÅŸaretler.
  *
- * Kullanıcının kazandığı ödülleri ChallengeRewardResult[] olarak döner.
+ * KullanÄ±cÄ±nÄ±n kazandÄ±ÄŸÄ± Ã¶dÃ¼lleri ChallengeRewardResult[] olarak dÃ¶ner.
  */
 export async function distributeChallengeRewards(
   userId: string
@@ -283,7 +283,7 @@ export async function distributeChallengeRewards(
   const now = new Date();
   const rewards: ChallengeRewardResult[] = [];
 
-  // 1) Süresi dolmuş, henüz ödül dağıtılmamış ACTIVE düellolar
+  // 1) SÃ¼resi dolmuÅŸ, henÃ¼z Ã¶dÃ¼l daÄŸÄ±tÄ±lmamÄ±ÅŸ ACTIVE dÃ¼ellolar
   const expired = await prisma.challenge.findMany({
     where: {
       status: "ACTIVE",
@@ -312,18 +312,18 @@ export async function distributeChallengeRewards(
     }
 
     try {
-      // Atomik transaction: durum + ödüller aynı anda
+      // Atomik transaction: durum + Ã¶dÃ¼ller aynÄ± anda
       await prisma.$transaction(async (tx) => {
-        // Double-spending koruması: tekrar kontrol
+        // Double-spending korumasÄ±: tekrar kontrol
         const fresh = await tx.challenge.findUnique({
           where: { id: c.id },
           select: { rewardDistributed: true, status: true },
         });
         if (!fresh || fresh.rewardDistributed || fresh.status === "COMPLETED") {
-          return; // Zaten ödül dağıtılmış
+          return; // Zaten Ã¶dÃ¼l daÄŸÄ±tÄ±lmÄ±ÅŸ
         }
 
-        // Challenge'ı güncelle
+        // Challenge'Ä± gÃ¼ncelle
         await tx.challenge.update({
           where: { id: c.id },
           data: {
@@ -349,7 +349,7 @@ export async function distributeChallengeRewards(
             where: { id: winnerId! },
             data: { xp: { increment: REWARD_WIN.xp }, coins: { increment: REWARD_WIN.coins } },
           });
-          // Kaybeden: 10 XP teselli ödülü
+          // Kaybeden: 10 XP teselli Ã¶dÃ¼lÃ¼
           await tx.user.update({
             where: { id: loserId! },
             data: { xp: { increment: REWARD_LOSS.xp } },
@@ -357,7 +357,7 @@ export async function distributeChallengeRewards(
         }
       });
 
-      // Kullanıcı için sonuç belirle
+      // KullanÄ±cÄ± iÃ§in sonuÃ§ belirle
       const isUserChallenger = c.challengerId === userId;
       const userWon = winnerId === userId;
       const outcome: "win" | "loss" | "draw" = isDraw
@@ -389,8 +389,8 @@ export async function distributeChallengeRewards(
         // Berabere bildirim her iki tarafa
         for (const uid of [c.challengerId, c.opponentId]) {
           await sendPushToUserAction(uid, {
-            title: "Düello Berabere! 🤝",
-            body: `"${c.routineTitle}" düellosu berabere bitti. +${REWARD_DRAW.xp} XP, +${REWARD_DRAW.coins} Coin`,
+            title: "DÃ¼ello Berabere! ğŸ¤",
+            body: `"${c.routineTitle}" dÃ¼ellosu berabere bitti. +${REWARD_DRAW.xp} XP, +${REWARD_DRAW.coins} Coin`,
             url: "/social",
             tag: `challenge-draw-${c.id}`,
           }).catch(() => {});
@@ -398,26 +398,26 @@ export async function distributeChallengeRewards(
       } else {
         // Kazanana bildirim
         await sendPushToUserAction(winnerId!, {
-          title: "Düello Kazandın! 🏆",
-          body: `"${c.routineTitle}" düellosunu kazandın! +${REWARD_WIN.xp} XP, +${REWARD_WIN.coins} Coin`,
+          title: "DÃ¼ello KazandÄ±n! ğŸ†",
+          body: `"${c.routineTitle}" dÃ¼ellosunu kazandÄ±n! +${REWARD_WIN.xp} XP, +${REWARD_WIN.coins} Coin`,
           url: "/social",
           tag: `challenge-win-${c.id}`,
         }).catch(() => {});
         // Kaybedene bildirim
         await sendPushToUserAction(loserId!, {
-          title: "Düello Bitti ⚔️",
-          body: `"${c.routineTitle}" düellosunu ${winnerName ?? "Rakip"} kazandı. +${REWARD_LOSS.xp} XP teselli ödülü`,
+          title: "DÃ¼ello Bitti âš”ï¸",
+          body: `"${c.routineTitle}" dÃ¼ellosunu ${winnerName ?? "Rakip"} kazandÄ±. +${REWARD_LOSS.xp} XP teselli Ã¶dÃ¼lÃ¼`,
           url: "/social",
           tag: `challenge-loss-${c.id}`,
         }).catch(() => {});
       }
     } catch (error) {
       console.error(`[distributeChallengeRewards] Challenge ${c.id} error:`, error);
-      // Hatalı challenge'ı atla, diğerlerine devam et
+      // HatalÄ± challenge'Ä± atla, diÄŸerlerine devam et
     }
   }
 
-  // Süresi dolmuş PENDING olanları expire et (3 gün yanıt yok)
+  // SÃ¼resi dolmuÅŸ PENDING olanlarÄ± expire et (3 gÃ¼n yanÄ±t yok)
   const stale = new Date(now);
   stale.setDate(stale.getDate() - 3);
 
@@ -429,7 +429,7 @@ export async function distributeChallengeRewards(
   return rewards;
 }
 
-// ─── Eski uyumluluk wrapper'ı ────────────────────────────────────────────────
+// â”€â”€â”€ Eski uyumluluk wrapper'Ä± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function finalizeExpiredChallengesAction() {
   const session = await requireAuth();
@@ -437,11 +437,11 @@ export async function finalizeExpiredChallengesAction() {
   return distributeChallengeRewards(userId);
 }
 
-// ─── Rutin Tamamlandığında Düello Skorunu Güncelle ───────────────────────────
+// â”€â”€â”€ Rutin TamamlandÄ±ÄŸÄ±nda DÃ¼ello Skorunu GÃ¼ncelle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Bir kullanıcı rutin tamamladığında, eğer aynı rutin başlığına sahip
- * aktif bir düellosu varsa otomatik olarak check-in yapılır.
+ * Bir kullanÄ±cÄ± rutin tamamladÄ±ÄŸÄ±nda, eÄŸer aynÄ± rutin baÅŸlÄ±ÄŸÄ±na sahip
+ * aktif bir dÃ¼ellosu varsa otomatik olarak check-in yapÄ±lÄ±r.
  */
 export async function updateChallengeScoresFromLog(
   userId: string,
@@ -465,7 +465,7 @@ export async function updateChallengeScoresFromLog(
   todayEnd.setUTCDate(todayEnd.getUTCDate() + 1);
 
   for (const challenge of activeChallenges) {
-    // Bugün zaten check-in yaptı mı?
+    // BugÃ¼n zaten check-in yaptÄ± mÄ±?
     const existing = await prisma.challengeLog.findFirst({
       where: {
         challengeId: challenge.id,
@@ -479,22 +479,22 @@ export async function updateChallengeScoresFromLog(
       data: { challengeId: challenge.id, userId },
     });
 
-    // Rakibe bildirim gönder
+    // Rakibe bildirim gÃ¶nder
     const opponentId =
       challenge.challengerId === userId
         ? challenge.opponentId
         : challenge.challengerId;
 
     await sendPushToUserAction(opponentId, {
-      title: "Düello Güncellemesi ⚔️",
-      body: `Rakibin "${challenge.routineTitle}" rutinini tamamladı!`,
+      title: "DÃ¼ello GÃ¼ncellemesi âš”ï¸",
+      body: `Rakibin "${challenge.routineTitle}" rutinini tamamladÄ±!`,
       url: "/social",
       tag: `challenge-score-${challenge.id}`,
     }).catch(() => {});
   }
 }
 
-// ─── Challenge Leaderboard Types ─────────────────────────────────────────────
+// â”€â”€â”€ Challenge Leaderboard Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type ChallengeLeaderboardEntry = {
   rank: number;
@@ -518,7 +518,7 @@ export type ChallengeLeaderboardPayload = {
   weekKey: string;
 };
 
-// ─── Challenge Leaderboard Action ────────────────────────────────────────────
+// â”€â”€â”€ Challenge Leaderboard Action â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getCurrentWeekKey(): string {
   const now = new Date();
@@ -527,7 +527,7 @@ function getCurrentWeekKey(): string {
   return `${year}-W${String(week).padStart(2, "0")}`;
 }
 
-// ─── Cached leaderboard data (shared across users, revalidates every hour) ──
+// â”€â”€â”€ Cached leaderboard data (shared across users, revalidates every hour) â”€â”€
 
 const getCachedLeaderboardData = unstable_cache(
   async (weekKey: string) => {
@@ -598,13 +598,13 @@ export async function getChallengeLeaderboard(): Promise<ChallengeLeaderboardPay
 
   const cached = await getCachedLeaderboardData(weekKey);
 
-  // Kullanıcı bilgilerini ekle
+  // KullanÄ±cÄ± bilgilerini ekle
   const entries: ChallengeLeaderboardEntry[] = cached.map((e) => ({
     ...e,
     isCurrentUser: e.id === currentUserId,
   }));
 
-  // Kullanıcı listede yoksa ayrı çek
+  // KullanÄ±cÄ± listede yoksa ayrÄ± Ã§ek
   let currentUser: ChallengeLeaderboardEntry | null = null;
 
   if (currentUserId && !entries.some((e) => e.isCurrentUser)) {

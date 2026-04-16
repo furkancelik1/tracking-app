@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
@@ -25,21 +25,21 @@ type Props = {
 };
 
 const TR_MONTHS = [
-  "Oca", "Şub", "Mar", "Nis", "May", "Haz",
-  "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara",
+  "Oca", "Åub", "Mar", "Nis", "May", "Haz",
+  "Tem", "AÄŸu", "Eyl", "Eki", "Kas", "Ara",
 ];
-const TR_DAYS_SHORT = ["Pzt", "Çar", "Cum"];
+const TR_DAYS_SHORT = ["Pzt", "Ã‡ar", "Cum"];
 
-// ── Türkçe gün adları (0=Pazar … 6=Cumartesi) ──────────────────────────────
+// â”€â”€ TÃ¼rkÃ§e gÃ¼n adlarÄ± (0=Pazar â€¦ 6=Cumartesi) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const TR_DAY_NAMES = [
-  "Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi",
+  "Pazar", "Pazartesi", "SalÄ±", "Ã‡arÅŸamba", "PerÅŸembe", "Cuma", "Cumartesi",
 ];
 const TR_MONTH_NAMES = [
-  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
+  "Ocak", "Åubat", "Mart", "Nisan", "MayÄ±s", "Haziran",
+  "Temmuz", "AÄŸustos", "EylÃ¼l", "Ekim", "KasÄ±m", "AralÄ±k",
 ];
 
-/** Tarih string'ini zengin Türkçe formata çevir: "12 Nisan 2026, Pazar" */
+/** Tarih string'ini zengin TÃ¼rkÃ§e formata Ã§evir: "12 Nisan 2026, Pazar" */
 function formatTurkishDate(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00Z");
   const day = d.getUTCDate();
@@ -49,7 +49,7 @@ function formatTurkishDate(dateStr: string): string {
   return `${day} ${month} ${year}, ${dayName}`;
 }
 
-// ── Geliştirilmiş renk skalası: daha belirgin emerald tonları ───────────────
+// â”€â”€ GeliÅŸtirilmiÅŸ renk skalasÄ±: daha belirgin emerald tonlarÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function intensityClass(count: number) {
   if (count <= 0) return "bg-muted/40 dark:bg-zinc-800/60";
@@ -57,7 +57,7 @@ function intensityClass(count: number) {
   if (count === 2) return "bg-emerald-400/60 dark:bg-emerald-500/50";
   if (count === 3) return "bg-emerald-500/80 dark:bg-emerald-400/70";
   if (count <= 5) return "bg-emerald-600 dark:bg-emerald-400";
-  return "bg-emerald-700 dark:bg-emerald-300"; // 6+ — en yoğun
+  return "bg-emerald-700 dark:bg-emerald-300"; // 6+ â€” en yoÄŸun
 }
 
 type GridCell = {
@@ -132,25 +132,25 @@ function handleCellClick(cell: GridCell) {
   const label = formatTurkishDate(cell.date);
   if (cell.count > 0) {
     toast.success(`${label}: ${cell.count} tamamlama`, {
-      description: "Bu güne ait detaylar yakında eklenecek!",
+      description: "Bu gÃ¼ne ait detaylar yakÄ±nda eklenecek!",
     });
   } else {
     toast(`${label}`, {
-      description: "Bu gün henüz tamamlama yok.",
+      description: "Bu gÃ¼n henÃ¼z tamamlama yok.",
     });
   }
 }
 
 export function YearlyActivityHeatmap({
   data,
-  title = "Yıllık Aktivite",
+  title = "YÄ±llÄ±k Aktivite",
 }: Props) {
   const { cells, weeks, monthLabels } = useMemo(() => buildGrid(data), [data]);
   const totalDays = data.length;
   const activeDays = data.filter((d) => d.count > 0).length;
   const totalCompletions = data.reduce((s, d) => s + d.count, 0);
 
-  // ── Boş / yeni kullanıcı state ──────────────────────────────────────────
+  // â”€â”€ BoÅŸ / yeni kullanÄ±cÄ± state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (cells.length === 0 || totalCompletions === 0) {
     return (
       <motion.div
@@ -168,10 +168,10 @@ export function YearlyActivityHeatmap({
                 <Sparkles className="h-6 w-6 text-emerald-500" />
               </div>
               <p className="text-sm font-medium">
-                Henüz çok başındasın, ilk kareyi boyamaya ne dersin?
+                HenÃ¼z Ã§ok baÅŸÄ±ndasÄ±n, ilk kareyi boyamaya ne dersin?
               </p>
               <p className="text-xs text-muted-foreground max-w-md">
-                Rutinlerini tamamladıkça bu harita yeşillenecek. Her gün bir kare, her kare bir adım!
+                Rutinlerini tamamladÄ±kÃ§a bu harita yeÅŸillenecek. Her gÃ¼n bir kare, her kare bir adÄ±m!
               </p>
             </div>
           </CardContent>
@@ -204,7 +204,7 @@ export function YearlyActivityHeatmap({
                 <strong className="text-foreground tabular-nums">
                   {activeDays}
                 </strong>
-                /{totalDays} gün aktif
+                /{totalDays} gÃ¼n aktif
               </span>
             </div>
           </div>
@@ -237,7 +237,7 @@ export function YearlyActivityHeatmap({
 
             {/* Heatmap grid */}
             <div className="flex gap-0 mt-1">
-              {/* Gün etiketleri */}
+              {/* GÃ¼n etiketleri */}
               <div
                 className="flex flex-col justify-between pr-1.5 shrink-0"
                 style={{ height: 7 * (CELL_SIZE + GAP) - GAP }}
@@ -259,7 +259,7 @@ export function YearlyActivityHeatmap({
                 ))}
               </div>
 
-              {/* Hücre grid */}
+              {/* HÃ¼cre grid */}
               <TooltipProvider delayDuration={100}>
                 <div
                   className="grid"
@@ -297,7 +297,7 @@ export function YearlyActivityHeatmap({
               </TooltipProvider>
             </div>
 
-            {/* Renk lejandı */}
+            {/* Renk lejandÄ± */}
             <div className="flex items-center gap-1.5 mt-3 justify-end">
               <span className="text-[10px] text-muted-foreground">Az</span>
               {[0, 1, 2, 3, 4, 6].map((level) => (
@@ -307,7 +307,7 @@ export function YearlyActivityHeatmap({
                   style={{ width: CELL_SIZE, height: CELL_SIZE }}
                 />
               ))}
-              <span className="text-[10px] text-muted-foreground">Çok</span>
+              <span className="text-[10px] text-muted-foreground">Ã‡ok</span>
             </div>
           </div>
         </CardContent>

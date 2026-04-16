@@ -66,7 +66,15 @@ export function calculateLevel(xp: number): LevelInfo {
   const xpToNextLevel = XP_PER_LEVEL - currentLevelXp;
   const progress = currentLevelXp / XP_PER_LEVEL;
 
-  const rankDef = RANKS.find((r) => level >= r.minLevel && level <= r.maxLevel) ?? RANKS[0];
+  const rankDef =
+    RANKS.find((r) => level >= r.minLevel && level <= r.maxLevel) ??
+    ({
+      minLevel: 1,
+      maxLevel: 5,
+      title: "Çırak",
+      titleEn: "Apprentice",
+      color: "#94a3b8",
+    } satisfies RankDef);
 
   return {
     level,

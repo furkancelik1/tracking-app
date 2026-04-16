@@ -137,7 +137,7 @@ export async function completeRoutineAction(
       }),
       prisma.routine.update({
         where: { id: routineId },
-        data: { currentStreak: newStreak, longestStreak: newLongest, lastCompleted: new Date() },
+        data: { currentStreak: newStreak, longestStreak: newLongest, lastCompletedAt: new Date() },
       }),
       prisma.user.update({
         where: { id: userId },
@@ -195,7 +195,7 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
   try {
     const routine = await prisma.routine.findFirst({
       where: { id: routineId, userId },
-      select: { frequency: true, currentStreak: true, lastCompleted: true },
+      select: { frequency: true, currentStreak: true, lastCompletedAt: true },
     });
     if (!routine) throw new Error("Rutin bulunamadÄ±.");
 
@@ -228,7 +228,7 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
       prisma.routineLog.delete({ where: { id: log.id } }),
       prisma.routine.update({
         where: { id: routineId },
-        data: { currentStreak: Math.max(0, restoredStreak), lastCompleted: prevLog ? prevPeriodStart : null },
+        data: { currentStreak: Math.max(0, restoredStreak), lastCompletedAt: prevLog ? prevPeriodStart : null },
       }),
       // XP ve coin geri al (minimum 0)
       prisma.user.update({

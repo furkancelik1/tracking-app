@@ -1,4 +1,4 @@
-import React from "react";
+import {from "react";
 import { requireAuth } from "@/lib/auth";
 import { getUserAnalytics, getAdvancedAnalytics } from "@/lib/analytics";
 import { StatsRangeTabs } from "@/components/dashboard/StatsRangeTabs";

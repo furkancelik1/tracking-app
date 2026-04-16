@@ -1,4 +1,4 @@
-import React from "react";
+import {from "react";
 // Re-export the OpenGraph image as Twitter card image
 export { default, alt, contentType } from "./opengraph-image";
 export const runtime = "edge";

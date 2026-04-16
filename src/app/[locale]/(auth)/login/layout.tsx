@@ -1,4 +1,4 @@
-import React from "react";
+import {from "react";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 

@@ -1,4 +1,4 @@
-import React from "react";
+import {from "react";
 import { DashboardNav } from "@/components/shared/DashboardNav";
 import { ThemeOverlay } from "@/components/shared/ThemeOverlay";
 import { ThemeTransition } from "@/components/shared/ThemeTransition";

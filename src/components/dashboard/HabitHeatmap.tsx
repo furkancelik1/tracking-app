@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import {from "react";
 
 type LogEntry = { id: string; completedAt: string; note: string | null };
 

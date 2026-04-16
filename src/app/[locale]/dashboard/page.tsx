@@ -1,4 +1,4 @@
-import React from "react";
+import {from "react";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardNav } from "@/components/shared/DashboardNav";

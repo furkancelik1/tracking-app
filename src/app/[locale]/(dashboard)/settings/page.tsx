@@ -1,4 +1,4 @@
-import React from "react";
+import {from "react";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSubscriptionTier, STRIPE_PLANS } from "@/lib/stripe";

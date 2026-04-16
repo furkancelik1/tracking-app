@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import {from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";

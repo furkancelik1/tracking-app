@@ -1,4 +1,4 @@
-import React from "react";
+import {from "react";
 import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

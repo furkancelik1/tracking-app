@@ -1,4 +1,4 @@
-import React from "react";
+import {from "react";
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";

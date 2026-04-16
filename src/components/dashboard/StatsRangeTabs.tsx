@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import {from "react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";

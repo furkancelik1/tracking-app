@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import {from "react";
 
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";

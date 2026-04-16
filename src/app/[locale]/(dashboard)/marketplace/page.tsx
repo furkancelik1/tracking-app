@@ -1,6 +1,10 @@
 import React from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { MarketplaceContent } from "@/components/dashboard/MarketplaceContent";
+import dynamic from "next/dynamic";
+const MarketplaceContent = dynamic(
+  () => import("@/components/dashboard/MarketplaceContent").then(mod => mod.MarketplaceContent),
+  { ssr: false }
+);
 import { getMarketplaceItems } from "@/actions/shop.actions";
 
 

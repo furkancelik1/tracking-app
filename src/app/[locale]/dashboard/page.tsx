@@ -5,9 +5,6 @@ import { RoutineList } from "@/components/dashboard/RoutineList";
 import { StreakAlert } from "@/components/dashboard/StreakAlert";
 import { DashboardEmptyState } from "@/components/dashboard/DashboardEmptyState";
 import { getSubscriptionTier } from "@/lib/stripe";
-import { getDashboardData } from "@/actions/dashboard.actions";
-import { getWeeklyInsightAction } from "@/actions/ai.actions";
-import { getTodayDisciplineScoreAction } from "@/actions/stats.actions";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
 import { AICoachButton } from "@/components/dashboard/AICoachButton";
 import { BottomNav } from "@/components/shared/BottomNav";
@@ -53,21 +50,12 @@ export default async function DashboardPage({
   try {
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setUTCDate(tomorrowStart.getUTCDate() + 1);
     const thirtyDaysAgo = new Date(todayStart);
     thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
 
-    const [dashboardData, raw, userXpData, gaugeData] = await Promise.all([
-      getDashboardData().catch(() => ({
-        stats: {
-          todayProgress: { completed: 0, total: 0, percentage: 0 },
-          activeStreak: 0,
-          weeklyProductivity: 0,
-          totalCompletions: 0,
-          trends: { todayVsYesterday: 0, thisWeekVsLastWeek: 0, streakChange: 0 },
-        },
-        weeklyChart: [],
-        isEmpty: true,
-      } as import("@/actions/dashboard.actions").DashboardPayload)),
+    const [raw, userXpData] = await Promise.all([
       prisma.routine
         .findMany({
           where: { userId, isActive: true },
@@ -86,13 +74,25 @@ export default async function DashboardPage({
       prisma.user
         .findUnique({ where: { id: userId }, select: { xp: true } })
         .catch(() => null),
-      getTodayDisciplineScoreAction().catch(() => ({ completed: 0, total: 0, score: 0 })),
     ]);
 
-    // AI insight (PRO kullanıcılar için — hata yutulur)
-    const weeklyInsight = isPro
-      ? await getWeeklyInsightAction({ locale }).catch(() => null)
-      : null;
+    const dailyRoutines = (raw ?? []).filter(
+      (r) => (r.frequencyType ?? "DAILY") === "DAILY"
+    );
+    const completedDaily = dailyRoutines.filter((routine) =>
+      (routine.logs ?? []).some((log) => {
+        const completedAt = log.completedAt;
+        return completedAt >= todayStart && completedAt < tomorrowStart;
+      })
+    ).length;
+    const gaugeData = {
+      completed: completedDaily,
+      total: dailyRoutines.length,
+      score:
+        dailyRoutines.length > 0
+          ? Math.round((completedDaily / dailyRoutines.length) * 100)
+          : 0,
+    };
 
     const userXp = userXpData?.xp ?? 0;
 
@@ -123,7 +123,7 @@ export default async function DashboardPage({
       _count: r._count ?? { logs: 0 },
     }));
 
-    const { isEmpty } = dashboardData;
+    const isEmpty = (raw?.length ?? 0) === 0;
 
     // ── Empty state ─────────────────────────────────────────────────────
     if (isEmpty) {
@@ -152,7 +152,7 @@ export default async function DashboardPage({
             <div className="flex-1">
               <LevelProgressBar xp={userXp} />
             </div>
-            <AICoachButton xp={userXp} initialInsight={weeklyInsight} isPro={isPro} />
+            <AICoachButton xp={userXp} initialInsight={null} isPro={isPro} />
           </div>
 
           {/* ── Streak alert (subtle, only shows when at risk) ── */}

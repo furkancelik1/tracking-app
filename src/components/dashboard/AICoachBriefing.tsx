@@ -15,26 +15,34 @@ import {
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import type { DailyCoachPayload, WeeklyInsightPayload } from "@/actions/ai.actions";
-import { getDailyCoachMessage } from "@/actions/ai.actions";
+import { getDailyCoachMessage, getWeeklyInsightAction } from "@/actions/ai.actions";
 import { calculateLevel, normalizeRankTitle } from "@/lib/level";
 
 type Props = {
   xp: number;
   initialInsight: WeeklyInsightPayload | null;
   isPro: boolean;
+  shouldLoadInsight?: boolean;
 };
 
 const LEGEND_LEVEL = 51;
 const XP_PER_LEVEL = 100;
 const LEGEND_XP = LEGEND_LEVEL * XP_PER_LEVEL; // 5100
 
-export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
+export function AICoachBriefing({
+  xp,
+  initialInsight,
+  isPro,
+  shouldLoadInsight = false,
+}: Props) {
   const t = useTranslations("coach");
   const tLevels = useTranslations("levels");
   const locale = useLocale();
 
   const [coach, setCoach] = useState<DailyCoachPayload | null>(null);
+  const [insight, setInsight] = useState<WeeklyInsightPayload | null>(initialInsight);
   const [loading, setLoading] = useState(true);
+  const [insightLoading, setInsightLoading] = useState(false);
 
   const fetchCoach = useCallback(async () => {
     try {
@@ -52,6 +60,27 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
     fetchCoach();
   }, [fetchCoach]);
 
+  useEffect(() => {
+    setInsight(initialInsight);
+  }, [initialInsight]);
+
+  const fetchInsight = useCallback(async () => {
+    if (!isPro || !shouldLoadInsight || insight) return;
+    try {
+      setInsightLoading(true);
+      const data = await getWeeklyInsightAction({ locale });
+      setInsight(data);
+    } catch {
+      setInsight(null);
+    } finally {
+      setInsightLoading(false);
+    }
+  }, [isPro, shouldLoadInsight, insight, locale]);
+
+  useEffect(() => {
+    void fetchInsight();
+  }, [fetchInsight]);
+
   // Level bilgileri
   const levelInfo = calculateLevel(xp);
   const normalizedRank = normalizeRankTitle(levelInfo.rank);
@@ -59,7 +88,7 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
   const legendProgress = Math.min(100, Math.round((xp / LEGEND_XP) * 100));
 
   // Challenge bilgileri
-  const challenge = initialInsight;
+  const challenge = insight;
   const hasChallengeData =
     challenge && challenge.challengeTitle && challenge.challengeTarget > 0;
   const challengePercent = hasChallengeData
@@ -195,6 +224,10 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
                   </div>
                 </div>
               </>
+            ) : insightLoading ? (
+              <p className="text-xs text-muted-foreground">
+                {t("thinking")}
+              </p>
             ) : (
               <p className="text-xs text-muted-foreground">
                 {isPro ? t("noChallengeYet") : t("proChallengeOnly")}

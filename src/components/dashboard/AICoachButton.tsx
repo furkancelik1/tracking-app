@@ -41,7 +41,12 @@ export function AICoachButton({ xp, initialInsight, isPro }: Props) {
             <DialogTitle>{t("title")}</DialogTitle>
           </DialogHeader>
           <div className="p-1">
-            <AICoachBriefing xp={xp} initialInsight={initialInsight} isPro={isPro} />
+            <AICoachBriefing
+              xp={xp}
+              initialInsight={initialInsight}
+              isPro={isPro}
+              shouldLoadInsight={open}
+            />
           </div>
         </DialogContent>
       </Dialog>

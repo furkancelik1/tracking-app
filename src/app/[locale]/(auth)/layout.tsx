@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
@@ -18,7 +19,7 @@ export default async function AuthLayout({
       {/* Left — branding panel (hidden on mobile) */}
       <div className="hidden lg:flex flex-col justify-between bg-zinc-900 p-12 text-white">
         <div className="flex items-center gap-2 font-semibold text-lg">
-          <span className="size-6 rounded-full bg-white" />
+          <Image src="/icons/logo-192x192.png" alt="Zenith" width={24} height={24} className="rounded-md" />
           {tCommon("appName")}
         </div>
         <blockquote className="space-y-2">

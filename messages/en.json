@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Routine Tracker",
+    "appName": "Zenith",
     "loading": "Loading…",
     "error": "Something went wrong",
     "retry": "Try Again",
@@ -15,7 +15,7 @@
     "level": "Level {level}",
     "anonymous": "Anonymous",
     "you": "(you)",
-    "footer": "© {year} Routine Tracker. All rights reserved.",
+    "footer": "© {year} Zenith. All rights reserved.",
     "site": "furkancelik.online"
   },
 
@@ -135,7 +135,7 @@
     },
     "cta": {
       "title": "Create your first routine today",
-      "description": "Thousands of users use Routine Tracker to track their habits. It's your turn.",
+      "description": "Thousands of users use Zenith to track their habits. It's your turn.",
       "button": "Get Started — Free"
     },
     "faq": {
@@ -156,7 +156,7 @@
         },
         {
           "question": "Can I use it as a phone app?",
-          "answer": "Yes! Routine Tracker is a PWA (Progressive Web App). Use 'Add to Home Screen' from your browser to install it on your phone — it even works offline."
+          "answer": "Yes! Zenith is a PWA (Progressive Web App). Use 'Add to Home Screen' from your browser to install it on your phone — it even works offline."
         },
         {
           "question": "How do notifications work?",
@@ -187,7 +187,7 @@
     "login": {
       "metadata": {
         "title": "Sign In",
-        "description": "Sign in to your Routine Tracker account. Continue quickly with Google or email."
+        "description": "Sign in to your Zenith account. Continue quickly with Google or email."
       },
       "title": "Welcome back",
       "subtitle": "Sign in to your account to continue",
@@ -219,7 +219,7 @@
     "register": {
       "metadata": {
         "title": "Create Account",
-        "description": "Sign up for Routine Tracker for free. Start tracking your habits right away."
+        "description": "Sign up for Zenith for free. Start tracking your habits right away."
       },
       "title": "Create account",
       "description": "New accounts are created automatically after your first sign-in.",
@@ -764,7 +764,7 @@
       "dedicated": "Dedicated",
       "earlyBird": "Early Bird"
     },
-    "footerBrand": "Habit Tracker",
+    "footerBrand": "Zenith",
     "streakDays": "{count} days",
     "filenameLevelUp": "level-up",
     "filenameWeeklySummary": "weekly-summary",
@@ -900,7 +900,7 @@
 
   "onboarding": {
     "title": "Welcome! \uD83C\uDF1F",
-    "subtitle": "Let us show you how to get the most out of Routine Tracker.",
+    "subtitle": "Let us show you how to get the most out of Zenith.",
     "back": "Back",
     "next": "Next",
     "finish": "Start Tracking!",

@@ -25,14 +25,14 @@ function getEmailTexts(lang: Lang, count: number, firstName: string, atRiskCount
     footerText: d.footer,
     unsubscribe: d.unsubscribe,
     dayUnit: lang === "tr" ? "gün" : "days",
-    copyright: `© ${new Date().getFullYear()} ${dictionaries[lang]?.common?.appName ?? "Routine Tracker"}`,
+    copyright: `© ${new Date().getFullYear()} ${dictionaries[lang]?.common?.appName ?? "Zenith"}`,
   };
 }
 
 function getFromName(lang: Lang) {
   return lang === "tr"
-    ? "Rutin Takipçisi <merhaba@furkancelik.online>"
-    : "Routine Tracker <merhaba@furkancelik.online>";
+    ? "Zenith <merhaba@furkancelik.online>"
+    : "Zenith <merhaba@furkancelik.online>";
 }
 
 function getSubject(lang: Lang, count: number) {
@@ -104,7 +104,7 @@ export async function sendWeeklyInsightEmail({
     cta: d.emailCta,
     footerText: d.emailFooter,
     unsubscribe: dictionaries[lang]?.email?.reminder?.unsubscribe ?? "Unsubscribe",
-    copyright: `© ${new Date().getFullYear()} ${dictionaries[lang]?.common?.appName ?? "Routine Tracker"}`,
+    copyright: `© ${new Date().getFullYear()} ${dictionaries[lang]?.common?.appName ?? "Zenith"}`,
   };
 
   const subject = d.emailSubject;

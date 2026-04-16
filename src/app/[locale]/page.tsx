@@ -11,6 +11,7 @@ import {
 import { CheckoutButton } from "@/components/landing/CheckoutButton";
 import { STRIPE_PLANS } from "@/lib/stripe";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import Image from "next/image";
 import {
   CheckCircle2,
   Flame,
@@ -40,7 +41,7 @@ function JsonLd({ locale }: { locale: string }) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Routine Tracker",
+    name: "Zenith",
     applicationCategory: "LifestyleApplication",
     operatingSystem: "Web",
     url: `https://furkancelik.online/${locale}`,
@@ -145,7 +146,7 @@ export default async function LandingPage({
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
         <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-sm">
-            <span className="size-5 rounded-full bg-primary inline-block" />
+            <Image src="/icons/logo-192x192.png" alt="Zenith" width={20} height={20} className="rounded-md" />
             {tc("appName")}
           </Link>
 
@@ -578,7 +579,7 @@ export default async function LandingPage({
       <footer className="border-t py-8">
         <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2 font-medium text-foreground">
-            <span className="size-4 rounded-full bg-primary inline-block" />
+            <Image src="/icons/logo-192x192.png" alt="Zenith" width={16} height={16} className="rounded-md" />
             {tc("appName")}
           </div>
           <p>{tc("footer", { year: new Date().getFullYear() })}</p>

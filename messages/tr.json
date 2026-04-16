@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Rutin Takipçisi",
+    "appName": "Zenith",
     "loading": "Yükleniyor…",
     "error": "Bir hata oluştu",
     "retry": "Tekrar Dene",
@@ -15,7 +15,7 @@
     "level": "Seviye {level}",
     "anonymous": "Anonim",
     "you": "(sen)",
-    "footer": "© {year} Rutin Takipçisi. Tüm hakları saklıdır.",
+    "footer": "© {year} Zenith. Tüm hakları saklıdır.",
     "site": "furkancelik.online"
   },
 
@@ -156,7 +156,7 @@
         },
         {
           "question": "Telefonda uygulama olarak kullanabilir miyim?",
-          "answer": "Evet! Routine Tracker bir PWA (Progressive Web App). Tarayıcından 'Ana ekrana ekle' seçeneğiyle telefonuna yükleyebilir, internet olmadan bile kullanabilirsin."
+          "answer": "Evet! Zenith bir PWA (Progressive Web App). Tarayıcından 'Ana ekrana ekle' seçeneğiyle telefonuna yükleyebilir, internet olmadan bile kullanabilirsin."
         },
         {
           "question": "Bildirimler nasıl çalışıyor?",
@@ -187,7 +187,7 @@
     "login": {
       "metadata": {
         "title": "Giriş Yap",
-        "description": "Routine Tracker hesabınıza giriş yapın. Google veya e-posta ile hızlıca devam edin."
+        "description": "Zenith hesabınıza giriş yapın. Google veya e-posta ile hızlıca devam edin."
       },
       "title": "Tekrar hoş geldin",
       "subtitle": "Devam etmek için hesabına giriş yap",
@@ -219,7 +219,7 @@
     "register": {
       "metadata": {
         "title": "Hesap Oluştur",
-        "description": "Routine Tracker'a ücretsiz kaydolun. Alışkanlıklarınızı takip etmeye hemen başlayın."
+        "description": "Zenith'e ücretsiz kaydolun. Alışkanlıklarınızı takip etmeye hemen başlayın."
       },
       "title": "Hesap oluştur",
       "description": "İlk girişinizde yeni hesabınız otomatik olarak oluşturulur.",

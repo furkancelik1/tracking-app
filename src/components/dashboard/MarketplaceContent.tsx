@@ -1,6 +1,6 @@
 ﻿"use client";
 import React from 'react';
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Coins, Check, Loader2, Package, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -55,6 +55,30 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
   const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [actionId, setActionId] = useState<string | null>(null);
 
+  const applyThemeStyleVars = useCallback((metadata: Record<string, string> | null) => {
+    const root = document.documentElement;
+    if (!metadata) return;
+    const radius = metadata.cardRadius ?? metadata.radius;
+    const shadow = metadata.cardShadow ?? metadata.shadow;
+    if (radius) root.style.setProperty("--shop-card-radius", radius);
+    if (shadow) root.style.setProperty("--shop-card-shadow", shadow);
+  }, []);
+
+  const resetThemeStyleVars = useCallback(() => {
+    const root = document.documentElement;
+    root.style.removeProperty("--shop-card-radius");
+    root.style.removeProperty("--shop-card-shadow");
+  }, []);
+
+  useEffect(() => {
+    const equippedTheme = items.find((i) => i.category === "THEME" && i.equipped);
+    if (equippedTheme?.metadata) {
+      applyThemeStyleVars(equippedTheme.metadata);
+    } else {
+      resetThemeStyleVars();
+    }
+  }, [items, applyThemeStyleVars, resetThemeStyleVars]);
+
   async function handleBuy(item: MarketplaceItem) {
     setActionId(item.id);
     try {
@@ -105,6 +129,9 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
             boxShadow: `0 0 24px ${glowColor}, 0 4px 16px rgba(0,0,0,0.4)`,
           },
         });
+        if (item.category === "THEME") {
+          applyThemeStyleVars(item.metadata);
+        }
         window.dispatchEvent(new CustomEvent("theme-changed"));
       } else {
         toast.error(t("equipFailed"));
@@ -125,6 +152,9 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
         setItems((prev) =>
           prev.map((i) => (i.id === item.id ? { ...i, equipped: false } : i))
         );
+        if (item.category === "THEME") {
+          resetThemeStyleVars();
+        }
         toast.success(t("unequipSuccess"));
         window.dispatchEvent(new CustomEvent("theme-changed"));
       }
@@ -235,7 +265,7 @@ function ItemRow({
   return (
     <div
       className={`flex items-center justify-between py-6 px-2 transition-all duration-300 ${
-        item.equipped ? "neon-item-active" : ""
+        item.equipped ? "neon-item-active theme-surface" : "theme-surface"
       } ${isLocked ? "opacity-60" : ""}`}
     >
       <div className="flex items-center gap-4">

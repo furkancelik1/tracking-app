@@ -10,6 +10,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { PageTransition } from "@/components/shared/PageTransition";
 
 const SITE_URL = "https://furkancelik.online";
 
@@ -174,7 +175,7 @@ export default async function LocaleLayout({ children, params }: Props) {
                 enableSystem
                 disableTransitionOnChange
               >
-                {children}
+                <PageTransition>{children}</PageTransition>
                 <Toaster />
               </ThemeProvider>
             </AuthProvider>

@@ -10,6 +10,7 @@ import type { LeaderboardEntry, LeaderboardPayload } from "@/actions/leaderboard
 import { Trophy, Medal, Flame, Crown, Sparkles, Users, Globe } from "lucide-react";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { getAvatarFrame } from "@/lib/level";
+import { getLeagueByXp } from "@/lib/league";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { getFriendsLeaderboardAction } from "@/actions/social.actions";
@@ -157,6 +158,12 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
             >
               {formatXp(entry.xp)} XP
             </Badge>
+            <Badge
+              variant="outline"
+              className={cn("text-[10px]", getLeagueByXp(entry.xp).badgeClassName)}
+            >
+              {getLeagueByXp(entry.xp).label}
+            </Badge>
             <LevelBadge xp={entry.xp} compact />
             {entry.currentStreak > 0 && (
               <span className="flex items-center gap-0.5 text-[11px] text-orange-400">
@@ -213,6 +220,12 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
               <Sparkles className="size-2.5" /> PRO
             </Badge>
           )}
+          <Badge
+            variant="outline"
+            className={cn("text-[10px] shrink-0", getLeagueByXp(entry.xp).badgeClassName)}
+          >
+            {getLeagueByXp(entry.xp).label}
+          </Badge>
           <LevelBadge xp={entry.xp} compact />
           {entry.currentStreak > 0 && (
             <span className="flex items-center gap-0.5 text-xs text-orange-400 shrink-0">
@@ -233,6 +246,7 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
 function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUsers: number }) {
   const t = useTranslations("common");
   const tLb = useTranslations("leaderboard");
+  const league = getLeagueByXp(entry.xp);
   return (
     <Card className="border-indigo-500/30 bg-indigo-500/5 mt-6">
       <CardContent className="flex items-center gap-4 py-4">
@@ -250,6 +264,9 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
           <p className="text-xs text-muted-foreground">
             {tLb("usersAmong", { rank: entry.rank, total: totalUsers })}
           </p>
+          <Badge variant="outline" className={cn("mt-1 text-[10px]", league.badgeClassName)}>
+            {league.label} Lig
+          </Badge>
         </div>
         <div className="text-right shrink-0">
           <p className="text-lg font-bold tabular-nums text-indigo-400">

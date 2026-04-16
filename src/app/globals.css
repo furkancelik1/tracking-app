@@ -24,6 +24,10 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+    --shop-card-radius: 0.85rem;
+    --shop-card-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
+    --glass-blur: 12px;
+    --glass-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
   }
 
   .dark {
@@ -90,6 +94,30 @@
 }
 
 @layer components {
+  .glass-card {
+    background: hsl(var(--card) / 0.62);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid hsl(var(--border) / 0.58);
+    box-shadow: var(--glass-shadow);
+    transition:
+      border-color 220ms ease,
+      box-shadow 220ms ease,
+      transform 220ms ease;
+  }
+
+  .retro-border {
+    border: 1px solid hsl(var(--border) / 0.82);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.08),
+      inset 0 0 0 1px hsl(var(--foreground) / 0.04),
+      0 8px 24px hsl(240 12% 7% / 0.32);
+  }
+
+  .theme-surface {
+    border-radius: var(--shop-card-radius);
+    box-shadow: var(--shop-card-shadow);
+  }
+
   .dark-surface {
     background-color: hsl(var(--card) / 0.82);
     backdrop-filter: blur(8px);
@@ -150,6 +178,11 @@
 [data-shop-theme="true"] .neon-item-active {
   border-left: 2px solid var(--shop-primary);
   box-shadow: inset 3px 0 12px -4px var(--shop-primary-glow, transparent);
+}
+
+[data-shop-theme="true"] .theme-surface {
+  border-radius: var(--shop-card-radius, 0.85rem);
+  box-shadow: var(--shop-card-shadow, 0 14px 34px rgba(15, 23, 42, 0.16));
 }
 
 /* Body radial tint follows theme when active */

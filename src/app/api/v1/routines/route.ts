@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSubscriptionTier } from "@/lib/stripe";
 import { z } from "zod";
 import type { ApiResponse } from "@/types";
-import type { Routine, RoutineFrequency } from "@prisma/client";
+import type { Routine, RoutineFrequency, RoutineFrequencyType } from "@prisma/client";
 
 const FREE_ROUTINE_LIMIT = 3;
 const isProd = process.env.NODE_ENV === "production";
@@ -24,7 +24,11 @@ function serializeError(err: unknown) {
 const createRoutineSchema = z.object({
   title: z.string().min(1, "BaÅŸlÄ±k zorunludur").max(100),
   description: z.string().max(500).optional(),
-  frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).default("DAILY"),
+  frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
+  frequencyType: z.enum(["DAILY", "WEEKLY", "SPECIFIC_DAYS"]).optional(),
+  weeklyTarget: z.number().int().min(1).max(7).optional(),
+  specificDays: z.array(z.number().int().min(0).max(6)).max(7).optional(),
+  stackParentId: z.string().cuid().nullable().optional(),
   category: z.string().max(50).default("Genel"),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "GeÃ§ersiz renk").default("#3b82f6"),
   icon: z.string().max(50).default("CheckCircle"),
@@ -136,11 +140,64 @@ export async function POST(req: Request) {
       );
     }
 
+    const resolvedFrequencyType =
+      parsed.data.frequencyType ??
+      (parsed.data.frequency === "WEEKLY" || parsed.data.frequency === "MONTHLY"
+        ? "WEEKLY"
+        : "DAILY");
+    const resolvedFrequency =
+      parsed.data.frequency ??
+      (resolvedFrequencyType === "DAILY" ? "DAILY" : "WEEKLY");
+    const resolvedSpecificDays = Array.from(new Set(parsed.data.specificDays ?? [])).sort();
+    const resolvedWeeklyTarget =
+      resolvedFrequencyType === "WEEKLY" ? parsed.data.weeklyTarget ?? 3 : 1;
+
+    if (resolvedFrequencyType === "SPECIFIC_DAYS" && resolvedSpecificDays.length === 0) {
+      return NextResponse.json<ApiResponse<never>>(
+        {
+          success: false,
+          error: "Belirli günler seçimi için en az bir gün belirtmelisiniz.",
+          code: "VALIDATION_ERROR",
+        },
+        { status: 422 }
+      );
+    }
+
+    if (parsed.data.stackParentId) {
+      const parent = await prisma.routine.findFirst({
+        where: {
+          id: parsed.data.stackParentId,
+          userId,
+          isActive: true,
+        },
+        select: { id: true },
+      });
+      if (!parent) {
+        return NextResponse.json<ApiResponse<never>>(
+          {
+            success: false,
+            error: "BaÄŸlanmak istenen ana alÄ±ÅŸkanlÄ±k bulunamadÄ±.",
+            code: "VALIDATION_ERROR",
+          },
+          { status: 422 }
+        );
+      }
+    }
+
     const routine = await prisma.routine.create({
       data: {
         userId,
-        ...parsed.data,
-        frequency: parsed.data.frequency as RoutineFrequency,
+        title: parsed.data.title,
+        description: parsed.data.description,
+        category: parsed.data.category,
+        color: parsed.data.color,
+        icon: parsed.data.icon,
+        sortOrder: parsed.data.sortOrder,
+        frequency: resolvedFrequency as RoutineFrequency,
+        frequencyType: resolvedFrequencyType as RoutineFrequencyType,
+        weeklyTarget: resolvedWeeklyTarget,
+        specificDays: resolvedFrequencyType === "SPECIFIC_DAYS" ? resolvedSpecificDays : [],
+        stackParentId: parsed.data.stackParentId ?? null,
       },
     });
 

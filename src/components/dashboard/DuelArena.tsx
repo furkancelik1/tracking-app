@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { fireLevelUpConfetti, hapticSuccess } from "@/lib/celebrations";
 import { fireDuelToast } from "@/lib/duel-notifications";
 import { nativeShareImage } from "@/lib/share";
 import type { DuelEntry } from "@/actions/duel.actions";
-import { respondToDuel } from "@/actions/duel.actions";
+import { respondToDuel, sendDuelMessage } from "@/actions/duel.actions";
 import { DuelChat } from "@/components/dashboard/DuelChat";
 import {
   Swords,
@@ -26,6 +27,9 @@ import {
   Sparkles,
   Check,
   X,
+  Rocket,
+  Flame,
+  Shield,
 } from "lucide-react";
 
 // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -356,6 +360,79 @@ function DuelEmptyState() {
   );
 }
 
+// --- Challenge Cards (quick taunt/motivation cards) ---
+
+const CHALLENGE_CARDS = [
+  {
+    id: "focus-mode",
+    title: "Focus Mode",
+    description: "Bugün 3 rutin bitir, liderliği al.",
+    message: "Focus Mode açıldı: Bugün en az 3 rutin tamamlayacağım. Hazır mısın?",
+    icon: Rocket,
+    className: "border-indigo-500/30 bg-indigo-500/10",
+  },
+  {
+    id: "streak-rush",
+    title: "Streak Rush",
+    description: "Seriyi koru, puan farkını kapat.",
+    message: "Streak Rush kartımı oynadım. Serini koru, ben de tempoyu artırıyorum!",
+    icon: Flame,
+    className: "border-orange-500/30 bg-orange-500/10",
+  },
+  {
+    id: "shield-up",
+    title: "Shield Up",
+    description: "Savunma modu: bugünü boş geçme.",
+    message: "Shield Up! Bugünü boş geçmiyorum. Düello son ana kadar açık.",
+    icon: Shield,
+    className: "border-emerald-500/30 bg-emerald-500/10",
+  },
+] as const;
+
+function ChallengeCards({ duelId, disabled }: { duelId: string; disabled: boolean }) {
+  const [isPending, startTransition] = useTransition();
+
+  const sendCard = (message: string, title: string) => {
+    startTransition(async () => {
+      const result = await sendDuelMessage({ duelId, content: message });
+      if (!result.success) {
+        toast.error("Kart gönderilemedi. Birkaç saniye sonra tekrar dene.");
+        return;
+      }
+      toast.success(`"${title}" kartı gönderildi.`);
+    });
+  };
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-muted-foreground">Meydan Okuma Kartları</p>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {CHALLENGE_CARDS.map((card) => {
+          const Icon = card.icon;
+          return (
+            <button
+              key={card.id}
+              type="button"
+              disabled={disabled || isPending}
+              onClick={() => sendCard(card.message, card.title)}
+              className={cn(
+                "rounded-xl border p-3 text-left transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60",
+                card.className
+              )}
+            >
+              <div className="mb-2 inline-flex rounded-md bg-background/70 p-1.5">
+                <Icon className="size-4" />
+              </div>
+              <p className="text-sm font-semibold">{card.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // â”€â”€â”€ Main DuelArena â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
@@ -520,6 +597,8 @@ export function DuelArena({ duel }: Props) {
           isActive={isActive}
         />
       )}
+
+      {isActive && duel.opponent && <ChallengeCards duelId={duel.id} disabled={!isActive} />}
     </section>
   );
 }

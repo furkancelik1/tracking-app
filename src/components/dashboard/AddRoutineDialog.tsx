@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useCreateRoutine } from "@/hooks/useRoutines";
+import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import {
   ICON_MAP,
   ICON_OPTIONS,
@@ -25,22 +26,33 @@ import {
   DEFAULT_COLOR,
 } from "@/lib/routine-icons";
 
-type Frequency = "DAILY" | "WEEKLY" | "MONTHLY";
-
-const FREQUENCY_VALUES: Frequency[] = ["DAILY", "WEEKLY", "MONTHLY"];
+type FrequencyType = "DAILY" | "WEEKLY" | "SPECIFIC_DAYS";
+const DAY_OPTIONS = [
+  { value: 1, label: "Pzt" },
+  { value: 2, label: "Sal" },
+  { value: 3, label: "Çar" },
+  { value: 4, label: "Per" },
+  { value: 5, label: "Cum" },
+  { value: 6, label: "Cmt" },
+  { value: 0, label: "Paz" },
+];
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   atLimit?: boolean;
+  routines?: RoutineWithMeta[];
 };
 
-export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props) {
+export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines = [] }: Props) {
   const t = useTranslations("dashboard.addRoutine");
   const tc = useTranslations("common");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [frequency, setFrequency] = useState<Frequency>("DAILY");
+  const [frequencyType, setFrequencyType] = useState<FrequencyType>("DAILY");
+  const [weeklyTarget, setWeeklyTarget] = useState(3);
+  const [specificDays, setSpecificDays] = useState<number[]>([1, 3, 5]);
+  const [stackParentId, setStackParentId] = useState<string>("");
   const [category, setCategory] = useState("Genel");
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [icon, setIcon] = useState(DEFAULT_ICON);
@@ -64,11 +76,19 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (atLimit || !title.trim()) return;
+    if (frequencyType === "SPECIFIC_DAYS" && specificDays.length === 0) {
+      toast.error("Belirli günler için en az bir gün seç.");
+      return;
+    }
     createRoutine(
       {
         title: title.trim(),
         description: description.trim() || undefined,
-        frequency,
+        frequency: frequencyType === "DAILY" ? "DAILY" : "WEEKLY",
+        frequencyType,
+        weeklyTarget: frequencyType === "WEEKLY" ? weeklyTarget : 1,
+        specificDays: frequencyType === "SPECIFIC_DAYS" ? specificDays : [],
+        stackParentId: stackParentId || null,
         category: category.trim() || "Genel",
         color,
         icon,
@@ -77,7 +97,10 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
         onSuccess: () => {
           setTitle("");
           setDescription("");
-          setFrequency("DAILY");
+          setFrequencyType("DAILY");
+          setWeeklyTarget(3);
+          setSpecificDays([1, 3, 5]);
+          setStackParentId("");
           setCategory("Genel");
           setColor(DEFAULT_COLOR);
           setIcon(DEFAULT_ICON);
@@ -156,27 +179,98 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false }: Props)
             />
           </div>
 
-          {/* Frequency */}
-          <div className="space-y-1.5">
+          {/* Esnek zamanlama */}
+          <div className="space-y-2">
             <Label>{t("frequencyLabel")}</Label>
-            <div className="flex gap-2">
-              {FREQUENCY_VALUES.map((val) => (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {[
+                { value: "DAILY", label: "Her gün" },
+                { value: "WEEKLY", label: "Haftada X kez" },
+                { value: "SPECIFIC_DAYS", label: "Belirli günler" },
+              ].map((option) => (
                 <button
-                  key={val}
+                  key={option.value}
                   type="button"
-                  onClick={() => setFrequency(val)}
+                  onClick={() => setFrequencyType(option.value as FrequencyType)}
                   disabled={atLimit}
                   className={cn(
-                    "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
-                    frequency === val
+                    "rounded-md border px-3 py-2 text-sm transition-colors",
+                    frequencyType === option.value
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-input bg-background hover:bg-accent"
                   )}
                 >
-                  {t(val === "DAILY" ? "daily" : val === "WEEKLY" ? "weekly" : "monthly")}
+                  {option.label}
                 </button>
               ))}
             </div>
+          </div>
+
+          {frequencyType === "WEEKLY" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="routine-weekly-target">Haftada kaç kez?</Label>
+              <Input
+                id="routine-weekly-target"
+                type="number"
+                min={1}
+                max={7}
+                value={weeklyTarget}
+                onChange={(e) => setWeeklyTarget(Math.min(7, Math.max(1, Number(e.target.value) || 1)))}
+                disabled={atLimit}
+              />
+            </div>
+          )}
+
+          {frequencyType === "SPECIFIC_DAYS" && (
+            <div className="space-y-1.5">
+              <Label>Hangi günler?</Label>
+              <div className="flex flex-wrap gap-2">
+                {DAY_OPTIONS.map((day) => {
+                  const selected = specificDays.includes(day.value);
+                  return (
+                    <button
+                      key={day.value}
+                      type="button"
+                      disabled={atLimit}
+                      onClick={() =>
+                        setSpecificDays((prev) =>
+                          prev.includes(day.value)
+                            ? prev.filter((d) => d !== day.value)
+                            : [...prev, day.value]
+                        )
+                      }
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-xs",
+                        selected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input bg-background hover:bg-accent"
+                      )}
+                    >
+                      {day.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Habit stacking */}
+          <div className="space-y-1.5">
+            <Label htmlFor="routine-stack-parent">Şu alışkanlıktan hemen sonra (opsiyonel)</Label>
+            <select
+              id="routine-stack-parent"
+              value={stackParentId}
+              onChange={(e) => setStackParentId(e.target.value)}
+              disabled={atLimit}
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">Bağımsız alışkanlık</option>
+              {routines.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.title}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Color */}

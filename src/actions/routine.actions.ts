@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -14,10 +14,11 @@ import { calculateLevel } from "@/lib/level";
 // YardÄ±mcÄ±: periyot baÅŸlangÄ±cÄ± (Route Handler ile aynÄ± mantÄ±k)
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function getPeriodStart(frequency: string): Date {
+function getPeriodStart(frequencyType: string): Date {
   const now = new Date();
-  switch (frequency) {
-    case "WEEKLY": {
+  switch (frequencyType) {
+    case "WEEKLY":
+    case "SPECIFIC_DAYS": {
       const day = now.getUTCDay();
       const diff = day === 0 ? -6 : 1 - day;
       const d = new Date(now);
@@ -25,8 +26,6 @@ function getPeriodStart(frequency: string): Date {
       d.setUTCHours(0, 0, 0, 0);
       return d;
     }
-    case "MONTHLY":
-      return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
     default: {
       const d = new Date(now);
       d.setUTCHours(0, 0, 0, 0);
@@ -35,21 +34,17 @@ function getPeriodStart(frequency: string): Date {
   }
 }
 
-function getPrevPeriodStart(frequency: string): Date {
+function getPrevPeriodStart(frequencyType: string): Date {
   const now = new Date();
-  switch (frequency) {
-    case "WEEKLY": {
+  switch (frequencyType) {
+    case "WEEKLY":
+    case "SPECIFIC_DAYS": {
       const day = now.getUTCDay();
       const diff = day === 0 ? -6 : 1 - day;
       const d = new Date(now);
       d.setUTCDate(now.getUTCDate() + diff - 7);
       d.setUTCHours(0, 0, 0, 0);
       return d;
-    }
-    case "MONTHLY": {
-      const d = new Date(now);
-      d.setUTCMonth(d.getUTCMonth() - 1);
-      return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
     }
     default: {
       const d = new Date(now);
@@ -91,17 +86,61 @@ export async function completeRoutineAction(
   try {
     const routine = await prisma.routine.findFirst({
       where: { id: routineId, userId, isActive: true },
-      select: { id: true, title: true, category: true, frequency: true, currentStreak: true, longestStreak: true, lastCompletedAt: true },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        frequencyType: true,
+        weeklyTarget: true,
+        specificDays: true,
+        stackParentId: true,
+        currentStreak: true,
+        longestStreak: true,
+        lastCompletedAt: true,
+      },
     });
     if (!routine) throw new Error("Rutin bulunamadÄ±.");
 
-    const periodStart = getPeriodStart(routine.frequency);
+    const todayStart = getPeriodStart("DAILY");
+    const periodStart = getPeriodStart(routine.frequencyType);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setUTCHours(23, 59, 59, 999);
 
-    const alreadyLogged = await prisma.routineLog.findFirst({
-      where: { routineId, userId, completedAt: { gte: periodStart } },
-      select: { id: true },
-    });
-    if (alreadyLogged) throw new Error("Bu periyot iÃ§in zaten tamamlandÄ±.");
+    if (
+      routine.frequencyType === "SPECIFIC_DAYS" &&
+      !routine.specificDays.includes(new Date().getUTCDay())
+    ) {
+      throw new Error("Bu alÄ±ÅŸkanlÄ±k bugÃ¼n iÃ§in planlÄ± deÄŸil.");
+    }
+
+    if (routine.stackParentId) {
+      const parentCompletedToday = await prisma.routineLog.findFirst({
+        where: {
+          routineId: routine.stackParentId,
+          userId,
+          completedAt: { gte: todayStart, lte: todayEnd },
+        },
+        select: { id: true },
+      });
+      if (!parentCompletedToday) {
+        throw new Error("Ã–nce baÄŸlÄ± olduÄŸu alÄ±ÅŸkanlÄ±ÄŸÄ± tamamlamalÄ±sÄ±n.");
+      }
+    }
+
+    if (routine.frequencyType === "WEEKLY") {
+      const weeklyLogs = await prisma.routineLog.count({
+        where: { routineId, userId, completedAt: { gte: periodStart } },
+      });
+      if (weeklyLogs >= routine.weeklyTarget) {
+        throw new Error(`Bu hafta hedefin olan ${routine.weeklyTarget} tamamlama sayÄ±sÄ±na ulaÅŸtÄ±n.`);
+      }
+    } else {
+      const alreadyLogged = await prisma.routineLog.findFirst({
+        where: { routineId, userId, completedAt: { gte: todayStart, lte: todayEnd } },
+        select: { id: true },
+      });
+      if (alreadyLogged) throw new Error("Bu periyot iÃ§in zaten tamamlandÄ±.");
+    }
 
     // Streak hesaplama
     let newStreak = routine.lastCompletedAt 
@@ -116,7 +155,6 @@ export async function completeRoutineAction(
     let coinGain = COINS_PER_COMPLETION;
 
     // All Done bonus
-    const todayStart = getPeriodStart("DAILY");
     const [activeRoutines, todayLogs, currentUser] = await Promise.all([
       prisma.routine.count({ where: { userId, isActive: true } }),
       prisma.routineLog.count({ where: { userId, completedAt: { gte: todayStart } } }),
@@ -195,12 +233,12 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
   try {
     const routine = await prisma.routine.findFirst({
       where: { id: routineId, userId },
-      select: { frequency: true, currentStreak: true, lastCompletedAt: true },
+      select: { frequencyType: true, currentStreak: true, lastCompletedAt: true },
     });
     if (!routine) throw new Error("Rutin bulunamadÄ±.");
 
-    const periodStart = getPeriodStart(routine.frequency);
-    const prevPeriodStart = getPrevPeriodStart(routine.frequency);
+    const periodStart = getPeriodStart(routine.frequencyType);
+    const prevPeriodStart = getPrevPeriodStart(routine.frequencyType);
 
     const log = await prisma.routineLog.findFirst({
       where: { routineId, userId, completedAt: { gte: periodStart } },

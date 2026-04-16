@@ -18,6 +18,12 @@ enum RoutineFrequency {
   MONTHLY
 }
 
+enum RoutineFrequencyType {
+  DAILY
+  WEEKLY
+  SPECIFIC_DAYS
+}
+
 enum ItemType {
   STREAK_FREEZE
 }
@@ -159,6 +165,10 @@ model Routine {
   category              String               @default("Genel")
   color                 String?              @default("#3b82f6")
   frequency             RoutineFrequency     @default(DAILY)
+  frequencyType         RoutineFrequencyType @default(DAILY)
+  weeklyTarget          Int                  @default(1)
+  specificDays          Int[]                @default([])
+  stackParentId         String?
   isActive              Boolean              @default(true)
   sortOrder             Int                  @default(0)
   currentStreak         Int                  @default(0)
@@ -168,10 +178,13 @@ model Routine {
   updatedAt             DateTime             @updatedAt
 
   user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stackParent           Routine?             @relation("RoutineStack", fields: [stackParentId], references: [id], onDelete: SetNull)
+  stackChildren         Routine[]            @relation("RoutineStack")
   logs                  RoutineLog[]
 
   @@index([userId])
   @@index([userId, isActive])
+  @@index([stackParentId])
 }
 
 model VerificationToken {

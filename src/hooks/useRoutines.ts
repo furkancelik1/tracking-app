@@ -9,6 +9,10 @@ export type RoutineWithMeta = {
   title: string;
   description: string | null;
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+  frequencyType: "DAILY" | "WEEKLY" | "SPECIFIC_DAYS";
+  weeklyTarget: number;
+  specificDays: number[];
+  stackParentId: string | null;
   isActive: boolean;
   sortOrder: number;
   category: string;
@@ -52,6 +56,10 @@ export function useCreateRoutine() {
       title: string;
       description?: string;
       frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+      frequencyType?: "DAILY" | "WEEKLY" | "SPECIFIC_DAYS";
+      weeklyTarget?: number;
+      specificDays?: number[];
+      stackParentId?: string | null;
       category?: string;
       color?: string;
       icon?: string;

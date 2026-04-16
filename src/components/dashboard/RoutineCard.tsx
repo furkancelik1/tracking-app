@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Check, Undo2, Trash2, Share2, Flame, MoreVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -55,9 +56,21 @@ export function RoutineCard({
   const Icon = ICON_MAP[routine.icon ?? ""];
 
   return (
-    <div
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        scale: completed ? 1.01 : 1,
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 220,
+        damping: 20,
+      }}
       className={cn(
-        "group relative flex flex-col gap-4 rounded-xl border bg-card p-5 transition-all duration-200",
+        "group relative flex flex-col gap-4 rounded-xl p-5 glass-card retro-border theme-surface",
         completed
           ? "border-emerald-500/40 bg-emerald-950/10 dark:bg-emerald-950/20"
           : "border-border hover:border-border/80 hover:shadow-sm",
@@ -164,6 +177,6 @@ export function RoutineCard({
           </>
         )}
       </Button>
-    </div>
+    </motion.div>
   );
 }

@@ -373,7 +373,12 @@ export function RoutineList({ initialRoutines }: Props) {
         </div>
       )}
 
-      <AddRoutineDialog open={dialogOpen} onOpenChange={setDialogOpen} atLimit={atLimit} />
+      <AddRoutineDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        atLimit={atLimit}
+        routines={optimisticRoutines}
+      />
 
       {/* Share Card Modal */}
       {shareModal.props && (

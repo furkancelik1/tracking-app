@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useTranslations } from "next-intl";
 import type { STRIPE_PLANS, SubscriptionTier } from "@/lib/stripe";
+import { motion } from "framer-motion";
 
 type Plan = (typeof STRIPE_PLANS)["PRO"];
 
@@ -56,7 +57,12 @@ export function SubscriptionCard({ tier, hasStripeCustomer, plan, periodEnd }: P
   }
 
   return (
-    <div className="rounded-lg border p-5 space-y-4">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 200, damping: 18 }}
+      className="rounded-lg p-5 space-y-4 glass-card retro-border theme-surface"
+    >
       {/* Current plan */}
       <div className="flex items-center justify-between">
         <div>
@@ -124,6 +130,6 @@ export function SubscriptionCard({ tier, hasStripeCustomer, plan, periodEnd }: P
           </div>
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

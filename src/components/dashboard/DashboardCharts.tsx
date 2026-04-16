@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import dynamic from "next/dynamic";
 
 // ── ssr:false — "use client" wrapper zorunlu, Server Component'te ssr:false yasak ──

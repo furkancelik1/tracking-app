@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { calculateLevel } from "@/lib/level";

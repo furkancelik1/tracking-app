@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 type LogEntry = { id: string; completedAt: string; note: string | null };
 
 type Props = {

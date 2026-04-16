@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";

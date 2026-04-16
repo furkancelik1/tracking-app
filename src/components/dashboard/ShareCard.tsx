@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 import { Shield, Flame, Trophy, Zap, Target, Award, Star, Sunrise } from "lucide-react";
 import { calculateLevel } from "@/lib/level";
 import { useTranslations, useLocale } from "next-intl";

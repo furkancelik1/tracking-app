@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { Coins, Snowflake, ShoppingBag, Package, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useRef, useCallback } from "react";
+import React, { useState, useEffect, useTransition, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

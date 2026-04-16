@@ -296,7 +296,8 @@
       "deleteDescription": "Emin misin? Bu işlem geri alınamaz.",
       "confirmDelete": "Sil",
       "cancelDelete": "İptal",
-      "shareRoutine": "Rutini Paylaş"
+      "shareRoutine": "Rutini Paylaş",
+      "undo": "Geri Al"
     },
     "addRoutine": {
       "title": "Yeni Rutin",

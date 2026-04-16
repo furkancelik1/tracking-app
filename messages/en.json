@@ -296,7 +296,8 @@
       "deleteDescription": "Are you sure? This action cannot be undone.",
       "confirmDelete": "Delete",
       "cancelDelete": "Cancel",
-      "shareRoutine": "Share Routine"
+      "shareRoutine": "Share Routine",
+      "undo": "Undo"
     },
     "addRoutine": {
       "title": "New Routine",

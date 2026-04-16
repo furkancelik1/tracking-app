@@ -135,7 +135,7 @@
     },
     "cta": {
       "title": "İlk rutinini bugün oluştur",
-      "description": "Binlerce kullanıcı alışkanlıklarını takip etmek için Rutin Takipçisi'ni kullanıyor. Sıra sende.",
+      "description": "Binlerce kullanıcı alışkanlıklarını takip etmek için Zenith'i kullanıyor. Sıra sende.",
       "button": "Hemen Başla — Ücretsiz"
     },
     "faq": {
@@ -787,7 +787,7 @@
   },
 
   "metadata": {
-    "title": "Zenith - Master Your Discipline",
+    "title": "Zenith - Productivity & Routine Tracker",
     "description": "Achieve your peak with zen-like focus.",
     "siteName": "Zenith",
     "keywords": "alışkanlık takip, rutin takip, günlük alışkanlıklar, seri, verimlilik, kişisel gelişim"
@@ -901,7 +901,7 @@
 
   "onboarding": {
     "title": "Hoş Geldin! 🌟",
-    "subtitle": "Rutin Takipçisi'nden en iyi şekilde nasıl faydalanacağını gösterelim.",
+    "subtitle": "Zenith'ten en iyi şekilde nasıl faydalanacağını gösterelim.",
     "back": "Geri",
     "next": "İleri",
     "finish": "Takibe Başla!",

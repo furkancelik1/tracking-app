@@ -14,7 +14,6 @@ import {
 } from "@/actions/shop.actions";
 import { firePurchaseConfetti } from "@/lib/celebrations";
 
-// ... (dosyanın geri kalanı aynı kalacak)
 
 type MarketplaceItem = {
   id: string;

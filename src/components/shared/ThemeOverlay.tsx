@@ -23,14 +23,23 @@ export function ThemeOverlay() {
         if (cancelled) return;
 
         const root = document.documentElement;
+        const resolveThemeRadius = (themeName: string | undefined, metadata: Record<string, any>) => {
+          const customRadius = metadata.cardRadius ?? metadata.radius;
+          if (customRadius) return customRadius as string;
+          const lowerName = themeName?.toLowerCase() ?? "";
+          if (lowerName.includes("retro")) return "0px";
+          if (lowerName.includes("modern")) return "24px";
+          return null;
+        };
 
         if (theme?.metadata) {
           const { primary, secondary, accent, glow, pattern, cardRadius, radius, cardShadow, shadow } = theme.metadata;
+          const resolvedRadius = resolveThemeRadius(theme.name, theme.metadata as Record<string, any>);
           if (primary) root.style.setProperty("--shop-primary", primary);
           if (secondary) root.style.setProperty("--shop-secondary", secondary);
           if (accent) root.style.setProperty("--shop-accent", accent);
           if (glow) root.style.setProperty("--shop-primary-glow", glow);
-          if (cardRadius ?? radius) root.style.setProperty("--shop-card-radius", (cardRadius ?? radius) as string);
+          if (resolvedRadius) root.style.setProperty("--shop-card-radius", resolvedRadius);
           if (cardShadow ?? shadow) root.style.setProperty("--shop-card-shadow", (cardShadow ?? shadow) as string);
           root.setAttribute("data-shop-theme", "true");
           root.setAttribute("data-theme-name", theme.name ?? "");

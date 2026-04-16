@@ -55,14 +55,26 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
   const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [actionId, setActionId] = useState<string | null>(null);
 
-  const applyThemeStyleVars = useCallback((metadata: Record<string, string> | null) => {
+  const resolveThemeRadius = useCallback(
+    (themeName: string | undefined, metadata: Record<string, string> | null) => {
+      const customRadius = metadata?.cardRadius ?? metadata?.radius;
+      if (customRadius) return customRadius;
+      const lowerName = themeName?.toLowerCase() ?? "";
+      if (lowerName.includes("retro")) return "0px";
+      if (lowerName.includes("modern")) return "24px";
+      return null;
+    },
+    []
+  );
+
+  const applyThemeStyleVars = useCallback((metadata: Record<string, string> | null, themeName?: string) => {
     const root = document.documentElement;
     if (!metadata) return;
-    const radius = metadata.cardRadius ?? metadata.radius;
+    const radius = resolveThemeRadius(themeName, metadata);
     const shadow = metadata.cardShadow ?? metadata.shadow;
     if (radius) root.style.setProperty("--shop-card-radius", radius);
     if (shadow) root.style.setProperty("--shop-card-shadow", shadow);
-  }, []);
+  }, [resolveThemeRadius]);
 
   const resetThemeStyleVars = useCallback(() => {
     const root = document.documentElement;
@@ -73,7 +85,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
   useEffect(() => {
     const equippedTheme = items.find((i) => i.category === "THEME" && i.equipped);
     if (equippedTheme?.metadata) {
-      applyThemeStyleVars(equippedTheme.metadata);
+      applyThemeStyleVars(equippedTheme.metadata, equippedTheme.name);
     } else {
       resetThemeStyleVars();
     }
@@ -130,7 +142,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
           },
         });
         if (item.category === "THEME") {
-          applyThemeStyleVars(item.metadata);
+          applyThemeStyleVars(item.metadata, item.name);
         }
         window.dispatchEvent(new CustomEvent("theme-changed"));
       } else {

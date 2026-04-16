@@ -97,7 +97,7 @@
   .glass-card {
     background: hsl(var(--card) / 0.62);
     backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--border) / 0.58);
+    border: 1px solid hsl(0 0% 100% / 0.1);
     box-shadow: var(--glass-shadow);
     transition:
       border-color 220ms ease,
@@ -106,10 +106,11 @@
   }
 
   .retro-border {
-    border: 1px solid hsl(var(--border) / 0.82);
+    border: 2px solid hsl(var(--border) / 0.7);
     box-shadow:
       inset 0 1px 0 hsl(0 0% 100% / 0.08),
-      inset 0 0 0 1px hsl(var(--foreground) / 0.04),
+      1px 1px 0 hsl(0 0% 100% / 0.04),
+      -1px -1px 0 hsl(240 10% 3% / 0.5),
       0 8px 24px hsl(240 12% 7% / 0.32);
   }
 
@@ -120,10 +121,10 @@
 
   .dark-surface {
     background-color: hsl(var(--card) / 0.82);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
     border: 1px solid hsl(var(--border) / 0.85);
     box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.03),
+      inset 0 1px 0 hsl(0 0% 100% / 0.05),
       inset 0 -1px 0 hsl(240 10% 2% / 0.35),
       0 8px 28px hsl(240 40% 2% / 0.45);
     transition:

@@ -1,8 +1,8 @@
 ﻿"use client";
 
 import * as React from "react";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Check, Undo2, Trash2, Share2, Flame, MoreVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -52,8 +52,29 @@ export function RoutineCard({
   const t = useTranslations("dashboard.routineCard");
   const completed = isCompletedToday(routine.logs);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isPressing, setIsPressing] = useState(false);
+  const [showShimmer, setShowShimmer] = useState(false);
   const iconColor = routine.color ?? "#3b82f6";
   const Icon = ICON_MAP[routine.icon ?? ""];
+  const prevCompletedRef = useRef(completed);
+
+  useEffect(() => {
+    if (!prevCompletedRef.current && completed) {
+      setShowShimmer(true);
+      const timer = window.setTimeout(() => setShowShimmer(false), 750);
+      return () => window.clearTimeout(timer);
+    }
+    prevCompletedRef.current = completed;
+  }, [completed]);
+
+  function handleToggle() {
+    if (isPending) return;
+    if (!completed) {
+      setIsPressing(true);
+      window.setTimeout(() => setIsPressing(false), 140);
+    }
+    onToggle(routine.id, completed);
+  }
 
   return (
     <motion.div
@@ -62,7 +83,7 @@ export function RoutineCard({
       animate={{
         opacity: 1,
         y: 0,
-        scale: completed ? 1.01 : 1,
+        scale: isPressing ? 0.98 : completed ? 1.01 : 1,
       }}
       transition={{
         type: "spring",
@@ -70,13 +91,25 @@ export function RoutineCard({
         damping: 20,
       }}
       className={cn(
-        "group relative flex flex-col gap-4 rounded-xl p-5 glass-card retro-border theme-surface",
+        "group relative overflow-hidden flex flex-col gap-4 rounded-xl p-5 glass-card dark-surface retro-border theme-surface border border-white/10",
         completed
-          ? "border-emerald-500/40 bg-emerald-950/10 dark:bg-emerald-950/20"
-          : "border-border hover:border-border/80 hover:shadow-sm",
+          ? "border-emerald-300/30 bg-emerald-950/10 dark:bg-emerald-950/20"
+          : "hover:border-white/20 hover:shadow-sm",
         isPending && "opacity-60 pointer-events-none"
       )}
     >
+      <AnimatePresence>
+        {showShimmer && (
+          <motion.div
+            initial={{ x: "-120%", opacity: 0 }}
+            animate={{ x: "120%", opacity: [0, 0.65, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.7, ease: "easeInOut" }}
+            className="pointer-events-none absolute inset-y-0 z-10 w-1/2 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
@@ -162,7 +195,7 @@ export function RoutineCard({
             ? "border-emerald-500/40 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
             : ""
         )}
-        onClick={() => onToggle(routine.id, completed)}
+        onClick={handleToggle}
         disabled={isPending}
       >
         {completed ? (

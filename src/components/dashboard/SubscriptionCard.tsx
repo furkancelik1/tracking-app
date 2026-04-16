@@ -61,7 +61,7 @@ export function SubscriptionCard({ tier, hasStripeCustomer, plan, periodEnd }: P
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 200, damping: 18 }}
-      className="rounded-lg p-5 space-y-4 glass-card retro-border theme-surface"
+      className="rounded-lg p-5 space-y-4 glass-card dark-surface retro-border theme-surface border border-white/10"
     >
       {/* Current plan */}
       <div className="flex items-center justify-between">

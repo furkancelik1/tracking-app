@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { Trophy, Swords, ShieldAlert } from "lucide-react";

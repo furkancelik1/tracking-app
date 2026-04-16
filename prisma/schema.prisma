@@ -163,7 +163,6 @@ model Routine {
   sortOrder             Int                  @default(0)
   currentStreak         Int                  @default(0)
   longestStreak         Int                  @default(0)
-  streakCount           Int                  @default(0)
   lastCompleted         DateTime?
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt

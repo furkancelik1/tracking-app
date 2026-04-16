@@ -137,7 +137,7 @@ export async function completeRoutineAction(
       }),
       prisma.routine.update({
         where: { id: routineId },
-        data: { currentStreak: newStreak, longestStreak: newLongest, lastCompleted: new Date(), streakCount: newStreak },
+        data: { currentStreak: newStreak, longestStreak: newLongest, lastCompleted: new Date() },
       }),
       prisma.user.update({
         where: { id: userId },

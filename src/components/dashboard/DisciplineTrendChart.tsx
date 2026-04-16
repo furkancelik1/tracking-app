@@ -145,7 +145,7 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                 "drop-shadow(0 0 8px rgba(34,211,238,0.15)) drop-shadow(0 0 16px rgba(167,139,250,0.1))",
             }}
           >
-            <ResponsiveContainer width="100%" height="100%" debounce={100}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250} debounce={100}>
               <AreaChart
                 data={points}
                 margin={{ top: 4, right: 4, left: -24, bottom: 0 }}

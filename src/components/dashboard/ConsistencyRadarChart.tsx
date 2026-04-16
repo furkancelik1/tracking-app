@@ -59,7 +59,7 @@ export function ConsistencyRadarChart({ data }: Props) {
           </div>
         ) : (
           <div style={{ height: "280px", minHeight: "280px", width: "100%" }}>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
               <RadarChart data={localizedData} cx="50%" cy="50%" outerRadius="70%">
                 <PolarGrid
                   stroke="hsl(var(--border))"

@@ -4,7 +4,7 @@ import React from "react";
 
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import { calculateLevel } from "@/lib/level";
+import { calculateLevel, normalizeRankTitle } from "@/lib/level";
 import { Shield } from "lucide-react";
 
 type Props = {
@@ -17,7 +17,7 @@ type Props = {
 export function LevelBadge({ xp, compact = false, className }: Props) {
   const t = useTranslations("levels");
   const { level, rank, rankColor } = calculateLevel(xp);
-  const localizedRank = t(`ranks.${rank}` as Parameters<typeof t>[0]);
+  const localizedRank = t(`ranks.${normalizeRankTitle(rank)}` as Parameters<typeof t>[0]);
 
   if (compact) {
     return (

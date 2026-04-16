@@ -5,7 +5,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import { calculateLevel } from "@/lib/level";
+import { calculateLevel, normalizeRankTitle } from "@/lib/level";
 import { Shield, Sparkles } from "lucide-react";
 
 type Props = {
@@ -17,7 +17,7 @@ export function LevelProgressBar({ xp, className }: Props) {
   const t = useTranslations("levels");
   const { level, currentLevelXp, xpForNextLevel, xpToNextLevel, rank, rankColor, progress } =
     calculateLevel(xp);
-  const localizedRank = t(`ranks.${rank}` as Parameters<typeof t>[0]);
+  const localizedRank = t(`ranks.${normalizeRankTitle(rank)}` as Parameters<typeof t>[0]);
 
   return (
     <div className={cn("rounded-xl border bg-card p-4", className)}>

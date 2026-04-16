@@ -2,7 +2,7 @@
 
 import { forwardRef } from "react";
 import { Shield, Flame, Trophy, Zap, Target, Award, Star, Sunrise } from "lucide-react";
-import { calculateLevel } from "@/lib/level";
+import { calculateLevel, normalizeRankTitle } from "@/lib/level";
 import { useTranslations, useLocale } from "next-intl";
 
 // â”€â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -79,6 +79,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
     const locale = useLocale();
     const { level, rank, rankColor, progress, currentLevelXp, xpForNextLevel } =
       calculateLevel(xp);
+    const normalizedRank = normalizeRankTitle(rank);
 
     const displayName = userName || tCommon("anonymous");
     const initials = displayName
@@ -145,7 +146,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             >
               <Shield className="size-4" style={{ color: rankColor }} />
               <span className="text-sm font-bold" style={{ color: rankColor }}>
-                {tLevels(`ranks.${rank}`)}
+                {tLevels(`ranks.${normalizedRank}`)}
               </span>
             </div>
           </div>
@@ -267,7 +268,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                     <StatBox
                       icon={<Shield className="size-5" style={{ color: rankColor }} />}
                       value={`Lvl ${level}`}
-                      label={tLevels(`ranks.${rank}`)}
+                      label={tLevels(`ranks.${normalizedRank}`)}
                       color={rankColor}
                     />
                     <StatBox
@@ -347,7 +348,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                         <p className="text-white font-bold text-3xl tabular-nums">
                           Lvl {level}
                         </p>
-                        <p className="text-white/40 text-sm">{tLevels(`ranks.${rank}`)}</p>
+                        <p className="text-white/40 text-sm">{tLevels(`ranks.${normalizedRank}`)}</p>
                       </div>
                     </div>
                   </div>

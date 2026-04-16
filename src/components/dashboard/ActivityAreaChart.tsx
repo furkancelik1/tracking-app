@@ -89,7 +89,7 @@ export function ActivityAreaChart({ data, rangeDays }: Props) {
           {!mounted ? (
             <Skeleton className="h-full w-full rounded-md" />
           ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
             <AreaChart
               data={safeData}
               margin={{ top: 4, right: 4, left: -20, bottom: 0 }}

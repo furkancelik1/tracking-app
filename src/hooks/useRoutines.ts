@@ -38,6 +38,10 @@ export function useRoutines(initialData?: RoutineWithMeta[]) {
     queryKey: ROUTINES_KEY,
     queryFn: fetchRoutines,
     initialData,
+    retry: (failureCount, error) => {
+      if (error instanceof Error && /500|internal/i.test(error.message)) return false;
+      return failureCount < 1;
+    },
   });
 }
 

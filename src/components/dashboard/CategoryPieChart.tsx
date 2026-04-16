@@ -76,7 +76,7 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
           </div>
         ) : (
           <div style={{ height: "260px", minHeight: "260px", width: "100%", touchAction: "manipulation" }}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={260}>
             <PieChart>
               <Pie
                 data={safeData}

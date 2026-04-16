@@ -4,17 +4,32 @@ const XP_PER_LEVEL = 100;
 
 // â”€â”€â”€ RÃ¼tbe TanÄ±mlarÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-export type RankTitle = "Ã‡Ä±rak" | "Disiplinli" | "Rutin CanavarÄ±" | "Ãœstat" | "Efsane";
+export type RankTitle = "Çırak" | "Disiplinli" | "Rutin Canavarı" | "Üstat" | "Efsane";
 
 type RankDef = { minLevel: number; maxLevel: number; title: RankTitle; titleEn: string; color: string };
 
 const RANKS: RankDef[] = [
-  { minLevel: 1, maxLevel: 5, title: "Ã‡Ä±rak", titleEn: "Apprentice", color: "#94a3b8" },
+  { minLevel: 1, maxLevel: 5, title: "Çırak", titleEn: "Apprentice", color: "#94a3b8" },
   { minLevel: 6, maxLevel: 15, title: "Disiplinli", titleEn: "Disciplined", color: "#22d3ee" },
-  { minLevel: 16, maxLevel: 30, title: "Rutin CanavarÄ±", titleEn: "Routine Beast", color: "#a855f7" },
-  { minLevel: 31, maxLevel: 50, title: "Ãœstat", titleEn: "Master", color: "#f59e0b" },
+  { minLevel: 16, maxLevel: 30, title: "Rutin Canavarı", titleEn: "Routine Beast", color: "#a855f7" },
+  { minLevel: 31, maxLevel: 50, title: "Üstat", titleEn: "Master", color: "#f59e0b" },
   { minLevel: 51, maxLevel: Infinity, title: "Efsane", titleEn: "Legend", color: "#ef4444" },
 ];
+
+const RANK_ALIASES: Record<string, RankTitle> = {
+  Çırak: "Çırak",
+  "Ã‡Ä±rak": "Çırak",
+  Disiplinli: "Disiplinli",
+  "Rutin Canavarı": "Rutin Canavarı",
+  "Rutin CanavarÄ±": "Rutin Canavarı",
+  Üstat: "Üstat",
+  "Ãœstat": "Üstat",
+  Efsane: "Efsane",
+};
+
+export function normalizeRankTitle(rank: string): RankTitle {
+  return RANK_ALIASES[rank] ?? "Çırak";
+}
 
 // â”€â”€â”€ Seviye Hesaplama â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -102,13 +117,13 @@ export function getAvatarFrame(xp: number): AvatarFrameConfig {
         glow: "shadow-[0_0_10px_rgba(34,211,238,0.25)]",
         isLegend: false,
       };
-    case "Rutin CanavarÄ±":
+    case "Rutin Canavarı":
       return {
         ring: "ring-2 ring-purple-500/80",
         glow: "shadow-[0_0_12px_rgba(168,85,247,0.35)]",
         isLegend: false,
       };
-    case "Ãœstat":
+    case "Üstat":
       return {
         ring: "ring-[3px] ring-amber-400/90",
         glow: "shadow-[0_0_16px_rgba(245,158,11,0.4)]",

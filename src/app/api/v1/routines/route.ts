@@ -7,6 +7,19 @@ import type { ApiResponse } from "@/types";
 import type { Routine, RoutineFrequency } from "@prisma/client";
 
 const FREE_ROUTINE_LIMIT = 3;
+const isProd = process.env.NODE_ENV === "production";
+
+function serializeError(err: unknown) {
+  if (err instanceof Error) {
+    return {
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
+      cause: err.cause,
+    };
+  }
+  return { value: err };
+}
 
 const createRoutineSchema = z.object({
   title: z.string().min(1, "BaÅŸlÄ±k zorunludur").max(100),
@@ -20,6 +33,7 @@ const createRoutineSchema = z.object({
 
 // GET /api/v1/routines â€” kullanÄ±cÄ±nÄ±n rutinlerini listele
 export async function GET() {
+  let userId: string | null = null;
   try {
     const session = await getSession();
     if (!session?.user) {
@@ -29,7 +43,7 @@ export async function GET() {
       );
     }
 
-    const userId = session.user.id;
+    userId = session.user.id;
 
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
@@ -53,11 +67,17 @@ export async function GET() {
       data: routines,
     });
   } catch (err) {
-    console.error("[GET /api/v1/routines] Hata:", err);
+    console.error("[GET /api/v1/routines] Internal error", {
+      route: "/api/v1/routines",
+      method: "GET",
+      userId,
+      error: serializeError(err),
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json<ApiResponse<never>>(
       {
         success: false,
-        error: err instanceof Error ? err.message : "Sunucu hatasÄ±",
+        error: isProd ? "Sunucu hatası" : err instanceof Error ? err.message : "Sunucu hatası",
         code: "INTERNAL_ERROR",
       },
       { status: 500 }

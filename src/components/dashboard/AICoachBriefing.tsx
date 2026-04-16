@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import type { DailyCoachPayload, WeeklyInsightPayload } from "@/actions/ai.actions";
 import { getDailyCoachMessage } from "@/actions/ai.actions";
-import { calculateLevel } from "@/lib/level";
+import { calculateLevel, normalizeRankTitle } from "@/lib/level";
 
 type Props = {
   xp: number;
@@ -54,6 +54,7 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
 
   // Level bilgileri
   const levelInfo = calculateLevel(xp);
+  const normalizedRank = normalizeRankTitle(levelInfo.rank);
   const xpToLegend = Math.max(0, LEGEND_XP - xp);
   const legendProgress = Math.min(100, Math.round((xp / LEGEND_XP) * 100));
 
@@ -224,7 +225,7 @@ export function AICoachBriefing({ xp, initialInsight, isPro }: Props) {
               <Progress value={legendProgress} className="h-1.5" />
               <div className="flex justify-between text-[10px] text-muted-foreground tabular-nums">
                 <span>
-                  {tLevels(`ranks.${levelInfo.rank}` as Parameters<typeof tLevels>[0])}
+                  {tLevels(`ranks.${normalizedRank}` as Parameters<typeof tLevels>[0])}
                 </span>
                 <span className="flex items-center gap-0.5">
                   {tLevels("ranks.Efsane")}

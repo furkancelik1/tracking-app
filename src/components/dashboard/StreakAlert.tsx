@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
@@ -12,9 +13,13 @@ type Props = {
 };
 
 /** Bugün tamamlanmamış ve aktif serisi olan rutinleri döner. */
-function getAtRiskRoutines(routines: RoutineWithMeta[]): RoutineWithMeta[] {
-  const todayUTC = new Date();
-  todayUTC.setUTCHours(0, 0, 0, 0);
+function getAtRiskRoutines(
+  routines: RoutineWithMeta[],
+  todayIso: string | null
+): RoutineWithMeta[] {
+  if (!todayIso) return [];
+  const todayUTC = new Date(todayIso);
+  if (Number.isNaN(todayUTC.getTime())) return [];
 
   return routines.filter((r) => {
     if (r.currentStreak === 0) return false;
@@ -27,12 +32,19 @@ function getAtRiskRoutines(routines: RoutineWithMeta[]): RoutineWithMeta[] {
 
 export function StreakAlert({ routines }: Props) {
   const t = useTranslations("dashboard.streakAlert");
-  const atRisk = getAtRiskRoutines(routines);
+  const [todayIso, setTodayIso] = useState<string | null>(null);
+  useEffect(() => {
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    setTodayIso(d.toISOString());
+  }, []);
+  const atRisk = useMemo(() => getAtRiskRoutines(routines, todayIso), [routines, todayIso]);
   const atRiskCount = atRisk.length;
   if (atRiskCount === 0) return null;
 
   return (
     <motion.div
+      suppressHydrationWarning
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}

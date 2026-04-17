@@ -10,6 +10,7 @@ import { updateAIChallengeProgress } from "@/actions/ai.actions";
 import { updateDuelScore } from "@/actions/duel.actions";
 import { calculateLevel } from "@/lib/level";
 import { calculateFlexibleStreak } from "@/lib/xp-logic";
+import { RoutineIntensity, type RoutineFrequency } from "@prisma/client";
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // YardÄ±mcÄ±: periyot baÅŸlangÄ±cÄ± (Route Handler ile aynÄ± mantÄ±k)
@@ -78,9 +79,6 @@ export async function createRoutineAction(input: {
   color?: string;
   icon?: string;
   frequencyType?: "DAILY" | "WEEKLY" | "SPECIFIC_DAYS";
-  weeklyTarget?: number;
-  daysOfWeek?: number[];
-  stackParentId?: string | null;
   intensity?: "LOW" | "MEDIUM" | "HIGH";
   estimatedMinutes?: number;
   imageUrl?: string | null;
@@ -90,24 +88,15 @@ export async function createRoutineAction(input: {
   const userId = await requireUser();
 
   const frequencyType = input.frequencyType ?? "DAILY";
-  const normalizedDays = Array.from(
-    new Set((input.daysOfWeek ?? []).filter((d) => Number.isInteger(d) && d >= 0 && d <= 6))
-  ).sort((a, b) => a - b);
-
-  if (frequencyType === "SPECIFIC_DAYS" && normalizedDays.length === 0) {
-    throw new Error("Belirli günler için en az bir gün seçmelisin.");
-  }
-
-  if (input.stackParentId) {
-    const parent = await prisma.routine.findFirst({
-      where: { id: input.stackParentId, userId, isActive: true },
-      select: { id: true },
-    });
-    if (!parent) throw new Error("Bağlanacak üst alışkanlık bulunamadı.");
-  }
-
-  const mins = Math.min(480, Math.max(1, input.estimatedMinutes ?? 30));
-  const intensity = input.intensity ?? "MEDIUM";
+  const frequency: RoutineFrequency =
+    frequencyType === "DAILY" ? "DAILY" : "WEEKLY";
+  const mins = Math.min(480, Math.max(0, input.estimatedMinutes ?? 0));
+  const intensity: RoutineIntensity =
+    input.intensity === "LOW"
+      ? RoutineIntensity.LOW
+      : input.intensity === "HIGH"
+        ? RoutineIntensity.HIGH
+        : RoutineIntensity.MEDIUM;
   const imageUrl = input.imageUrl?.trim() || null;
   const coachTip = input.coachTip?.trim() || null;
 
@@ -119,11 +108,7 @@ export async function createRoutineAction(input: {
       category: input.category?.trim() || "Genel",
       color: input.color ?? "#3b82f6",
       icon: input.icon ?? "CheckCircle",
-      frequency: frequencyType === "DAILY" ? "DAILY" : "WEEKLY",
-      frequencyType,
-      weeklyTarget: frequencyType === "WEEKLY" ? Math.min(7, Math.max(1, input.weeklyTarget ?? 3)) : 1,
-      daysOfWeek: frequencyType === "SPECIFIC_DAYS" ? normalizedDays : [],
-      stackParentId: input.stackParentId ?? null,
+      frequency,
       intensity,
       estimatedMinutes: mins,
       imageUrl: imageUrl && imageUrl.length > 0 ? imageUrl : null,
@@ -157,10 +142,7 @@ export async function completeRoutineAction(
         id: true,
         title: true,
         category: true,
-        frequencyType: true,
-        weeklyTarget: true,
-        daysOfWeek: true,
-        stackParentId: true,
+        frequency: true,
         currentStreak: true,
         longestStreak: true,
         lastCompletedAt: true,
@@ -168,38 +150,19 @@ export async function completeRoutineAction(
     });
     if (!routine) throw new Error("Rutin bulunamadÄ±.");
 
+    const periodType = routine.frequency === "WEEKLY" ? "WEEKLY" : "DAILY";
     const todayStart = getPeriodStart("DAILY");
-    const periodStart = getPeriodStart(routine.frequencyType);
+    const periodStart = getPeriodStart(periodType);
     const todayEnd = new Date(todayStart);
     todayEnd.setUTCHours(23, 59, 59, 999);
 
-    if (
-      routine.frequencyType === "SPECIFIC_DAYS" &&
-      !routine.daysOfWeek.includes(new Date().getUTCDay())
-    ) {
-      throw new Error("Bu alÄ±ÅŸkanlÄ±k bugÃ¼n iÃ§in planlÄ± deÄŸil.");
-    }
-
-    if (routine.stackParentId) {
-      const parentCompletedToday = await prisma.routineLog.findFirst({
-        where: {
-          routineId: routine.stackParentId,
-          userId,
-          completedAt: { gte: todayStart, lte: todayEnd },
-        },
+    if (routine.frequency === "WEEKLY") {
+      const alreadyWeeklyLogged = await prisma.routineLog.findFirst({
+        where: { routineId, userId, completedAt: { gte: periodStart } },
         select: { id: true },
       });
-      if (!parentCompletedToday) {
-        throw new Error("Ã–nce baÄŸlÄ± olduÄŸu alÄ±ÅŸkanlÄ±ÄŸÄ± tamamlamalÄ±sÄ±n.");
-      }
-    }
-
-    if (routine.frequencyType === "WEEKLY") {
-      const weeklyLogs = await prisma.routineLog.count({
-        where: { routineId, userId, completedAt: { gte: periodStart } },
-      });
-      if (weeklyLogs >= routine.weeklyTarget) {
-        throw new Error(`Bu hafta hedefin olan ${routine.weeklyTarget} tamamlama sayÄ±sÄ±na ulaÅŸtÄ±n.`);
+      if (alreadyWeeklyLogged) {
+        throw new Error("Bu hafta için zaten tamamlandı.");
       }
     } else {
       const alreadyLogged = await prisma.routineLog.findFirst({
@@ -212,11 +175,11 @@ export async function completeRoutineAction(
     // Streak hesaplama
     const now = new Date();
     let newStreak = calculateFlexibleStreak({
-      frequencyType: routine.frequencyType,
+      frequencyType: periodType,
       currentStreak: routine.currentStreak,
       lastCompletedAt: routine.lastCompletedAt,
       completedAt: now,
-      daysOfWeek: routine.daysOfWeek,
+      daysOfWeek: [],
     });
     const newLongest = Math.max(newStreak, routine.longestStreak);
 
@@ -303,12 +266,13 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
   try {
     const routine = await prisma.routine.findFirst({
       where: { id: routineId, userId },
-      select: { frequencyType: true, currentStreak: true, lastCompletedAt: true },
+      select: { frequency: true, currentStreak: true, lastCompletedAt: true },
     });
     if (!routine) throw new Error("Rutin bulunamadÄ±.");
 
-    const periodStart = getPeriodStart(routine.frequencyType);
-    const prevPeriodStart = getPrevPeriodStart(routine.frequencyType);
+    const periodType = routine.frequency === "WEEKLY" ? "WEEKLY" : "DAILY";
+    const periodStart = getPeriodStart(periodType);
+    const prevPeriodStart = getPrevPeriodStart(periodType);
 
     const log = await prisma.routineLog.findFirst({
       where: { routineId, userId, completedAt: { gte: periodStart } },

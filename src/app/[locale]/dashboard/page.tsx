@@ -1,3 +1,4 @@
+import React from "react";
 import dynamic from "next/dynamic";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -34,6 +35,25 @@ const RoutineList = dynamic(
 
 function isMissingColumnError(err: unknown): boolean {
   return err instanceof Error && /column .* does not exist/i.test(err.message);
+}
+
+function toIsoOrNow(value: unknown): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
+  }
+  return new Date().toISOString();
+}
+
+function toIsoOrNull(value: unknown): string | null {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
+  }
+  return null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -147,12 +167,18 @@ export default async function DashboardPage({
         .catch(() => null),
     ]);
 
-    const dailyRoutines = (raw ?? []).filter(
+    const normalizedRaw = (raw ?? []) as Array<any>;
+
+    const dailyRoutines = normalizedRaw.filter(
       (r) => (r.frequencyType ?? "DAILY") === "DAILY"
     );
     const completedDaily = dailyRoutines.filter((routine) =>
-      (routine.logs ?? []).some((log) => {
-        const completedAt = log.completedAt;
+      (routine.logs ?? []).some((log: { completedAt?: Date | string | null }) => {
+        const rawCompletedAt = log.completedAt;
+        if (!rawCompletedAt) return false;
+        const completedAt =
+          rawCompletedAt instanceof Date ? rawCompletedAt : new Date(rawCompletedAt);
+        if (Number.isNaN(completedAt.getTime())) return false;
         return completedAt >= todayStart && completedAt < tomorrowStart;
       })
     ).length;
@@ -167,46 +193,99 @@ export default async function DashboardPage({
 
     const userXp = userXpData?.xp ?? 0;
 
-    const routines: RoutineWithMeta[] = (raw ?? []).map((r) => ({
-      id: r.id,
-      title: r.title ?? "",
-      description: r.description ?? null,
-      frequency: r.frequency ?? "DAILY",
-      frequencyType:
-        r.frequencyType === "SPECIFIC_DAYS"
-          ? "SPECIFIC_DAYS"
-          : r.frequencyType === "WEEKLY"
-            ? "WEEKLY"
-            : "DAILY",
-      weeklyTarget: r.weeklyTarget ?? 1,
-      daysOfWeek: r.daysOfWeek ?? [],
-      stackParentId: r.stackParentId ?? null,
-      intensity: ((): "LOW" | "MEDIUM" | "HIGH" => {
-        const i = (r as { intensity?: string }).intensity;
-        if (i === "LOW" || i === "MEDIUM" || i === "HIGH") return i;
-        return "MEDIUM";
-      })(),
-      estimatedMinutes: (r as { estimatedMinutes?: number }).estimatedMinutes ?? 30,
-      imageUrl: (r as { imageUrl?: string | null }).imageUrl ?? null,
-      isGuided: (r as { isGuided?: boolean }).isGuided ?? false,
-      coachTip: (r as { coachTip?: string | null }).coachTip ?? null,
-      isActive: r.isActive ?? true,
-      sortOrder: r.sortOrder ?? 0,
-      category: r.category ?? "Genel",
-      color: r.color ?? "#3b82f6",
-      icon: r.icon ?? "Check",
-      currentStreak: r.currentStreak ?? 0,
-      longestStreak: r.longestStreak ?? 0,
-      lastCompletedAt: r.lastCompletedAt?.toISOString() ?? null,
-      createdAt: r.createdAt?.toISOString() ?? new Date().toISOString(),
-      updatedAt: r.updatedAt?.toISOString() ?? new Date().toISOString(),
-      logs: (r.logs ?? []).map((l) => ({
-        id: l.id,
-        completedAt: l.completedAt?.toISOString() ?? new Date().toISOString(),
-        note: l.note ?? null,
-      })),
-      _count: r._count ?? { logs: 0 },
-    }));
+    const routines: RoutineWithMeta[] = normalizedRaw.map((r) => {
+      try {
+        const rec = r as any;
+        const intensity: "LOW" | "MEDIUM" | "HIGH" =
+          rec.intensity === "LOW" ||
+          rec.intensity === "HIGH" ||
+          rec.intensity === "MEDIUM"
+            ? (rec.intensity as "LOW" | "MEDIUM" | "HIGH")
+            : "MEDIUM";
+
+        const rawMinutes = rec.estimatedMinutes as number | null | undefined;
+        const estimatedMinutes =
+          typeof rawMinutes === "number" && Number.isFinite(rawMinutes) && rawMinutes > 0
+            ? Math.min(480, Math.max(1, Math.round(rawMinutes)))
+            : 30;
+
+        return {
+          id: rec.id,
+          title: rec.title ?? "",
+          description: rec.description ?? null,
+          frequency: rec.frequency ?? "DAILY",
+          frequencyType:
+            rec.frequencyType === "SPECIFIC_DAYS"
+              ? "SPECIFIC_DAYS"
+              : rec.frequencyType === "WEEKLY"
+                ? "WEEKLY"
+                : "DAILY",
+          weeklyTarget: rec.weeklyTarget ?? 1,
+          daysOfWeek: Array.isArray(rec.daysOfWeek) ? rec.daysOfWeek : [],
+          stackParentId: rec.stackParentId ?? null,
+          intensity,
+          estimatedMinutes,
+          imageUrl: rec.imageUrl || null,
+          isGuided: rec.isGuided ?? false,
+          coachTip: rec.coachTip ?? null,
+          isActive: rec.isActive ?? true,
+          sortOrder: rec.sortOrder ?? 0,
+          category: rec.category ?? "Genel",
+          color: rec.color ?? "#3b82f6",
+          icon: rec.icon ?? "Check",
+          currentStreak: rec.currentStreak ?? 0,
+          longestStreak: rec.longestStreak ?? 0,
+          lastCompletedAt: toIsoOrNull(rec.lastCompletedAt),
+          createdAt: toIsoOrNow(rec.createdAt),
+          updatedAt: toIsoOrNow(rec.updatedAt),
+          logs: (rec.logs ?? []).map((l: any) => ({
+            id: l.id,
+            completedAt: toIsoOrNow(l.completedAt),
+            note: l.note ?? null,
+          })),
+          _count: {
+            logs:
+              typeof rec._count?.logs === "number" && Number.isFinite(rec._count.logs)
+                ? rec._count.logs
+                : 0,
+          },
+        };
+      } catch (mapError) {
+        console.error("[DashboardPage] routine normalize failed", {
+          userId,
+          routineId: (r as { id?: string })?.id,
+          routine: r,
+          mapError,
+        });
+        return {
+          id: (r as { id?: string })?.id ?? `fallback-${Math.random().toString(36).slice(2)}`,
+          title: (r as { title?: string | null })?.title ?? "",
+          description: null,
+          frequency: "DAILY",
+          frequencyType: "DAILY",
+          weeklyTarget: 1,
+          daysOfWeek: [],
+          stackParentId: null,
+          intensity: "MEDIUM",
+          estimatedMinutes: 30,
+          imageUrl: null,
+          isGuided: false,
+          coachTip: null,
+          isActive: true,
+          sortOrder: 0,
+          category: "Genel",
+          color: "#3b82f6",
+          icon: "Check",
+          currentStreak: 0,
+          longestStreak: 0,
+          lastCompletedAt: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          logs: [],
+          _count: { logs: 0 },
+        };
+      }
+    });
 
     const isEmpty = (raw?.length ?? 0) === 0;
 

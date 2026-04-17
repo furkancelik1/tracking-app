@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,8 +11,6 @@ import { cn } from "@/lib/utils";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import type { DuelEntry } from "@/actions/duel.actions";
 import { Timer, Swords, Coins, Trophy, Flame } from "lucide-react";
-
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -33,8 +31,6 @@ function formatTimeLeft(ms: number): { h: number; m: number; s: number } {
   };
 }
 
-// â”€â”€â”€ Live Countdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function LiveCountdown({ endTimeMs }: { endTimeMs: number }) {
   const t = useTranslations("duel");
   const [now, setNow] = useState(Date.now());
@@ -51,8 +47,8 @@ function LiveCountdown({ endTimeMs }: { endTimeMs: number }) {
 
   if (ms <= 0) {
     return (
-      <Badge variant="destructive" className="text-xs gap-1">
-        <Timer className="size-3" />
+      <Badge variant="destructive" className="gap-1 text-xs">
+        <Timer className="size-3" aria-hidden />
         {t("battleEnded")}
       </Badge>
     );
@@ -61,27 +57,28 @@ function LiveCountdown({ endTimeMs }: { endTimeMs: number }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-center gap-2">
-        <Timer className="size-4 text-orange-400" />
+        <Timer className="size-4 text-[#D6FF00]" aria-hidden />
         <div className="flex gap-1 tabular-nums text-sm font-bold">
-          <span className="bg-orange-500/10 text-orange-500 rounded px-2 py-1">
-            {String(h).padStart(2, "0")}{t("hours")}
+          <span className="rounded bg-[#D6FF00]/15 px-2 py-1 text-[#D6FF00]">
+            {String(h).padStart(2, "0")}
+            {t("hours")}
           </span>
-          <span className="text-muted-foreground self-center">:</span>
-          <span className="bg-orange-500/10 text-orange-500 rounded px-2 py-1">
-            {String(m).padStart(2, "0")}{t("minutes")}
+          <span className="self-center text-zinc-600">:</span>
+          <span className="rounded bg-[#D6FF00]/15 px-2 py-1 text-[#D6FF00]">
+            {String(m).padStart(2, "0")}
+            {t("minutes")}
           </span>
-          <span className="text-muted-foreground self-center">:</span>
-          <span className="bg-orange-500/10 text-orange-500 rounded px-2 py-1">
-            {String(s).padStart(2, "0")}{t("seconds")}
+          <span className="self-center text-zinc-600">:</span>
+          <span className="rounded bg-[#D6FF00]/15 px-2 py-1 text-[#D6FF00]">
+            {String(s).padStart(2, "0")}
+            {t("seconds")}
           </span>
         </div>
       </div>
-      <Progress value={progressPct} className="h-1" />
+      <Progress value={progressPct} className="h-1 [&>div]:bg-[#D6FF00]" />
     </div>
   );
 }
-
-// â”€â”€â”€ Player Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PlayerPanel({
   player,
@@ -106,79 +103,60 @@ function PlayerPanel({
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: isLeft ? 0.1 : 0.2 }}
       className={cn(
-        "flex-1 flex flex-col items-center gap-2 rounded-xl p-4 border relative",
+        "relative flex flex-1 flex-col items-center gap-2 rounded-xl border p-4",
         isWinner
-          ? "border-yellow-400/50 bg-gradient-to-b from-yellow-400/10 to-transparent"
+          ? "border-[#D6FF00]/40 bg-gradient-to-b from-[#D6FF00]/12 to-transparent"
           : isCurrentUser
-            ? "border-orange-500/30 bg-orange-500/5"
-            : "border-border bg-card/50"
+            ? "border-[#D6FF00]/25 bg-[#D6FF00]/5"
+            : "border-white/5 bg-zinc-950/80"
       )}
     >
       {isWinner && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="absolute -top-2 -right-2"
-        >
-          <Trophy className="size-5 text-yellow-400" />
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -right-2 -top-2">
+          <Trophy className="size-5 text-[#D6FF00]" aria-hidden />
         </motion.div>
       )}
 
-      {/* Avatar */}
       <Avatar
         className={cn(
           "size-14 ring-2",
-          isWinner
-            ? "ring-yellow-400"
-            : isCurrentUser
-              ? "ring-orange-400"
-              : "ring-border"
+          isWinner ? "ring-[#D6FF00]" : isCurrentUser ? "ring-[#D6FF00]/70" : "ring-white/10"
         )}
       >
         <AvatarImage src={player.image ?? undefined} alt={player.name ?? "?"} />
-        <AvatarFallback className="text-sm font-semibold">
-          {getInitials(player.name)}
-        </AvatarFallback>
+        <AvatarFallback className="text-sm font-semibold">{getInitials(player.name)}</AvatarFallback>
       </Avatar>
 
-      <div className="text-center space-y-0.5">
-        <p className="text-xs font-semibold truncate max-w-[90px]">
-          {player.name ?? "?"}
-        </p>
+      <div className="space-y-0.5 text-center">
+        <p className="max-w-[90px] truncate text-xs font-semibold text-white">{player.name ?? "?"}</p>
         <LevelBadge xp={player.xp} compact />
       </div>
 
-      {/* Score */}
       <motion.div
         key={score}
         initial={{ scale: 1.3 }}
         animate={{ scale: 1 }}
         className={cn(
           "text-2xl font-black tabular-nums",
-          isWinner ? "text-yellow-400" : isCurrentUser ? "text-orange-400" : "text-foreground"
+          isWinner ? "text-[#D6FF00]" : isCurrentUser ? "text-[#D6FF00]" : "text-zinc-300"
         )}
       >
         {score}
       </motion.div>
 
-      {/* Discipline Bar */}
       <div className="w-full space-y-1">
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-          <Flame className="size-3" />
+        <div className="flex items-center justify-between text-[10px] text-zinc-500">
+          <Flame className="size-3 text-[#D6FF00]/80" aria-hidden />
           <span>{scorePct}%</span>
         </div>
-        <div className="relative h-2 rounded-full bg-muted overflow-hidden">
+        <div className="relative h-2 overflow-hidden rounded-full bg-zinc-900">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${scorePct}%` }}
             transition={{ duration: 0.6, ease: "easeOut" }}
             className={cn(
               "absolute inset-y-0 left-0 rounded-full",
-              isWinner
-                ? "bg-gradient-to-r from-yellow-400 to-amber-500"
-                : isCurrentUser
-                  ? "bg-gradient-to-r from-orange-400 to-red-500"
-                  : "bg-gradient-to-r from-slate-400 to-slate-500"
+              isWinner || isCurrentUser ? "bg-[#D6FF00]" : "bg-zinc-600"
             )}
           />
         </div>
@@ -187,24 +165,20 @@ function PlayerPanel({
   );
 }
 
-// â”€â”€â”€ VS Badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function VsBadge() {
   return (
     <motion.div
       initial={{ scale: 0, rotate: -20 }}
       animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.3 }}
-      className="z-10 -mx-3"
+      className="-mx-3 z-10"
     >
-      <div className="size-12 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg shadow-red-500/30">
-        <span className="text-sm font-black text-white tracking-tighter">VS</span>
+      <div className="flex size-12 items-center justify-center rounded-full bg-[#D6FF00] shadow-[0_0_28px_rgba(214,255,0,0.35)]">
+        <span className="text-sm font-black tracking-tighter text-black">VS</span>
       </div>
     </motion.div>
   );
 }
-
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   duel: DuelEntry;
@@ -217,41 +191,46 @@ export function DuelLiveStatus({ duel }: Props) {
   const isFinished = duel.status === "FINISHED";
   const endTimeMs = duel.endTime ? new Date(duel.endTime).getTime() : 0;
   const pot = duel.stake * 2;
-  const myId = duel.isChallenger ? duel.challenger.id : duel.opponent?.id;
 
   const maxScore = Math.max(duel.challengerScore, duel.opponentScore, 1);
 
   if (!duel.opponent) return null;
 
   return (
-    <Card className="overflow-hidden border-orange-500/20">
-      <CardContent className="p-4 space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Swords className="size-4 text-orange-400" />
-            <span className="text-sm font-bold">{t("liveStatus")}</span>
+    <Card className="overflow-hidden border border-[#D6FF00]/20 bg-zinc-950/90 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
+      <CardContent className="space-y-4 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <Swords className="size-4 shrink-0 text-[#D6FF00]" aria-hidden />
+            <span className="truncate text-sm font-black uppercase tracking-tight text-white">
+              {t("liveStatus")}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-[10px] gap-1">
-              <Coins className="size-3 text-yellow-500" />
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Badge
+              variant="secondary"
+              className="gap-1 border border-white/10 bg-black/50 text-[10px] text-[#D6FF00]"
+            >
+              <Coins className="size-3" aria-hidden />
               {t("potTotal", { amount: pot })}
             </Badge>
             {isActive && (
-              <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 text-[10px] gap-1">
-                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <Badge className="gap-1 border border-[#D6FF00]/30 bg-[#D6FF00]/10 text-[10px] text-[#D6FF00]">
+                <span className="size-1.5 animate-pulse rounded-full bg-[#D6FF00]" />
                 {t("live")}
               </Badge>
             )}
             {duel.isPrivate && (
-              <Badge variant="outline" className="text-[10px] gap-1 border-orange-500/30 text-orange-500">
+              <Badge
+                variant="outline"
+                className="gap-1 border-[#D6FF00]/35 text-[10px] text-[#D6FF00]"
+              >
                 {t("privateBadge")}
               </Badge>
             )}
           </div>
         </div>
 
-        {/* Players VS */}
         <div className="flex items-center gap-0">
           <PlayerPanel
             player={duel.challenger}
@@ -272,16 +251,10 @@ export function DuelLiveStatus({ duel }: Props) {
           />
         </div>
 
-        {/* Countdown */}
-        {isActive && endTimeMs > 0 && (
-          <LiveCountdown endTimeMs={endTimeMs} />
-        )}
+        {isActive && endTimeMs > 0 && <LiveCountdown endTimeMs={endTimeMs} />}
 
-        {/* Tip */}
         {isActive && (
-          <p className="text-[11px] text-muted-foreground text-center">
-            {t("completeRoutines")}
-          </p>
+          <p className="text-center text-[11px] text-zinc-500">{t("completeRoutines")}</p>
         )}
       </CardContent>
     </Card>

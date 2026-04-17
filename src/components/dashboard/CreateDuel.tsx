@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -19,12 +19,8 @@ import { cn } from "@/lib/utils";
 import { Swords, Coins, Copy, Check, Share2, Lock } from "lucide-react";
 import { createPrivateDuel, joinDuelByCode } from "@/actions/duel.actions";
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 const MIN_STAKE = 10;
 const MAX_STAKE = 500;
-
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function CreateDuel() {
   const t = useTranslations("duel");
@@ -32,14 +28,12 @@ export function CreateDuel() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"create" | "join">("create");
 
-  // Create state
   const [stake, setStake] = useState("");
   const [createdCode, setCreatedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // Join state
   const [joinCode, setJoinCode] = useState("");
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoinPending, startJoinTransition] = useTransition();
@@ -78,7 +72,6 @@ export function CreateDuel() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback: copy just the code
       await navigator.clipboard.writeText(createdCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -132,7 +125,6 @@ export function CreateDuel() {
   const handleOpenChange = (v: boolean) => {
     setOpen(v);
     if (!v) {
-      // Reset state
       setStake("");
       setCreatedCode(null);
       setCopied(false);
@@ -149,40 +141,48 @@ export function CreateDuel() {
         <Button
           size="sm"
           variant="outline"
-          className="gap-1.5 border-orange-500/30 text-orange-500 hover:bg-orange-500/10"
+          className="gap-1.5 border-[#D6FF00]/35 font-semibold uppercase tracking-wide text-[#D6FF00] hover:bg-[#D6FF00]/10"
         >
-          <Lock className="size-3.5" />
+          <Lock className="size-3.5" aria-hidden />
           {t("privateDuel")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md border border-white/10 bg-zinc-950">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Swords className="size-5 text-orange-400" />
+          <DialogTitle className="flex items-center gap-2 font-black uppercase tracking-tight text-white">
+            <Swords className="size-5 text-[#D6FF00]" aria-hidden />
             {t("privateDuel")}
           </DialogTitle>
         </DialogHeader>
 
-        {/* Mode tabs */}
-        <div className="flex gap-2 p-1 bg-muted rounded-lg">
+        <div className="flex gap-2 rounded-xl border border-white/5 bg-black/40 p-1">
           <button
-            onClick={() => { setMode("create"); setCreatedCode(null); setError(null); }}
+            type="button"
+            onClick={() => {
+              setMode("create");
+              setCreatedCode(null);
+              setError(null);
+            }}
             className={cn(
-              "flex-1 text-sm font-medium py-2 rounded-md transition-colors",
+              "flex-1 rounded-lg py-2 text-sm font-bold uppercase tracking-wide transition-colors",
               mode === "create"
-                ? "bg-background shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
+                : "text-zinc-500 hover:text-white"
             )}
           >
             {t("createDuel")}
           </button>
           <button
-            onClick={() => { setMode("join"); setJoinError(null); }}
+            type="button"
+            onClick={() => {
+              setMode("join");
+              setJoinError(null);
+            }}
             className={cn(
-              "flex-1 text-sm font-medium py-2 rounded-md transition-colors",
+              "flex-1 rounded-lg py-2 text-sm font-bold uppercase tracking-wide transition-colors",
               mode === "join"
-                ? "bg-background shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
+                : "text-zinc-500 hover:text-white"
             )}
           >
             {t("joinDuel")}
@@ -200,10 +200,12 @@ export function CreateDuel() {
             >
               {!createdCode ? (
                 <>
-                  {/* Stake input */}
                   <div className="space-y-2">
-                    <Label htmlFor="private-stake" className="flex items-center gap-1.5 text-xs font-medium">
-                      <Coins className="size-3.5 text-yellow-500" />
+                    <Label
+                      htmlFor="private-stake"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400"
+                    >
+                      <Coins className="size-3.5 text-[#D6FF00]" aria-hidden />
                       {t("stakeLabel")}
                     </Label>
                     <Input
@@ -218,64 +220,59 @@ export function CreateDuel() {
                         setStake(e.target.value);
                         setError(null);
                       }}
+                      className="border-white/10 bg-black/40 text-white"
                     />
-                    <p className="text-[11px] text-muted-foreground">{t("privateStakeHint")}</p>
+                    <p className="text-[11px] text-zinc-500">{t("privateStakeHint")}</p>
                   </div>
 
-                  {error && <p className="text-xs text-destructive">{error}</p>}
+                  {error && <p className="text-xs text-red-400">{error}</p>}
 
                   <Button
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                    className="w-full bg-[#D6FF00] font-bold text-black hover:bg-[#c8f000]"
                     onClick={handleCreate}
                     disabled={isPending || !stake}
                   >
-                    <Swords className="size-4 mr-1.5" />
+                    <Swords className="mr-1.5 size-4" aria-hidden />
                     {t("createDuel")}
                   </Button>
                 </>
               ) : (
-                /* Success â€” show invite code */
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="space-y-4"
                 >
-                  <div className="rounded-xl border-2 border-dashed border-orange-500/30 bg-orange-500/5 p-6 text-center space-y-3">
-                    <Badge variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/30">
+                  <div className="space-y-3 rounded-xl border-2 border-dashed border-[#D6FF00]/35 bg-[#D6FF00]/5 p-6 text-center">
+                    <Badge
+                      variant="secondary"
+                      className="border border-[#D6FF00]/35 bg-black/50 text-[#D6FF00]"
+                    >
                       {t("waitingForOpponent")}
                     </Badge>
-                    <p className="text-xs text-muted-foreground">{t("shareCodeHint")}</p>
+                    <p className="text-xs text-zinc-500">{t("shareCodeHint")}</p>
                     <div className="flex items-center justify-center gap-2">
-                      <code className="text-2xl font-mono font-black tracking-[0.3em] text-orange-500">
+                      <code className="font-mono text-2xl font-black tracking-[0.3em] text-[#D6FF00]">
                         {createdCode}
                       </code>
                     </div>
                   </div>
 
                   <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      className="flex-1 gap-1.5"
-                      onClick={handleCopy}
-                    >
+                    <Button variant="outline" className="flex-1 gap-1.5 border-white/15" onClick={handleCopy}>
                       {copied ? (
                         <>
-                          <Check className="size-4 text-emerald-500" />
+                          <Check className="size-4 text-[#D6FF00]" aria-hidden />
                           {t("linkCopied")}
                         </>
                       ) : (
                         <>
-                          <Copy className="size-4" />
+                          <Copy className="size-4" aria-hidden />
                           {t("copyLink")}
                         </>
                       )}
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="gap-1.5"
-                      onClick={handleShare}
-                    >
-                      <Share2 className="size-4" />
+                    <Button variant="outline" className="gap-1.5 border-white/15" onClick={handleShare}>
+                      <Share2 className="size-4" aria-hidden />
                     </Button>
                   </div>
                 </motion.div>
@@ -290,7 +287,7 @@ export function CreateDuel() {
               className="space-y-4 pt-2"
             >
               <div className="space-y-2">
-                <Label htmlFor="join-code" className="text-xs font-medium">
+                <Label htmlFor="join-code" className="text-xs font-semibold text-zinc-400">
                   {t("enterInviteCode")}
                 </Label>
                 <Input
@@ -301,19 +298,19 @@ export function CreateDuel() {
                     setJoinCode(e.target.value.toUpperCase());
                     setJoinError(null);
                   }}
-                  className="text-center font-mono text-lg tracking-[0.2em] uppercase"
+                  className="border-white/10 bg-black/40 text-center font-mono text-lg uppercase tracking-[0.2em] text-white"
                   maxLength={8}
                 />
               </div>
 
-              {joinError && <p className="text-xs text-destructive">{joinError}</p>}
+              {joinError && <p className="text-xs text-red-400">{joinError}</p>}
 
               <Button
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                className="w-full bg-[#D6FF00] font-bold text-black hover:bg-[#c8f000]"
                 onClick={handleJoin}
                 disabled={isJoinPending || !joinCode.trim()}
               >
-                <Swords className="size-4 mr-1.5" />
+                <Swords className="mr-1.5 size-4" aria-hidden />
                 {t("joinDuel")}
               </Button>
             </motion.div>

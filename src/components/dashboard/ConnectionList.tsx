@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,8 +18,6 @@ import { useTranslations } from "next-intl";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { unfollowAction, type FriendEntry } from "@/actions/social.actions";
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function getInitials(name: string | null): string {
   if (!name) return "?";
   return name
@@ -35,8 +33,6 @@ function formatXp(xp: number): string {
   return String(xp);
 }
 
-// â”€â”€â”€ Animation variants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -51,7 +47,8 @@ const item = {
   exit: { opacity: 0, x: -40, transition: { duration: 0.2 } },
 };
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const proBadgeClass =
+  "border border-[#D6FF00]/35 bg-[#D6FF00]/12 text-[#D6FF00] shadow-[inset_0_0_0_1px_rgba(214,255,0,0.08)]";
 
 type Props = {
   following: FriendEntry[];
@@ -71,14 +68,17 @@ export function ConnectionList({ following: initialFollowing }: Props) {
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border border-white/5 bg-zinc-950/90 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-            <UserCheck className="size-4 text-indigo-400" />
+        <CardTitle className="flex items-center gap-3 text-base font-black uppercase tracking-tight text-white">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-[#D6FF00]/30 bg-[#D6FF00]/10 shadow-[0_0_20px_rgba(214,255,0,0.1)]">
+            <UserCheck className="size-4 text-[#D6FF00]" aria-hidden />
           </div>
           {t("followingTab")}
-          <Badge variant="secondary" className="ml-auto tabular-nums">
+          <Badge
+            variant="secondary"
+            className="ml-auto border border-white/10 bg-black/60 tabular-nums text-[#D6FF00] shadow-[inset_0_0_0_1px_rgba(214,255,0,0.12)]"
+          >
             {following.length}
           </Badge>
         </CardTitle>
@@ -91,20 +91,18 @@ export function ConnectionList({ following: initialFollowing }: Props) {
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center justify-center py-12 text-center"
           >
-            <div className="h-14 w-14 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
-              <Users className="size-7 text-muted-foreground/40" />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/5 bg-zinc-900">
+              <Users className="size-7 text-[#D6FF00]/35" aria-hidden />
             </div>
-            <p className="text-sm font-medium">{t("noFollowing")}</p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-[240px]">
-              {t("noFriendsDesc")}
-            </p>
+            <p className="text-sm font-semibold text-white">{t("noFollowing")}</p>
+            <p className="mt-1 max-w-[240px] text-xs text-zinc-500">{t("noFriendsDesc")}</p>
           </motion.div>
         ) : (
           <motion.div
             variants={container}
             initial="hidden"
             animate="show"
-            className="space-y-1.5"
+            className="space-y-2"
           >
             <AnimatePresence mode="popLayout">
               {following.map((user) => (
@@ -113,59 +111,57 @@ export function ConnectionList({ following: initialFollowing }: Props) {
                   variants={item}
                   exit="exit"
                   layout
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-accent/50 transition-colors group border border-transparent hover:border-border/50"
+                  className="group flex items-center gap-3 rounded-xl border border-white/5 bg-black/25 px-3 py-3 transition-colors hover:border-[#D6FF00]/20 hover:bg-white/[0.03]"
                 >
-                  {/* Avatar */}
                   <div className="relative">
-                    <Avatar className="size-10 ring-2 ring-background shadow-sm">
+                    <Avatar className="size-10 shadow-sm ring-2 ring-black">
                       <AvatarImage src={user.image ?? undefined} />
-                      <AvatarFallback className="text-xs font-semibold bg-gradient-to-br from-indigo-500/20 to-purple-500/20">
+                      <AvatarFallback className="bg-gradient-to-br from-zinc-800 to-zinc-950 text-xs font-semibold text-[#D6FF00]">
                         {getInitials(user.name)}
                       </AvatarFallback>
                     </Avatar>
                     {user.currentStreak >= 7 && (
-                      <span className="absolute -bottom-0.5 -right-0.5 rounded-full bg-orange-500 p-0.5">
-                        <Flame className="size-2.5 text-white" />
+                      <span className="absolute -bottom-0.5 -right-0.5 rounded-full border border-black bg-[#D6FF00] p-0.5">
+                        <Flame className="size-2.5 text-black" aria-hidden />
                       </span>
                     )}
                   </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <p className="text-sm font-semibold truncate">
+                      <p className="truncate text-sm font-semibold text-white">
                         {user.name ?? tc("anonymous")}
                       </p>
                       {user.subscriptionTier === "PRO" && (
-                        <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 text-[9px] px-1 py-0 gap-0.5 shrink-0">
-                          <Sparkles className="size-2" /> PRO
+                        <Badge className={`${proBadgeClass} shrink-0 gap-0.5 px-1 py-0 text-[9px]`}>
+                          <Sparkles className="size-2" aria-hidden />
+                          PRO
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                      <span className="flex items-center gap-1">
-                        <TrendingUp className="size-3 text-indigo-400" />
+                    <div className="mt-0.5 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+                      <span className="flex items-center gap-1 font-medium text-zinc-400">
+                        <TrendingUp className="size-3 text-[#D6FF00]" aria-hidden />
                         {formatXp(user.xp)} XP
                       </span>
                       {user.currentStreak > 0 && (
-                        <span className="flex items-center gap-0.5 text-orange-400">
-                          <Flame className="size-3" />
+                        <span className="flex items-center gap-0.5 font-medium text-[#D6FF00]">
+                          <Flame className="size-3" aria-hidden />
                           {tc("dayStreak", { count: user.currentStreak })}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Level + Unfollow */}
                   <LevelBadge xp={user.xp} compact />
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleUnfollow(user.id)}
                     disabled={isPending}
-                    className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all gap-1"
+                    className="h-8 gap-1 px-2 text-xs text-zinc-500 opacity-0 transition-all hover:text-white group-hover:opacity-100"
                   >
-                    <UserMinus className="size-3.5" />
+                    <UserMinus className="size-3.5" aria-hidden />
                     <span className="hidden sm:inline">{t("unfollow")}</span>
                   </Button>
                 </motion.div>

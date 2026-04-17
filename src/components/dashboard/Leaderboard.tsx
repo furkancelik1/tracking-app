@@ -18,10 +18,13 @@ import { getLeagueLeaderboard, getGlobalCommunityChallengeAction } from "@/actio
 // â”€â”€â”€ Podium renkleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PODIUM = [
-  { ring: "ring-yellow-400", bg: "bg-yellow-400/10", text: "text-yellow-400", icon: Crown, label: "AltÄ±n" },
-  { ring: "ring-zinc-300", bg: "bg-zinc-300/10", text: "text-zinc-300", icon: Medal, label: "GÃ¼mÃ¼ÅŸ" },
-  { ring: "ring-amber-600", bg: "bg-amber-600/10", text: "text-amber-600", icon: Medal, label: "Bronz" },
+  { ring: "ring-[#D6FF00]", bg: "bg-[#D6FF00]/15", text: "text-[#D6FF00]", icon: Crown },
+  { ring: "ring-zinc-300", bg: "bg-zinc-300/10", text: "text-zinc-300", icon: Medal },
+  { ring: "ring-zinc-600", bg: "bg-zinc-600/10", text: "text-zinc-500", icon: Medal },
 ] as const;
+
+const proBadgeClass =
+  "border border-[#D6FF00]/35 bg-[#D6FF00]/12 text-[#D6FF00] shadow-[inset_0_0_0_1px_rgba(214,255,0,0.08)]";
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -144,12 +147,12 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
             <p className="text-sm font-semibold truncate max-w-[80px] sm:max-w-[120px] text-center">
               {entry.name ?? t("anonymous")}
               {entry.isCurrentUser && (
-                <span className="text-xs text-indigo-400 ml-1">{t("you")}</span>
+                <span className="ml-1 text-xs text-[#D6FF00]">{t("you")}</span>
               )}
             </p>
             {entry.subscriptionTier === "PRO" && (
-              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 text-[10px] px-1.5 py-0 gap-0.5">
-                <Sparkles className="size-2.5" /> PRO
+              <Badge className={`${proBadgeClass} gap-0.5 px-1.5 py-0 text-[10px]`}>
+                <Sparkles className="size-2.5" aria-hidden /> PRO
               </Badge>
             )}
             <Badge
@@ -166,8 +169,8 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
             </Badge>
             <LevelBadge xp={entry.xp} compact />
             {entry.currentStreak > 0 && (
-              <span className="flex items-center gap-0.5 text-[11px] text-orange-400">
-                <Flame className="size-3" /> {entry.currentStreak}
+              <span className="flex items-center gap-0.5 text-[11px] text-[#D6FF00]">
+                <Flame className="size-3" aria-hidden /> {entry.currentStreak}
               </span>
             )}
           </div>
@@ -191,10 +194,10 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
           className={cn(
             "flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors",
             entry.isCurrentUser
-              ? "bg-indigo-500/10 border border-indigo-500/20"
+              ? "border border-[#D6FF00]/25 bg-[#D6FF00]/5"
               : entry.subscriptionTier === "PRO"
-                ? "bg-card/50 hover:bg-card/80 border border-amber-400/30"
-                : "bg-card/50 hover:bg-card/80"
+                ? "border border-[#D6FF00]/15 bg-black/20 hover:bg-white/[0.03]"
+                : "border border-transparent bg-black/20 hover:bg-white/[0.03]"
           )}
         >
           <span className="w-6 text-center text-sm font-bold tabular-nums text-muted-foreground">
@@ -211,13 +214,13 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
             <p className="text-sm font-medium truncate">
               {entry.name ?? t("anonymous")}
               {entry.isCurrentUser && (
-                <span className="text-xs text-indigo-400 ml-1">{t("you")}</span>
+                <span className="ml-1 text-xs text-[#D6FF00]">{t("you")}</span>
               )}
             </p>
           </div>
           {entry.subscriptionTier === "PRO" && (
-            <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 text-[10px] px-1.5 py-0 gap-0.5 shrink-0">
-              <Sparkles className="size-2.5" /> PRO
+            <Badge className={`${proBadgeClass} shrink-0 gap-0.5 px-1.5 py-0 text-[10px]`}>
+              <Sparkles className="size-2.5" aria-hidden /> PRO
             </Badge>
           )}
           <Badge
@@ -228,11 +231,11 @@ function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
           </Badge>
           <LevelBadge xp={entry.xp} compact />
           {entry.currentStreak > 0 && (
-            <span className="flex items-center gap-0.5 text-xs text-orange-400 shrink-0">
-              <Flame className="size-3" /> {entry.currentStreak}
+            <span className="flex shrink-0 items-center gap-0.5 text-xs text-[#D6FF00]">
+              <Flame className="size-3" aria-hidden /> {entry.currentStreak}
             </span>
           )}
-          <span className="text-sm font-semibold tabular-nums text-indigo-400 shrink-0">
+          <span className="shrink-0 text-sm font-semibold tabular-nums text-[#D6FF00]">
             {formatXp(entry.xp)} XP
           </span>
         </div>
@@ -248,11 +251,9 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
   const tLb = useTranslations("leaderboard");
   const league = getUserLeague(entry.xp);
   return (
-    <Card className="border-indigo-500/30 bg-indigo-500/5 mt-6">
+    <Card className="mt-6 border border-[#D6FF00]/25 bg-zinc-950/90 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
       <CardContent className="flex items-center gap-4 py-4">
-        <span className="text-lg font-bold tabular-nums text-indigo-400">
-          #{entry.rank}
-        </span>
+        <span className="text-lg font-black tabular-nums text-[#D6FF00]">#{entry.rank}</span>
         <FramedAvatar
           xp={entry.xp}
           src={entry.image ?? undefined}
@@ -268,13 +269,11 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
             {league.icon} {league.label} Lig
           </Badge>
         </div>
-        <div className="text-right shrink-0">
-          <p className="text-lg font-bold tabular-nums text-indigo-400">
-            {formatXp(entry.xp)} XP
-          </p>
+        <div className="shrink-0 text-right">
+          <p className="text-lg font-bold tabular-nums text-[#D6FF00]">{formatXp(entry.xp)} XP</p>
           {entry.currentStreak > 0 && (
-            <span className="flex items-center justify-end gap-0.5 text-xs text-orange-400">
-              <Flame className="size-3" /> {t("dayStreak", { count: entry.currentStreak })}
+            <span className="flex items-center justify-end gap-0.5 text-xs text-[#D6FF00]">
+              <Flame className="size-3" aria-hidden /> {t("dayStreak", { count: entry.currentStreak })}
             </span>
           )}
         </div>
@@ -289,8 +288,8 @@ function LeaderboardEmpty() {
   const t = useTranslations("leaderboard");
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="h-16 w-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-5">
-        <Trophy className="h-8 w-8 text-indigo-400" />
+      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#D6FF00]/20 bg-[#D6FF00]/10">
+        <Trophy className="h-8 w-8 text-[#D6FF00]" aria-hidden />
       </div>
       <h2 className="text-lg font-semibold">{t("emptyTitle")}</h2>
       <p className="text-sm text-muted-foreground mt-1 max-w-sm">
@@ -363,41 +362,44 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
     <div>
       {/* Tab Switcher */}
       {isLoggedIn && (
-        <div className="flex gap-1 rounded-lg bg-muted/50 p-1 mb-6">
+        <div className="mb-6 flex gap-1 rounded-xl border border-white/5 bg-black/40 p-1">
           <button
+            type="button"
             onClick={() => handleTabChange("global")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
               tab === "global"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
+                : "text-zinc-500 hover:text-white"
             )}
           >
-            <Globe className="size-4" />
+            <Globe className="size-4 shrink-0" aria-hidden />
             {tabLabels.global}
           </button>
           <button
+            type="button"
             onClick={() => handleTabChange("league")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
               tab === "league"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
+                : "text-zinc-500 hover:text-white"
             )}
           >
-            <Shield className="size-4" />
+            <Shield className="size-4 shrink-0" aria-hidden />
             {tabLabels.league}
           </button>
           <button
+            type="button"
             onClick={() => handleTabChange("challenges")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
               tab === "challenges"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
+                : "text-zinc-500 hover:text-white"
             )}
           >
-            <Zap className="size-4" />
+            <Zap className="size-4 shrink-0" aria-hidden />
             {tabLabels.challenges}
           </button>
         </div>
@@ -406,7 +408,7 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
       {/* Loading */}
       {isPending && tab !== "challenges" && (
         <div className="flex justify-center py-12">
-          <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <div className="size-6 animate-spin rounded-full border-2 border-[#D6FF00]/30 border-t-[#D6FF00]" />
         </div>
       )}
       {isPending && tab === "challenges" && !challengeData && (
@@ -468,7 +470,7 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
       {!isPending && tab !== "challenges" && topTen.length === 0 ? (
         tab === "league" ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Shield className="size-10 text-muted-foreground/30 mb-4" />
+            <Shield className="mb-4 size-10 text-[#D6FF00]/35" aria-hidden />
             <p className="text-sm text-muted-foreground">{t("leagueEmpty")}</p>
           </div>
         ) : (

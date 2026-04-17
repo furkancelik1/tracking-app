@@ -70,14 +70,14 @@ export default async function SocialPage({
 
   return (
     <div className="px-6 py-8 space-y-8">
-      {/* Header */}
+      {/* Header — Nike Elite */}
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-          <Users className="h-5 w-5 text-indigo-400" />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#D6FF00]/30 bg-[#D6FF00]/10 shadow-[0_0_28px_rgba(214,255,0,0.12)]">
+          <Users className="h-5 w-5 text-[#D6FF00]" aria-hidden />
         </div>
-        <div>
-          <h1 className="text-xl font-bold">{t("pageTitle")}</h1>
-          <p className="text-sm text-muted-foreground">{t("pageSubtitle")}</p>
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl font-black uppercase tracking-tight text-white">{t("pageTitle")}</h1>
+          <p className="text-sm text-zinc-400">{t("pageSubtitle")}</p>
         </div>
       </div>
 
@@ -112,12 +112,9 @@ export default async function SocialPage({
 
       {/* Disiplin Düellosu */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <div />
-          <div className="flex items-center gap-2">
-            <CreateDuel />
-            <DuelInviteDialog friends={friends} />
-          </div>
+        <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+          <CreateDuel />
+          <DuelInviteDialog friends={friends} />
         </div>
         {activeDuel && activeDuel.isPrivate && activeDuel.opponent && (
           <div className="mb-4">

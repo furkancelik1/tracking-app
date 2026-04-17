@@ -319,11 +319,11 @@ export function RoutineList({ initialRoutines }: Props) {
 
       {/* FREE limit warning */}
       {atLimit && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 px-4 py-3 flex items-center justify-between gap-4 text-sm">
-          <p className="text-amber-800 dark:text-amber-200">
-            <span className="font-semibold">3/3</span> — {t("limitWarning", { count: 3, max: 3 })}
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-[#D6FF00]/25 bg-[#D6FF00]/8 px-4 py-3 text-sm shadow-[inset_0_0_0_1px_rgba(214,255,0,0.06)]">
+          <p className="text-zinc-200">
+            <span className="font-black text-[#D6FF00]">3/3</span> — {t("limitWarning", { count: 3, max: 3 })}
           </p>
-          <Button size="sm" asChild>
+          <Button size="sm" className="bg-[#D6FF00] font-semibold text-black hover:bg-[#c8f000]" asChild>
             <a href="/settings">{t("upgradeCta")}</a>
           </Button>
         </div>

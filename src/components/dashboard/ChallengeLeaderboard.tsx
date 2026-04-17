@@ -24,8 +24,6 @@ import type {
   ChallengeLeaderboardPayload,
 } from "@/actions/challenge.actions";
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function getInitials(name: string | null): string {
   if (!name) return "?";
   return name
@@ -36,14 +34,17 @@ function getInitials(name: string | null): string {
     .toUpperCase();
 }
 
+const proBadgeClass =
+  "border border-[#D6FF00]/35 bg-[#D6FF00]/12 text-[#D6FF00] shadow-[inset_0_0_0_1px_rgba(214,255,0,0.08)]";
+
 const PODIUM = [
   {
-    ring: "ring-yellow-400",
-    bg: "bg-yellow-400/10",
-    border: "border-yellow-400/40",
-    text: "text-yellow-400",
+    ring: "ring-[#D6FF00]",
+    bg: "bg-[#D6FF00]/15",
+    border: "border-[#D6FF00]/40",
+    text: "text-[#D6FF00]",
     icon: Crown,
-    gradient: "from-yellow-400/20 via-amber-400/10 to-transparent",
+    gradient: "from-[#D6FF00]/20 via-zinc-950/80 to-transparent",
   },
   {
     ring: "ring-zinc-300",
@@ -51,19 +52,17 @@ const PODIUM = [
     border: "border-zinc-300/30",
     text: "text-zinc-300",
     icon: Medal,
-    gradient: "from-zinc-300/15 via-zinc-200/5 to-transparent",
+    gradient: "from-zinc-300/15 via-zinc-900/50 to-transparent",
   },
   {
-    ring: "ring-amber-600",
-    bg: "bg-amber-600/10",
-    border: "border-amber-600/30",
-    text: "text-amber-600",
+    ring: "ring-zinc-600",
+    bg: "bg-zinc-600/10",
+    border: "border-zinc-600/30",
+    text: "text-zinc-500",
     icon: Medal,
-    gradient: "from-amber-600/15 via-amber-500/5 to-transparent",
+    gradient: "from-zinc-700/20 via-zinc-950/80 to-transparent",
   },
 ] as const;
-
-// â”€â”€â”€ Framed Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function FramedAvatar({
   xp,
@@ -84,14 +83,10 @@ function FramedAvatar({
   return (
     <Avatar className={cn(ringClass, frame.glow, "transition-all", className)}>
       <AvatarImage src={src} alt={fallback} />
-      <AvatarFallback className="font-semibold text-xs">
-        {fallback}
-      </AvatarFallback>
+      <AvatarFallback className="text-xs font-semibold">{fallback}</AvatarFallback>
     </Avatar>
   );
 }
-
-// â”€â”€â”€ Progress pill for a row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function RateBar({
   rate,
@@ -100,31 +95,29 @@ function RateBar({
   rate: number;
   completed: boolean;
 }) {
-  const t = useTranslations("challengeLeaderboard");
-
   return (
-    <div className="flex items-center gap-2 min-w-[120px]">
+    <div className="flex min-w-[120px] items-center gap-2">
       <Progress
         value={rate}
         className={cn(
-          "h-2 flex-1",
+          "h-2 flex-1 bg-zinc-900",
           completed
-            ? "[&>div]:bg-gradient-to-r [&>div]:from-yellow-400 [&>div]:to-amber-500"
+            ? "[&>div]:bg-[#D6FF00]"
             : rate >= 75
-              ? "[&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-emerald-500"
+              ? "[&>div]:bg-[#D6FF00]"
               : rate >= 50
-                ? "[&>div]:bg-gradient-to-r [&>div]:from-blue-400 [&>div]:to-indigo-500"
-                : "[&>div]:bg-gradient-to-r [&>div]:from-indigo-400 [&>div]:to-purple-500"
+                ? "[&>div]:bg-[#D6FF00]/60"
+                : "[&>div]:bg-zinc-600"
         )}
       />
       <span
         className={cn(
-          "text-xs font-semibold tabular-nums w-10 text-right",
-          completed ? "text-yellow-500" : "text-muted-foreground"
+          "w-10 text-right text-xs font-semibold tabular-nums",
+          completed ? "text-[#D6FF00]" : "text-zinc-500"
         )}
       >
         {completed ? (
-          <CheckCircle2 className="size-4 text-yellow-500 inline" />
+          <CheckCircle2 className="inline size-4 text-[#D6FF00]" aria-hidden />
         ) : (
           `${rate}%`
         )}
@@ -132,8 +125,6 @@ function RateBar({
     </div>
   );
 }
-
-// â”€â”€â”€ Top 3 Podium â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ChallengePodium({
   entries,
@@ -143,7 +134,6 @@ function ChallengePodium({
   const t = useTranslations("challengeLeaderboard");
   const tc = useTranslations("common");
 
-  // Visual order: 2nd | 1st | 3rd
   const order = [entries[1], entries[0], entries[2]].filter(
     Boolean
   ) as ChallengeLeaderboardEntry[];
@@ -152,7 +142,7 @@ function ChallengePodium({
   if (entries.length === 0) return null;
 
   return (
-    <div className="flex items-end justify-center gap-3 sm:gap-5 mb-6">
+    <div className="mb-6 flex items-end justify-center gap-3 sm:gap-5">
       {order.map((entry, i) => {
         const actualRank = entry.rank - 1;
         const style = PODIUM[actualRank];
@@ -166,20 +156,17 @@ function ChallengePodium({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1, duration: 0.4 }}
             className={cn(
-              "flex flex-col items-center gap-2 rounded-xl p-3 border",
-              "bg-gradient-to-b",
+              "flex flex-col items-center gap-2 rounded-xl border bg-gradient-to-b p-3",
               style.gradient,
               style.border,
-              entry.isCurrentUser && "ring-2 ring-indigo-500/50",
+              entry.isCurrentUser && "ring-2 ring-[#D6FF00]/45",
               heights[i]
             )}
           >
-            {/* Medal */}
             <div className={cn("rounded-full p-1.5", style.bg)}>
-              <Icon className={cn("size-4", style.text)} />
+              <Icon className={cn("size-4", style.text)} aria-hidden />
             </div>
 
-            {/* Avatar */}
             <FramedAvatar
               xp={entry.xp}
               src={entry.image ?? undefined}
@@ -188,36 +175,29 @@ function ChallengePodium({
               ringOverride={cn("ring-2", style.ring)}
             />
 
-            {/* Name */}
-            <p className="text-xs font-semibold truncate max-w-[90px] text-center">
+            <p className="max-w-[90px] truncate text-center text-xs font-semibold text-white">
               {entry.name ?? tc("anonymous")}
               {entry.isCurrentUser && (
-                <span className="text-[10px] text-indigo-400 ml-1">
-                  {tc("you")}
-                </span>
+                <span className="ml-1 text-[10px] text-[#D6FF00]">{tc("you")}</span>
               )}
             </p>
 
             <LevelBadge xp={entry.xp} compact />
 
-            {/* Completion rate */}
             <Badge
               variant="secondary"
               className={cn(
                 "tabular-nums text-xs",
                 entry.challengeCompleted
-                  ? "bg-yellow-500/15 text-yellow-500 border-yellow-500/30"
-                  : ""
+                  ? "border border-[#D6FF00]/35 bg-[#D6FF00]/10 text-[#D6FF00]"
+                  : "border border-white/10 bg-zinc-900 text-zinc-400"
               )}
             >
-              {entry.challengeCompleted
-                ? t("completed")
-                : `${entry.completionRate}%`}
+              {entry.challengeCompleted ? t("completed") : `${entry.completionRate}%`}
             </Badge>
 
-            {/* Challenge title */}
             {entry.challengeTitle && (
-              <p className="text-[10px] text-muted-foreground truncate max-w-[90px] text-center">
+              <p className="max-w-[90px] truncate text-center text-[10px] text-zinc-500">
                 {entry.challengeTitle}
               </p>
             )}
@@ -228,15 +208,12 @@ function ChallengePodium({
   );
 }
 
-// â”€â”€â”€ Rank Rows (4â€“20) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function ChallengeRankTable({
   entries,
 }: {
   entries: ChallengeLeaderboardEntry[];
 }) {
   const tc = useTranslations("common");
-  const t = useTranslations("challengeLeaderboard");
 
   if (entries.length === 0) return null;
 
@@ -249,18 +226,16 @@ function ChallengeRankTable({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: i * 0.03, duration: 0.3 }}
           className={cn(
-            "flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors",
+            "flex items-center gap-3 rounded-xl border px-4 py-2.5 transition-colors",
             entry.isCurrentUser
-              ? "bg-indigo-500/10 border border-indigo-500/20"
-              : "bg-card/50 hover:bg-card/80"
+              ? "border-[#D6FF00]/25 bg-[#D6FF00]/5"
+              : "border-white/5 bg-black/20 hover:bg-white/[0.03]"
           )}
         >
-          {/* Rank */}
-          <span className="w-6 text-center text-sm font-bold tabular-nums text-muted-foreground">
+          <span className="w-6 text-center text-sm font-bold tabular-nums text-zinc-500">
             {entry.rank}
           </span>
 
-          {/* Avatar */}
           <FramedAvatar
             xp={entry.xp}
             src={entry.image ?? undefined}
@@ -268,41 +243,33 @@ function ChallengeRankTable({
             className="size-8"
           />
 
-          {/* Name + Challenge */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-white">
               {entry.name ?? tc("anonymous")}
               {entry.isCurrentUser && (
-                <span className="text-xs text-indigo-400 ml-1">
-                  {tc("you")}
-                </span>
+                <span className="ml-1 text-xs text-[#D6FF00]">{tc("you")}</span>
               )}
             </p>
             {entry.challengeTitle && (
-              <p className="text-[11px] text-muted-foreground truncate">
-                {entry.challengeTitle}
-              </p>
+              <p className="truncate text-[11px] text-zinc-500">{entry.challengeTitle}</p>
             )}
           </div>
 
-          {/* PRO Badge */}
           {entry.subscriptionTier === "PRO" && (
-            <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 text-[10px] px-1.5 py-0 gap-0.5 shrink-0">
-              <Sparkles className="size-2.5" /> PRO
+            <Badge className={`${proBadgeClass} shrink-0 gap-0.5 px-1.5 py-0 text-[10px]`}>
+              <Sparkles className="size-2.5" aria-hidden />
+              PRO
             </Badge>
           )}
 
           <LevelBadge xp={entry.xp} compact />
 
-          {/* Progress */}
           <RateBar rate={entry.completionRate} completed={entry.challengeCompleted} />
         </motion.div>
       ))}
     </div>
   );
 }
-
-// â”€â”€â”€ Personal Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ChallengePersonalPanel({
   entry,
@@ -315,29 +282,25 @@ function ChallengePersonalPanel({
   const t = useTranslations("challengeLeaderboard");
 
   return (
-    <Card className="border-indigo-500/30 bg-indigo-500/5 mt-6">
+    <Card className="mt-6 border border-[#D6FF00]/25 bg-zinc-950/90 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
       <CardContent className="flex items-center gap-4 py-4">
-        <span className="text-lg font-bold tabular-nums text-indigo-400">
-          #{entry.rank}
-        </span>
+        <span className="text-lg font-black tabular-nums text-[#D6FF00]">#{entry.rank}</span>
         <FramedAvatar
           xp={entry.xp}
           src={entry.image ?? undefined}
           fallback={getInitials(entry.name)}
           className="size-10"
         />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-white">
             {entry.name ?? tc("anonymous")}
           </p>
-          <p className="text-xs text-muted-foreground">
-            {t("among", { rank: entry.rank, total })}
-          </p>
+          <p className="text-xs text-zinc-500">{t("among", { rank: entry.rank, total })}</p>
         </div>
-        <div className="text-right shrink-0 space-y-1">
+        <div className="shrink-0 space-y-1 text-right">
           <RateBar rate={entry.completionRate} completed={entry.challengeCompleted} />
           {entry.challengeTitle && (
-            <p className="text-[11px] text-muted-foreground truncate max-w-[150px]">
+            <p className="max-w-[150px] truncate text-[11px] text-zinc-500">
               {entry.challengeTitle}
             </p>
           )}
@@ -347,25 +310,19 @@ function ChallengePersonalPanel({
   );
 }
 
-// â”€â”€â”€ Empty State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function ChallengeLeaderboardEmpty() {
   const t = useTranslations("challengeLeaderboard");
 
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="h-16 w-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-5">
-        <Target className="h-8 w-8 text-indigo-400" />
+      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#D6FF00]/20 bg-[#D6FF00]/10">
+        <Target className="h-8 w-8 text-[#D6FF00]" aria-hidden />
       </div>
-      <h2 className="text-lg font-semibold">{t("noEntries")}</h2>
-      <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-        {t("noEntriesSub")}
-      </p>
+      <h2 className="text-lg font-semibold text-white">{t("noEntries")}</h2>
+      <p className="mt-1 max-w-sm text-sm text-zinc-500">{t("noEntriesSub")}</p>
     </div>
   );
 }
-
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   data: ChallengeLeaderboardPayload;
@@ -377,27 +334,23 @@ export function ChallengeLeaderboard({ data }: Props) {
 
   return (
     <section className="space-y-4">
-      {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center size-10 rounded-lg bg-gradient-to-br from-amber-500/15 to-yellow-500/15">
-          <Trophy className="size-5 text-amber-400" />
+        <div className="flex size-10 items-center justify-center rounded-lg border border-[#D6FF00]/30 bg-[#D6FF00]/10">
+          <Trophy className="size-5 text-[#D6FF00]" aria-hidden />
         </div>
         <div>
-          <h2 className="text-base font-bold">{t("title")}</h2>
-          <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
+          <h2 className="text-base font-black uppercase tracking-tight text-white">{t("title")}</h2>
+          <p className="text-xs text-zinc-500">{t("subtitle")}</p>
         </div>
       </div>
 
-      {/* Content */}
       {entries.length === 0 ? (
         <ChallengeLeaderboardEmpty />
       ) : (
         <>
           <ChallengePodium entries={entries.slice(0, 3)} />
           <ChallengeRankTable entries={entries.slice(3)} />
-          {currentUser && (
-            <ChallengePersonalPanel entry={currentUser} total={entries.length} />
-          )}
+          {currentUser && <ChallengePersonalPanel entry={currentUser} total={entries.length} />}
         </>
       )}
     </section>

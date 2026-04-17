@@ -1,20 +1,18 @@
 ﻿"use client";
 
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   Users,
   UserCheck,
-  UserPlus,
   Clock,
   X,
   Flame,
   Sparkles,
-  Swords,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
@@ -26,8 +24,6 @@ import {
   type FriendRequest,
 } from "@/actions/social.actions";
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 type Tab = "followers" | "following" | "requests";
 
 type Props = {
@@ -35,8 +31,6 @@ type Props = {
   following: FriendEntry[];
   pendingRequests: FriendRequest[];
 };
-
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -53,36 +47,45 @@ function formatXp(xp: number): string {
   return String(xp);
 }
 
-// â”€â”€â”€ User Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const proBadgeClass =
+  "border border-[#D6FF00]/35 bg-[#D6FF00]/12 text-[#D6FF00] shadow-[inset_0_0_0_1px_rgba(214,255,0,0.08)]";
 
 function UserRow({
   user,
   actions,
 }: {
-  user: { id: string; name: string | null; image: string | null; xp: number; currentStreak: number; subscriptionTier: string };
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    xp: number;
+    currentStreak: number;
+    subscriptionTier: string;
+  };
   actions?: React.ReactNode;
 }) {
   const tc = useTranslations("common");
   return (
-    <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-accent/40 transition-colors group">
-      <Avatar className="size-9">
+    <div className="group flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 transition-colors hover:border-white/5 hover:bg-white/[0.03]">
+      <Avatar className="size-9 ring-1 ring-white/10">
         <AvatarImage src={user.image ?? undefined} />
         <AvatarFallback className="text-xs">{getInitials(user.name)}</AvatarFallback>
       </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{user.name ?? tc("anonymous")}</p>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-white">{user.name ?? tc("anonymous")}</p>
+        <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
           <span>{formatXp(user.xp)} XP</span>
           {user.currentStreak > 0 && (
-            <span className="flex items-center gap-0.5 text-orange-400">
-              <Flame className="size-3" /> {user.currentStreak}
+            <span className="flex items-center gap-0.5 font-medium text-[#D6FF00]">
+              <Flame className="size-3" aria-hidden /> {user.currentStreak}
             </span>
           )}
         </div>
       </div>
       {user.subscriptionTier === "PRO" && (
-        <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 text-[10px] px-1.5 py-0 gap-0.5 shrink-0">
-          <Sparkles className="size-2.5" /> PRO
+        <Badge className={`${proBadgeClass} shrink-0 gap-0.5 px-1.5 py-0 text-[10px]`}>
+          <Sparkles className="size-2.5" aria-hidden />
+          PRO
         </Badge>
       )}
       <LevelBadge xp={user.xp} compact />
@@ -91,9 +94,11 @@ function UserRow({
   );
 }
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-export function SocialTabs({ followers: initFollowers, following: initFollowing, pendingRequests: initRequests }: Props) {
+export function SocialTabs({
+  followers: initFollowers,
+  following: initFollowing,
+  pendingRequests: initRequests,
+}: Props) {
   const t = useTranslations("social");
   const [isPending, startTransition] = useTransition();
 
@@ -146,25 +151,32 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
   ];
 
   return (
-    <Card>
-      {/* Tab Switcher */}
+    <Card className="border border-white/5 bg-zinc-950/90 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
       <CardHeader className="pb-0">
-        <div className="flex gap-1 rounded-lg bg-muted/50 p-1">
+        <div className="flex gap-1 rounded-xl border border-white/5 bg-black/40 p-1">
           {tabs.map(({ key, label, icon: Icon, count }) => (
             <button
               key={key}
+              type="button"
               onClick={() => setTab(key)}
               className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
                 tab === key
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-[#D6FF00] text-black shadow-[0_0_24px_rgba(214,255,0,0.2)]"
+                  : "text-zinc-500 hover:text-white"
               )}
             >
-              <Icon className="size-4" />
-              {label}
+              <Icon className="size-4 shrink-0" aria-hidden />
+              <span className="truncate">{label}</span>
               {count > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
+                <Badge
+                  className={cn(
+                    "ml-0.5 h-5 px-1.5 text-[10px] tabular-nums",
+                    tab === key
+                      ? "border border-black/20 bg-black/15 text-black"
+                      : "border border-white/10 bg-zinc-900 text-zinc-300"
+                  )}
+                >
                   {count}
                 </Badge>
               )}
@@ -174,7 +186,6 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
       </CardHeader>
 
       <CardContent className="pt-4">
-        {/* â”€â”€ Followers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {tab === "followers" && (
           <div>
             {followers.length === 0 ? (
@@ -191,9 +202,9 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
                         variant="ghost"
                         onClick={() => handleUnfollow(user.id)}
                         disabled={isPending}
-                        className="h-7 text-xs text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-7 text-xs text-zinc-500 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
                       >
-                        <X className="size-3" />
+                        <X className="size-3" aria-hidden />
                       </Button>
                     }
                   />
@@ -203,7 +214,6 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
           </div>
         )}
 
-        {/* â”€â”€ Following â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {tab === "following" && (
           <div>
             {following.length === 0 ? (
@@ -220,7 +230,7 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
                         variant="ghost"
                         onClick={() => handleUnfollow(user.id)}
                         disabled={isPending}
-                        className="h-7 text-xs text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-7 text-xs text-zinc-500 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
                       >
                         {t("unfollow")}
                       </Button>
@@ -232,35 +242,32 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
           </div>
         )}
 
-        {/* â”€â”€ Pending Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {tab === "requests" && (
           <div>
             {requests.length === 0 ? (
               <EmptyState icon={Clock} text={t("noRequests")} />
             ) : (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {requests.map((req) => (
                   <div
                     key={req.id}
-                    className="flex items-center gap-3 rounded-lg border px-3 py-2.5 bg-amber-500/5"
+                    className="flex items-center gap-3 rounded-xl border border-[#D6FF00]/20 bg-zinc-900/60 px-3 py-2.5"
                   >
-                    <Avatar className="size-9">
+                    <Avatar className="size-9 ring-1 ring-white/10">
                       <AvatarImage src={req.user.image ?? undefined} />
-                      <AvatarFallback className="text-xs">
-                        {getInitials(req.user.name)}
-                      </AvatarFallback>
+                      <AvatarFallback className="text-xs">{getInitials(req.user.name)}</AvatarFallback>
                     </Avatar>
-                    <p className="flex-1 text-sm font-medium truncate">
+                    <p className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
                       {req.user.name ?? "?"}
                     </p>
-                    <div className="flex gap-1.5 shrink-0">
+                    <div className="flex shrink-0 gap-1.5">
                       <Button
                         size="sm"
                         onClick={() => handleAccept(req.id)}
                         disabled={isPending}
-                        className="gap-1 h-8"
+                        className="h-8 gap-1 bg-[#D6FF00] text-black hover:bg-[#c8f000]"
                       >
-                        <UserCheck className="size-3.5" />
+                        <UserCheck className="size-3.5" aria-hidden />
                         {t("accept")}
                       </Button>
                       <Button
@@ -268,9 +275,9 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
                         variant="ghost"
                         onClick={() => handleReject(req.id)}
                         disabled={isPending}
-                        className="h-8 text-muted-foreground"
+                        className="h-8 text-zinc-500 hover:text-white"
                       >
-                        <X className="size-3.5" />
+                        <X className="size-3.5" aria-hidden />
                       </Button>
                     </div>
                   </div>
@@ -284,13 +291,11 @@ export function SocialTabs({ followers: initFollowers, following: initFollowing,
   );
 }
 
-// â”€â”€â”€ Empty State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function EmptyState({ icon: Icon, text }: { icon: typeof Users; text: string }) {
   return (
-    <div className="text-center py-10">
-      <Icon className="size-10 text-muted-foreground/30 mx-auto mb-3" />
-      <p className="text-sm text-muted-foreground">{text}</p>
+    <div className="py-10 text-center">
+      <Icon className="mx-auto mb-3 size-10 text-[#D6FF00]/25" aria-hidden />
+      <p className="text-sm text-zinc-500">{text}</p>
     </div>
   );
 }

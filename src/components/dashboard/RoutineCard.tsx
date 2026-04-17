@@ -252,7 +252,7 @@ export function RoutineCard({
           <Flame
             className={cn(
               "size-4",
-              routine.currentStreak > 0 ? "text-orange-400" : "text-zinc-600"
+              routine.currentStreak > 0 ? "text-[#D6FF00]" : "text-zinc-600"
             )}
           />
           <span className={cn(routine.currentStreak > 0 && "font-semibold text-white")}>

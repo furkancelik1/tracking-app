@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { Coins, Snowflake, ShoppingBag, Package, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ type Props = {
 };
 
 const ITEM_ICONS: Record<string, React.ReactNode> = {
-  STREAK_FREEZE: <Snowflake className="h-8 w-8 text-blue-400" />,
+  STREAK_FREEZE: <Snowflake className="h-8 w-8 text-[#D6FF00]" aria-hidden />,
 };
 
 export function ShopDialog({ open, onOpenChange }: Props) {
@@ -71,7 +71,6 @@ export function ShopDialog({ open, onOpenChange }: Props) {
           )
         );
         toast.success(t("purchaseSuccess"));
-        // Navbar coin gÃ¶stergesini gÃ¼ncelle
         window.dispatchEvent(new CustomEvent("coins-updated"));
       } else if (result.message === "NOT_ENOUGH_COINS") {
         toast.error(t("notEnoughCoins"));
@@ -87,67 +86,65 @@ export function ShopDialog({ open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="border border-white/10 bg-zinc-950 sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 font-black uppercase tracking-tight text-white">
+            <ShoppingBag className="h-5 w-5 text-[#D6FF00]" aria-hidden />
             {t("title")}
           </DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
+          <DialogDescription className="text-zinc-500">{t("description")}</DialogDescription>
         </DialogHeader>
 
-        {/* Coin bakiyesi */}
-        <div className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 p-3">
-          <Coins className="h-5 w-5 text-yellow-500" />
-          <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+        <div className="flex items-center justify-center gap-2 rounded-xl border border-[#D6FF00]/25 bg-[#D6FF00]/8 p-3 shadow-[inset_0_0_0_1px_rgba(214,255,0,0.08)]">
+          <Coins className="h-5 w-5 text-[#D6FF00]" aria-hidden />
+          <span className="text-lg font-black tabular-nums text-[#D6FF00]">
             {coins.toLocaleString("en-US")}
           </span>
-          <span className="text-sm text-muted-foreground">{t("coins")}</span>
+          <span className="text-sm text-zinc-500">{t("coins")}</span>
         </div>
 
-        <Separator />
+        <Separator className="bg-white/10" />
 
-        {/* ÃœrÃ¼n listesi */}
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#D6FF00]" aria-hidden />
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Package className="h-10 w-10 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">{t("emptyShop")}</p>
+            <Package className="mb-2 h-10 w-10 text-zinc-600" aria-hidden />
+            <p className="text-sm text-zinc-500">{t("emptyShop")}</p>
           </div>
         ) : (
-          <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+          <div className="max-h-[50vh] space-y-3 overflow-y-auto pr-1">
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/50"
+                className="flex items-center gap-3 rounded-xl border border-white/5 bg-black/30 p-3 transition-colors hover:border-[#D6FF00]/15 hover:bg-white/[0.03]"
               >
-                {/* Ä°kon */}
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-accent/60">
-                  {ITEM_ICONS[item.type] ?? <Package className="h-8 w-8 text-muted-foreground" />}
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-zinc-900/80">
+                  {ITEM_ICONS[item.type] ?? <Package className="h-8 w-8 text-zinc-500" aria-hidden />}
                 </div>
 
-                {/* Bilgi */}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{t(`items.${item.type}.name`)}</span>
+                    <span className="text-sm font-semibold text-white">{t(`items.${item.type}.name`)}</span>
                     {item.owned > 0 && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="border border-white/10 bg-zinc-900 text-xs text-zinc-400"
+                      >
                         {t("owned", { count: item.owned })}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                  <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500">
                     {t(`items.${item.type}.description`)}
                   </p>
                 </div>
 
-                {/* Fiyat & satÄ±n al */}
-                <div className="flex flex-col items-end gap-1.5 shrink-0">
-                  <div className="flex items-center gap-1 text-sm font-semibold text-yellow-600 dark:text-yellow-400">
-                    <Coins className="h-3.5 w-3.5" />
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <div className="flex items-center gap-1 text-sm font-semibold tabular-nums text-[#D6FF00]">
+                    <Coins className="h-3.5 w-3.5" aria-hidden />
                     {item.price}
                   </div>
                   <Button
@@ -155,10 +152,14 @@ export function ShopDialog({ open, onOpenChange }: Props) {
                     variant={coins >= item.price ? "default" : "outline"}
                     disabled={coins < item.price || buyingId === item.id}
                     onClick={() => handleBuy(item.id)}
-                    className="h-7 text-xs px-3"
+                    className={
+                      coins >= item.price
+                        ? "h-7 bg-[#D6FF00] px-3 text-xs font-bold text-black hover:bg-[#c8f000]"
+                        : "h-7 border-white/15 px-3 text-xs text-zinc-400"
+                    }
                   >
                     {buyingId === item.id ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
                     ) : (
                       t("buy")
                     )}

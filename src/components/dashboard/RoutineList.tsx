@@ -163,7 +163,6 @@ export function RoutineList({ initialRoutines }: Props) {
       dispatch({ type: "toggle", id, completed, note });
 
       if (!completed) {
-        playComplete();
         const todayUTC = new Date();
         todayUTC.setUTCHours(0, 0, 0, 0);
         const todayISO = todayUTC.toISOString();
@@ -207,6 +206,7 @@ export function RoutineList({ initialRoutines }: Props) {
             window.dispatchEvent(new CustomEvent("coins-updated"));
           } else {
             const result = await completeRoutineAction(id, note);
+            playComplete();
             toast.success(t("completed"));
             window.dispatchEvent(new CustomEvent("coins-updated"));
 

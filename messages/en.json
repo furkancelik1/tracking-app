@@ -20,7 +20,6 @@
     "syncedOfflineCompletions": "{count} offline completion(s) synced.",
     "queuedOfflineCompletion": "Saved offline. Will sync when you're back online."
   },
-
   "nav": {
     "routines": "My Routines",
     "leaderboard": "Leaderboard",
@@ -34,7 +33,6 @@
     "darkMode": "Switch to Dark Mode",
     "signOut": "Sign Out"
   },
-
   "landing": {
     "metadata": {
       "title": "Zenith - Master Your Discipline",
@@ -180,7 +178,6 @@
       "pricing": "Pricing"
     }
   },
-
   "auth": {
     "layout": {
       "quote": "Build better routines. Track every action. Stay consistent.",
@@ -228,9 +225,11 @@
       "backToLogin": "Continue to sign in"
     }
   },
-
   "dashboard": {
-    "metadata": { "title": "My Routines", "description": "Manage and track your daily routines. Stay consistent and build lasting habits." },
+    "metadata": {
+      "title": "My Routines",
+      "description": "Manage and track your daily routines. Stay consistent and build lasting habits."
+    },
     "errorTitle": "Something went wrong",
     "errorMessage": "An error occurred while loading data. Please refresh the page.",
     "sessionError": "Could not retrieve session info.",
@@ -326,7 +325,6 @@
       "limitClose": "Close"
     }
   },
-
   "aiInsight": {
     "title": "Weekly Coach Summary",
     "subtitle": "AI-powered analysis of your week",
@@ -369,7 +367,6 @@
       "noHighlight": "No highlight this week."
     }
   },
-
   "disciplineTrend": {
     "title": "Discipline Trend",
     "subtitle": "Daily completion scores over the last 7 days",
@@ -386,9 +383,11 @@
     "status_low": "Needs Work",
     "status_miss": "Missed Day"
   },
-
   "leaderboard": {
-    "metadata": { "title": "Leaderboard", "description": "See how you rank among other users. Earn XP by completing routines and climb the leaderboard." },
+    "metadata": {
+      "title": "Leaderboard",
+      "description": "See how you rank among other users. Earn XP by completing routines and climb the leaderboard."
+    },
     "title": "Leaderboard",
     "subtitle": "Complete routines, earn XP, rise to the top!",
     "emptyTitle": "No rankings yet",
@@ -400,7 +399,6 @@
     },
     "friendsEmpty": "No friends yet. Search for users and follow them!"
   },
-
   "social": {
     "title": "Friends",
     "searchPlaceholder": "Search by username...",
@@ -430,7 +428,6 @@
       "description": "Connect with friends, send challenges and compete together."
     }
   },
-
   "challenges": {
     "title": "Challenges",
     "subtitle": "Compete with friends — winner earns XP and coins!",
@@ -481,7 +478,6 @@
     "rewardDrawShort": "Draw: +{xp} XP, +{coins} Coins",
     "rewardLossShort": "Consolation: +{xp} XP"
   },
-
   "duel": {
     "title": "Discipline Duel",
     "subtitle": "Bet coins, compete head-to-head, winner takes all!",
@@ -507,13 +503,13 @@
     "pending": "Waiting for response...",
     "coinsBet": "{amount} coins bet",
     "potTotal": "Pot: {amount} coins",
-    "resultWin": "Victory! You won {amount} coins! \uD83C\uDFC6",
+    "resultWin": "Victory! You won {amount} coins! 🏆",
     "resultLoss": "Defeat! You lost {amount} coins.",
     "resultDraw": "Draw! Your {amount} coins were returned.",
     "noDuel": "No active duel",
     "noDuelDesc": "Challenge a friend and put your discipline to the test!",
     "share": "Share Duel",
-    "shareText": "I'm in a Discipline Duel! {challengerScore}–{opponentScore} \u2694\uFE0F",
+    "shareText": "I'm in a Discipline Duel! {challengerScore}–{opponentScore} ⚔️",
     "errorSelf": "You can't duel yourself.",
     "errorNotFriends": "You must be friends to duel.",
     "errorMaxDuels": "Maximum active duels reached.",
@@ -560,9 +556,11 @@
     "notifLastHourDesc": "Hurry up! The duel is ending soon",
     "notifViewDuel": "View Duel"
   },
-
   "settings": {
-    "metadata": { "title": "Settings", "description": "Manage your account, notifications, and subscription preferences." },
+    "metadata": {
+      "title": "Settings",
+      "description": "Manage your account, notifications, and subscription preferences."
+    },
     "title": "Settings",
     "subtitle": "Manage your account and notification preferences.",
     "profile": {
@@ -594,9 +592,11 @@
       "renewsOn": "Renews on {date}"
     }
   },
-
   "stats": {
-    "metadata": { "title": "My Statistics", "description": "Analyze your habit data with detailed charts, streaks, and performance insights." },
+    "metadata": {
+      "title": "My Statistics",
+      "description": "Analyze your habit data with detailed charts, streaks, and performance insights."
+    },
     "title": "My Statistics",
     "subtitle": "Analyze your habit data and visualize your progress.",
     "totalCompletions": "Total Completions",
@@ -670,20 +670,19 @@
       }
     }
   },
-
   "coach": {
     "title": "AI Coach",
     "subtitle": "Your personal discipline companion",
     "thinking": "Coach is thinking…",
     "noMessage": "No message available yet. Complete some routines!",
     "weeklyChallenge": "Weekly Challenge",
-    "challengeComplete": "Completed! \uD83C\uDF89",
+    "challengeComplete": "Completed! 🎉",
     "noChallengeYet": "Challenge will be generated with your weekly insight.",
     "proChallengeOnly": "Upgrade to PRO for personalized challenges.",
     "coachTip": "Coach Tip",
     "legendRemaining": "{xp} XP to Legend rank",
-    "legendReached": "You are a Legend! \uD83D\uDC51",
-    "developerMode": "Coach is sleeping \uD83D\uDCA4",
+    "legendReached": "You are a Legend! 👑",
+    "developerMode": "Coach is sleeping 💤",
     "addApiKey": "Add GEMINI_API_KEY to .env to wake the AI Coach."
   },
   "challengeTracker": {
@@ -692,10 +691,10 @@
     "focus": "Focus: {category}",
     "progressLabel": "{current}/{target} days completed",
     "remaining": "{count} days remaining",
-    "almostThere": "One last push! You're almost there! \uD83D\uDCAA",
-    "halfWay": "Halfway through \u2014 keep the momentum!",
+    "almostThere": "One last push! You're almost there! 💪",
+    "halfWay": "Halfway through — keep the momentum!",
     "justStarted": "Great start! Let's keep going.",
-    "completedTitle": "You're amazing! \uD83C\uDFC6",
+    "completedTitle": "You're amazing! 🏆",
     "completedMessage": "You successfully completed your weekly challenge!",
     "reward": "+{xp} XP & +{coins} Coins earned!",
     "noChallenge": "No active challenge this week.",
@@ -730,7 +729,6 @@
       "Efsane": "Legend"
     }
   },
-
   "share": {
     "download": "Download Image",
     "close": "Close",
@@ -773,7 +771,6 @@
     "filenameWeeklySummary": "weekly-summary",
     "filenameSingleRoutine": "routine-streak"
   },
-
   "email": {
     "reminder": {
       "badge": "🔥 Reminder",
@@ -787,14 +784,12 @@
       "unsubscribe": "Manage notification settings"
     }
   },
-
   "metadata": {
     "title": "Zenith - Productivity & Routine Tracker",
     "description": "Achieve your peak with zen-like focus.",
     "siteName": "Zenith",
     "keywords": "habit tracker, routine tracker, daily habits, streak, productivity, self-improvement"
   },
-
   "proGate": {
     "defaultFeature": "this feature",
     "title": "Upgrade to Pro",
@@ -806,7 +801,6 @@
     "redirecting": "Redirecting…",
     "checkoutError": "Could not start checkout."
   },
-
   "shop": {
     "title": "Shop",
     "description": "Spend your hard-earned coins on useful items.",
@@ -815,7 +809,7 @@
     "owned": "{count}x owned",
     "emptyShop": "No items available yet.",
     "loadError": "Could not load shop.",
-    "purchaseSuccess": "Item purchased! \uD83C\uDF89",
+    "purchaseSuccess": "Item purchased! 🎉",
     "purchaseFailed": "Purchase failed.",
     "notEnoughCoins": "Not enough coins!",
     "items": {
@@ -825,7 +819,6 @@
       }
     }
   },
-
   "marketplace": {
     "title": "Marketplace",
     "subtitle": "Customize your experience with themes, frames & boosters.",
@@ -854,7 +847,6 @@
     "viewShop": "Browse Marketplace",
     "levelRequired": "Requires Level {level}+"
   },
-
   "badges": {
     "title": "Badges",
     "description": "{earned}/{total} badges earned",
@@ -900,9 +892,8 @@
       }
     }
   },
-
   "onboarding": {
-    "title": "Welcome! \uD83C\uDF1F",
+    "title": "Welcome! 🌟",
     "subtitle": "Let us show you how to get the most out of Zenith.",
     "back": "Back",
     "next": "Next",
@@ -910,8 +901,8 @@
     "finishing": "Setting up…",
     "skip": "Skip Tour",
     "rewardHint": "Complete the tour to earn 50 Coins + Explorer badge!",
-    "rewardToast": "\uD83C\uDF89 Welcome reward: +50 Coins!",
-    "badgeEarned": "\uD83C\uDFC5 Badge earned: {badge}",
+    "rewardToast": "🎉 Welcome reward: +50 Coins!",
+    "badgeEarned": "🏅 Badge earned: {badge}",
     "error": "Something went wrong.",
     "steps": {
       "addRoutine": {
@@ -949,7 +940,6 @@
       "gotIt": "Got it"
     }
   },
-
   "push": {
     "title": "Push Notifications",
     "checking": "Checking status…",
@@ -968,14 +958,13 @@
     "test": "Test",
     "blocked": "Blocked"
   },
-
   "gauge": {
     "title": "Today's Discipline",
-    "status_fire": "On fire bro! \uD83D\uDD25",
+    "status_fire": "On fire bro! 🔥",
     "status_storm": "Killing it bro! ⚡",
-    "status_decent": "Decent, bro \uD83D\uDCAA",
-    "status_push": "Step it up bro \uD83D\uDC4A",
-    "status_sleepy": "Wake up call, bro \uD83D\uDE34",
+    "status_decent": "Decent, bro 💪",
+    "status_push": "Step it up bro 👊",
+    "status_sleepy": "Wake up call, bro 😴",
     "status_alarm": "Set that alarm, bro ⏰",
     "completedOf": "{completed}/{total} completed"
   }

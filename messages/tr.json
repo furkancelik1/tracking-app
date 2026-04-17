@@ -20,7 +20,6 @@
     "syncedOfflineCompletions": "{count} çevrimdışı tamamlama senkronize edildi.",
     "queuedOfflineCompletion": "Çevrimdışı kaydedildi; bağlantı gelince senkronize edilecek."
   },
-
   "nav": {
     "routines": "Rutinlerim",
     "leaderboard": "Liderlik",
@@ -34,7 +33,6 @@
     "darkMode": "Karanlık Moda Geç",
     "signOut": "Çıkış Yap"
   },
-
   "landing": {
     "metadata": {
       "title": "Zenith - Master Your Discipline",
@@ -180,7 +178,6 @@
       "pricing": "Fiyatlandırma"
     }
   },
-
   "auth": {
     "layout": {
       "quote": "Daha iyi rutinler oluştur. Her adımını takip et. Tutarlı kal.",
@@ -228,9 +225,11 @@
       "backToLogin": "Giriş yapmaya devam et"
     }
   },
-
   "dashboard": {
-    "metadata": { "title": "Rutinlerim", "description": "Günlük rutinlerini yönet ve takip et. Tutarlı ol ve kalıcı alışkanlıklar edin." },
+    "metadata": {
+      "title": "Rutinlerim",
+      "description": "Günlük rutinlerini yönet ve takip et. Tutarlı ol ve kalıcı alışkanlıklar edin."
+    },
     "errorTitle": "Bir hata oluştu",
     "errorMessage": "Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.",
     "sessionError": "Oturum bilgisi alınamadı.",
@@ -326,7 +325,6 @@
       "limitClose": "Kapat"
     }
   },
-
   "aiInsight": {
     "title": "Haftalık Koç Özeti",
     "subtitle": "Haftanızın AI destekli analizi",
@@ -369,7 +367,6 @@
       "noHighlight": "Bu hafta öne çıkan başarı yok."
     }
   },
-
   "disciplineTrend": {
     "title": "Disiplin Trendi",
     "subtitle": "Son 7 günün günlük tamamlanma skorları",
@@ -386,9 +383,11 @@
     "status_low": "İyileştirilebilir",
     "status_miss": "Kaçırılan Gün"
   },
-
   "leaderboard": {
-    "metadata": { "title": "Liderlik Tablosu", "description": "Diğer kullanıcılar arasındaki sıralamana bak. Rutinlerini tamamlayarak XP kazan ve zirveye çık." },
+    "metadata": {
+      "title": "Liderlik Tablosu",
+      "description": "Diğer kullanıcılar arasındaki sıralamana bak. Rutinlerini tamamlayarak XP kazan ve zirveye çık."
+    },
     "title": "Liderlik Tablosu",
     "subtitle": "Rutinlerini tamamla, XP kazan, zirveye çık!",
     "emptyTitle": "Henüz sıralama yok",
@@ -400,7 +399,6 @@
     },
     "friendsEmpty": "Henüz arkadaşın yok. Kullanıcı ara ve takip et!"
   },
-
   "social": {
     "title": "Arkadaşlar",
     "searchPlaceholder": "Kullanıcı adı ile ara...",
@@ -430,7 +428,6 @@
       "description": "Arkadaşlarınla bağlan, düello gönder ve birlikte yarış."
     }
   },
-
   "challenges": {
     "title": "Düellolar",
     "subtitle": "Arkadaşlarınla yarış, kazanan XP ve coin kazanır!",
@@ -481,88 +478,89 @@
     "rewardDrawShort": "Berabere: +{xp} XP, +{coins} Coin",
     "rewardLossShort": "Teselli: +{xp} XP"
   },
-
   "duel": {
-    "title": "Disiplin D\u00fcellosu",
-    "subtitle": "Alt\u0131n koy, bire bir yar\u0131\u015f, kazanan hepsini al\u0131r!",
-    "arenaTitle": "D\u00fcello Arenas\u0131",
-    "readyQuestion": "D\u00fcelloya Haz\u0131r m\u0131s\u0131n?",
-    "stakeLabel": "Bahis Miktar\u0131",
-    "stakePlaceholder": "Alt\u0131n miktar\u0131 gir ({min}\u2013{max})",
-    "stakeHint": "\u0130ki taraf da ayn\u0131 miktar\u0131 koyar. Kazanan potu al\u0131r!",
-    "sendInvite": "D\u00fcello Daveti G\u00f6nder",
-    "cancel": "\u0130ptal",
-    "accept": "D\u00fcelloyu Kabul Et",
+    "title": "Disiplin Düellosu",
+    "subtitle": "Altın koy, bire bir yarış, kazanan hepsini alır!",
+    "arenaTitle": "Düello Arenası",
+    "readyQuestion": "Düelloya Hazır mısın?",
+    "stakeLabel": "Bahis Miktarı",
+    "stakePlaceholder": "Altın miktarı gir ({min}–{max})",
+    "stakeHint": "İki taraf da aynı miktarı koyar. Kazanan potu alır!",
+    "sendInvite": "Düello Daveti Gönder",
+    "cancel": "İptal",
+    "accept": "Düelloyu Kabul Et",
     "decline": "Reddet",
-    "battleStarted": "Sava\u015f Ba\u015flad\u0131!",
-    "battleEnded": "Sava\u015f Bitti!",
+    "battleStarted": "Savaş Başladı!",
+    "battleEnded": "Savaş Bitti!",
     "vs": "VS",
-    "timeLeft": "Kalan S\u00fcre",
+    "timeLeft": "Kalan Süre",
     "hours": "s",
     "minutes": "dk",
     "seconds": "sn",
     "yourScore": "Senin Skorun",
     "theirScore": "Rakibin Skoru",
-    "completeRoutines": "Puan kazanmak i\u00e7in rutinlerini tamamla!",
-    "pending": "Yan\u0131t bekleniyor...",
-    "coinsBet": "{amount} alt\u0131n bahis",
-    "potTotal": "Pot: {amount} alt\u0131n",
-    "resultWin": "Zafer! {amount} alt\u0131n kazand\u0131n! \uD83C\uDFC6",
-    "resultLoss": "Yenilgi! {amount} alt\u0131n kaybettin.",
-    "resultDraw": "Berabere! {amount} alt\u0131n\u0131n iade edildi.",
-    "noDuel": "Aktif d\u00fcello yok",
-    "noDuelDesc": "Bir arkada\u015f\u0131na meydan oku ve disiplinini test et!",
-    "share": "D\u00fcelloyu Payla\u015f",
-    "shareText": "Disiplin D\u00fcellosunday\u0131m! {challengerScore}\u2013{opponentScore} \u2694\uFE0F",
-    "errorSelf": "Kendine d\u00fcello yapamazs\u0131n.",
-    "errorNotFriends": "D\u00fcello i\u00e7in arkada\u015f olmal\u0131s\u0131n\u0131z.",
-    "errorMaxDuels": "Maksimum aktif d\u00fcello say\u0131s\u0131na ula\u015ft\u0131n.",
-    "errorInsufficientCoins": "Bu bahis i\u00e7in yeterli alt\u0131n\u0131n yok.",
-    "errorInvalidStake": "Bahis miktar\u0131 {min} ile {max} aras\u0131nda olmal\u0131.",
-    "expired": "S\u00fcresi Doldu",
+    "completeRoutines": "Puan kazanmak için rutinlerini tamamla!",
+    "pending": "Yanıt bekleniyor...",
+    "coinsBet": "{amount} altın bahis",
+    "potTotal": "Pot: {amount} altın",
+    "resultWin": "Zafer! {amount} altın kazandın! 🏆",
+    "resultLoss": "Yenilgi! {amount} altın kaybettin.",
+    "resultDraw": "Berabere! {amount} altının iade edildi.",
+    "noDuel": "Aktif düello yok",
+    "noDuelDesc": "Bir arkadaşına meydan oku ve disiplinini test et!",
+    "share": "Düelloyu Paylaş",
+    "shareText": "Disiplin Düellosundayım! {challengerScore}–{opponentScore} ⚔️",
+    "errorSelf": "Kendine düello yapamazsın.",
+    "errorNotFriends": "Düello için arkadaş olmalısınız.",
+    "errorMaxDuels": "Maksimum aktif düello sayısına ulaştın.",
+    "errorInsufficientCoins": "Bu bahis için yeterli altının yok.",
+    "errorInvalidStake": "Bahis miktarı {min} ile {max} arasında olmalı.",
+    "expired": "Süresi Doldu",
     "finished": "Bitti",
     "declined": "Reddedildi",
-    "privateDuel": "\u00d6zel D\u00fcello",
-    "createDuel": "D\u00fcello Olu\u015ftur",
-    "joinDuel": "D\u00fcelloya Kat\u0131l",
-    "privateStakeHint": "Bahis miktar\u0131n\u0131 belirle. Arkada\u015f\u0131n ayn\u0131 miktar\u0131 koyarak kat\u0131lacak!",
+    "privateDuel": "Özel Düello",
+    "createDuel": "Düello Oluştur",
+    "joinDuel": "Düelloya Katıl",
+    "privateStakeHint": "Bahis miktarını belirle. Arkadaşın aynı miktarı koyarak katılacak!",
     "waitingForOpponent": "Rakip bekleniyor...",
-    "shareCodeHint": "D\u00fcelloyu ba\u015flatmak i\u00e7in bu kodu arkada\u015f\u0131nla payla\u015f!",
+    "shareCodeHint": "Düelloyu başlatmak için bu kodu arkadaşınla paylaş!",
     "copyLink": "Davet Linkini Kopyala",
-    "linkCopied": "Link Kopyaland\u0131!",
-    "shareInviteText": "Disiplin D\u00fcelloma kat\u0131l! Kod: {code} \u2694\ufe0f",
+    "linkCopied": "Link Kopyalandı!",
+    "shareInviteText": "Disiplin Düelloma katıl! Kod: {code} ⚔️",
     "enterInviteCode": "Davet Kodunu Gir",
-    "inviteCodePlaceholder": "\u00d6rn: A3F1B2C4",
-    "errorInvalidCode": "Ge\u00e7ersiz veya s\u00fcresi dolmu\u015f davet kodu.",
-    "errorAlreadyStarted": "Bu d\u00fcello zaten ba\u015flam\u0131\u015f.",
-    "errorAlreadyJoined": "Bu d\u00fcelloya zaten biri kat\u0131lm\u0131\u015f.",
-    "liveStatus": "Canl\u0131 D\u00fcello",
+    "inviteCodePlaceholder": "Örn: A3F1B2C4",
+    "errorInvalidCode": "Geçersiz veya süresi dolmuş davet kodu.",
+    "errorAlreadyStarted": "Bu düello zaten başlamış.",
+    "errorAlreadyJoined": "Bu düelloya zaten biri katılmış.",
+    "liveStatus": "Canlı Düello",
     "live": "CANLI",
-    "privateBadge": "\u00d6zel",
-    "chat": "D\u00fcello Sohbeti",
-    "sendMessage": "Mesaj G\u00f6nder",
-    "messagePlaceholder": "Bir \u015fey s\u00f6yle...",
-    "quickReply": "H\u0131zl\u0131 Cevap",
-    "opponentSaid": "Rakibin bir \u015fey s\u00f6yledi!",
-    "errorCooldown": "Yava\u015f! Birka\u00e7 saniye bekle.",
-    "errorMessageTooLong": "Mesaj \u00e7ok uzun.",
-    "quickComeOn": "Hadi ama! \uD83D\uDD25",
-    "quickAwesome": "M\u00fcthi\u015fsin! \uD83E\uDD29",
-    "quickCatchingUp": "Yeti\u015fiyorum! \uD83C\uDFC3",
-    "quickNoChance": "\u015eans\u0131n yok! \uD83D\uDE0E",
-    "quickGoodLuck": "\u0130yi \u015fanslar! \uD83C\uDF40",
-    "ephemeralNote": "Mesajlar d\u00fcello bitti\u011finde silinecektir.",
-    "notifOpponentScored": "Rakibin ata\u011fa kalkt\u0131! \uD83D\uDD25",
-    "notifOpponentScoredDesc": "{name} bir rutini tamamlad\u0131",
-    "notifNewMessage": "Yeni d\u00fcello mesaj\u0131 \uD83D\uDCAC",
+    "privateBadge": "Özel",
+    "chat": "Düello Sohbeti",
+    "sendMessage": "Mesaj Gönder",
+    "messagePlaceholder": "Bir şey söyle...",
+    "quickReply": "Hızlı Cevap",
+    "opponentSaid": "Rakibin bir şey söyledi!",
+    "errorCooldown": "Yavaş! Birkaç saniye bekle.",
+    "errorMessageTooLong": "Mesaj çok uzun.",
+    "quickComeOn": "Hadi ama! 🔥",
+    "quickAwesome": "Müthişsin! 🤩",
+    "quickCatchingUp": "Yetişiyorum! 🏃",
+    "quickNoChance": "Şansın yok! 😎",
+    "quickGoodLuck": "İyi şanslar! 🍀",
+    "ephemeralNote": "Mesajlar düello bittiğinde silinecektir.",
+    "notifOpponentScored": "Rakibin atağa kalktı! 🔥",
+    "notifOpponentScoredDesc": "{name} bir rutini tamamladı",
+    "notifNewMessage": "Yeni düello mesajı 💬",
     "notifNewMessageDesc": "{name}: {preview}",
-    "notifLastHour": "Son 1 saat! \u23F0",
-    "notifLastHourDesc": "Acele et! D\u00fcello bitiyor",
-    "notifViewDuel": "D\u00fcelloyu G\u00f6r"
+    "notifLastHour": "Son 1 saat! ⏰",
+    "notifLastHourDesc": "Acele et! Düello bitiyor",
+    "notifViewDuel": "Düelloyu Gör"
   },
-
   "settings": {
-    "metadata": { "title": "Ayarlar", "description": "Hesap, bildirim ve abonelik tercihlerini yönet." },
+    "metadata": {
+      "title": "Ayarlar",
+      "description": "Hesap, bildirim ve abonelik tercihlerini yönet."
+    },
     "title": "Ayarlar",
     "subtitle": "Hesap ve bildirim tercihlerini yönet.",
     "profile": {
@@ -594,9 +592,11 @@
       "renewsOn": "{date} tarihinde yenilenir"
     }
   },
-
   "stats": {
-    "metadata": { "title": "İstatistiklerim", "description": "Detaylı grafikler, seriler ve performans analizleriyle alışkanlık verilerini analiz et." },
+    "metadata": {
+      "title": "İstatistiklerim",
+      "description": "Detaylı grafikler, seriler ve performans analizleriyle alışkanlık verilerini analiz et."
+    },
     "title": "İstatistiklerim",
     "subtitle": "Alışkanlık verilerini analiz et ve ilerlemeni görselleştir.",
     "totalCompletions": "Toplam Tamamlama",
@@ -670,38 +670,36 @@
       }
     }
   },
-
   "coach": {
-    "title": "AI Ko\u00e7",
-    "subtitle": "Ki\u015fisel disiplin arkada\u015f\u0131n",
-    "thinking": "Ko\u00e7 d\u00fc\u015f\u00fcn\u00fcyor\u2026",
-    "noMessage": "Hen\u00fcz mesaj yok. Birka\u00e7 rutin tamamla!",
-    "weeklyChallenge": "Haftal\u0131k G\u00f6rev",
-    "challengeComplete": "Tamamland\u0131! \uD83C\uDF89",
-    "noChallengeYet": "G\u00f6rev, haftal\u0131k analizinle birlikte olu\u015fturulacak.",
-    "proChallengeOnly": "Ki\u015fisel g\u00f6revler i\u00e7in PRO\u2019ya y\u00fcksel.",
-    "coachTip": "Ko\u00e7 \u0130pucu",
-    "legendRemaining": "Efsane r\u00fctbesine {xp} XP kald\u0131",
-    "legendReached": "Sen bir Efsanesin! \uD83D\uDC51",
-    "developerMode": "Ko\u00e7 uyuyor \uD83D\uDCA4",
-    "addApiKey": "AI Ko\u00e7\u2019u uyand\u0131rmak i\u00e7in .env dosyas\u0131na GEMINI_API_KEY ekle."
+    "title": "AI Koç",
+    "subtitle": "Kişisel disiplin arkadaşın",
+    "thinking": "Koç düşünüyor…",
+    "noMessage": "Henüz mesaj yok. Birkaç rutin tamamla!",
+    "weeklyChallenge": "Haftalık Görev",
+    "challengeComplete": "Tamamlandı! 🎉",
+    "noChallengeYet": "Görev, haftalık analizinle birlikte oluşturulacak.",
+    "proChallengeOnly": "Kişisel görevler için PRO’ya yüksel.",
+    "coachTip": "Koç İpucu",
+    "legendRemaining": "Efsane rütbesine {xp} XP kaldı",
+    "legendReached": "Sen bir Efsanesin! 👑",
+    "developerMode": "Koç uyuyor 💤",
+    "addApiKey": "AI Koç’u uyandırmak için .env dosyasına GEMINI_API_KEY ekle."
   },
-
   "challengeTracker": {
-    "title": "Haftal\u0131k G\u00f6rev",
-    "assignedBy": "AI Ko\u00e7 taraf\u0131ndan atand\u0131",
+    "title": "Haftalık Görev",
+    "assignedBy": "AI Koç tarafından atandı",
     "focus": "Odak: {category}",
-    "progressLabel": "{current}/{target} g\u00fcn tamamland\u0131",
-    "remaining": "{count} g\u00fcn kald\u0131",
-    "almostThere": "Hadi son bir ad\u0131m! Neredeyse ba\u015fard\u0131n! \uD83D\uDCAA",
-    "halfWay": "Yar\u0131 yolda \u2014 ivmeyi koru!",
-    "justStarted": "Harika ba\u015flang\u0131\u00e7! Devam edelim.",
-    "completedTitle": "M\u00fcthi\u015fsin! \uD83C\uDFC6",
-    "completedMessage": "Haftal\u0131k g\u00f6revini ba\u015far\u0131yla tamamlad\u0131n!",
-    "reward": "+{xp} XP & +{coins} Alt\u0131n kazand\u0131n!",
-    "noChallenge": "Bu hafta aktif g\u00f6rev yok.",
-    "noChallengeSub": "AI Ko\u00e7\u2019un bir sonraki haftal\u0131k analizinle birlikte atayacak.",
-    "proOnly": "Ki\u015fisel haftal\u0131k g\u00f6revler i\u00e7in PRO\u2019ya y\u00fcksel."
+    "progressLabel": "{current}/{target} gün tamamlandı",
+    "remaining": "{count} gün kaldı",
+    "almostThere": "Hadi son bir adım! Neredeyse başardın! 💪",
+    "halfWay": "Yarı yolda — ivmeyi koru!",
+    "justStarted": "Harika başlangıç! Devam edelim.",
+    "completedTitle": "Müthişsin! 🏆",
+    "completedMessage": "Haftalık görevini başarıyla tamamladın!",
+    "reward": "+{xp} XP & +{coins} Altın kazandın!",
+    "noChallenge": "Bu hafta aktif görev yok.",
+    "noChallengeSub": "AI Koç’un bir sonraki haftalık analizinle birlikte atayacak.",
+    "proOnly": "Kişisel haftalık görevler için PRO’ya yüksel."
   },
   "challengeLeaderboard": {
     "title": "Haftalık Görev Şampiyonları",
@@ -731,7 +729,6 @@
       "Efsane": "Efsane"
     }
   },
-
   "share": {
     "download": "Görüntüyü İndir",
     "close": "Kapat",
@@ -774,7 +771,6 @@
     "filenameWeeklySummary": "haftalik-ozet",
     "filenameSingleRoutine": "rutin-serisi"
   },
-
   "email": {
     "reminder": {
       "badge": "🔥 Hatırlatma",
@@ -788,14 +784,12 @@
       "unsubscribe": "Bildirim ayarlarını yönet"
     }
   },
-
   "metadata": {
     "title": "Zenith - Productivity & Routine Tracker",
     "description": "Achieve your peak with zen-like focus.",
     "siteName": "Zenith",
     "keywords": "alışkanlık takip, rutin takip, günlük alışkanlıklar, seri, verimlilik, kişisel gelişim"
   },
-
   "proGate": {
     "defaultFeature": "bu özellik",
     "title": "Pro'ya Yükselt",
@@ -807,7 +801,6 @@
     "redirecting": "Yönlendiriliyor…",
     "checkoutError": "Ödeme başlatılamadı."
   },
-
   "shop": {
     "title": "Dükkan",
     "description": "Kazandığın altınları kullanışlı eşyalara harca.",
@@ -826,7 +819,6 @@
       }
     }
   },
-
   "marketplace": {
     "title": "Pazar Yeri",
     "subtitle": "Temalar, çerçeveler ve güçlendiricilerle deneyimini kişiselleştir.",
@@ -855,7 +847,6 @@
     "viewShop": "Pazar Yerine Göz At",
     "levelRequired": "Seviye {level}+ gerekiyor"
   },
-
   "badges": {
     "title": "Rozetler",
     "description": "{earned}/{total} rozet kazanıldı",
@@ -901,7 +892,6 @@
       }
     }
   },
-
   "onboarding": {
     "title": "Hoş Geldin! 🌟",
     "subtitle": "Zenith'ten en iyi şekilde nasıl faydalanacağını gösterelim.",
@@ -950,7 +940,6 @@
       "gotIt": "Anladım"
     }
   },
-
   "push": {
     "title": "Push Bildirimleri",
     "checking": "Kontrol ediliyor…",
@@ -969,14 +958,13 @@
     "test": "Test",
     "blocked": "Engellendi"
   },
-
   "gauge": {
     "title": "Bugünkü Disiplin",
-    "status_fire": "Yangın var abi! \uD83D\uDD25",
+    "status_fire": "Yangın var abi! 🔥",
     "status_storm": "Fırtına gibisin abi! ⚡",
-    "status_decent": "İdare eder abi \uD83D\uDCAA",
-    "status_push": "Biraz gaza bas abi \uD83D\uDC4A",
-    "status_sleepy": "Abi bugün uyandın mı? \uD83D\uDE34",
+    "status_decent": "İdare eder abi 💪",
+    "status_push": "Biraz gaza bas abi 👊",
+    "status_sleepy": "Abi bugün uyandın mı? 😴",
     "status_alarm": "Abi alarm kurmadın mı? ⏰",
     "completedOf": "{completed}/{total} tamamlandı"
   }

@@ -92,7 +92,7 @@ export function useSoundEffect() {
       osc.start(now);
       osc.stop(now + durationSec);
     } catch {
-      // AudioContext may be blocked â€” fail silently
+      // AudioContext may be blocked; fail silently.
     }
   }, []);
 

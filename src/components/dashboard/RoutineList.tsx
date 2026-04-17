@@ -30,8 +30,9 @@ import {
   flushPendingRoutineLogs,
   subscribeRoutineSync,
 } from "@/lib/offline/routine-sync-manager";
+import { useSoundEffect } from "@/hooks/useSoundEffect";
 
-// â”€â”€â”€ Optimistic reducer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Optimistic reducer
 
 type OptimisticAction =
   | { type: "toggle"; id: string; completed: boolean; note?: string }
@@ -50,14 +51,14 @@ function optimisticReducer(
       return state.map((r) => {
         if (r.id !== action.id) return r;
         if (action.completed) {
-          // Geri al: bugÃ¼nkÃ¼ log kaldÄ±r, streak azalt
+          // Geri al: bugünkü logu kaldır, streak azalt.
           return {
             ...r,
             logs: r.logs.filter((l) => l.completedAt < todayISO),
             currentStreak: Math.max(0, r.currentStreak - 1),
           };
         }
-        // Tamamla: log ekle, streak artÄ±r
+        // Tamamla: log ekle, streak artır.
         return {
           ...r,
           logs: [{ id: "_opt", completedAt: todayISO, note: action.note ?? null }, ...r.logs],
@@ -74,7 +75,7 @@ function optimisticReducer(
   }
 }
 
-// â”€â”€â”€ BileÅŸen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Component
 
 type Props = { initialRoutines: RoutineWithMeta[] };
 
@@ -98,14 +99,14 @@ export function RoutineList({ initialRoutines }: Props) {
     rank: string;
     rankColor: string;
   } | null>(null);
+  const { playComplete } = useSoundEffect();
 
-  // Sunucu verisi (TanStack Query â€” polling + refetch)
+  // Server data (TanStack Query).
   const { data: serverRoutines = [], isLoading } = useRoutines(initialRoutines);
-  // Server Action tamamlandÄ±ktan sonra TQ cache'ini temizle
+  // Invalidate TQ cache after server action.
   const { invalidate } = useRoutineQueryClient();
 
-  // â”€â”€ useOptimistic: serverRoutines baz alÄ±nÄ±r, dispatch ile anÄ±nda gÃ¼ncellenir.
-  //    Transition bitince serverRoutines'e (sunucu doÄŸrusu) dÃ¶ner.
+  // useOptimistic: instant UI, then server truth.
   const [optimisticRoutines, dispatch] = useOptimistic(serverRoutines, optimisticReducer);
 
   // Çevrimdışı kuyruk: sayfa açılışında ve tekrar çevrimiçi olunca senkronize et
@@ -126,7 +127,7 @@ export function RoutineList({ initialRoutines }: Props) {
     return subscribeRoutineSync(run);
   }, [invalidate, tc]);
 
-  // Reset allDone flag when server data refreshes (new day / undo)
+  // Reset allDone flag when server data refreshes.
   useEffect(() => {
     const todayUTC = new Date();
     todayUTC.setUTCHours(0, 0, 0, 0);
@@ -137,8 +138,7 @@ export function RoutineList({ initialRoutines }: Props) {
     if (!allDone) allDoneFiredRef.current = false;
   }, [serverRoutines]);
 
-  // â”€â”€ useTransition: async Server Action'Ä± sarar (isPending kullanÄ±lmÄ±yor â€”
-  //    gÃ¶rsel durum pendingId Ã¼zerinden yÃ¶netilir)
+  // useTransition wraps async server actions.
   const [, startToggle] = useTransition();
   const [, startDelete] = useTransition();
 
@@ -146,24 +146,24 @@ export function RoutineList({ initialRoutines }: Props) {
   const isPro = auth.status === "authenticated" && auth.isPro;
   const atLimit = !isPro && serverRoutines.length >= 3;
 
-  // â”€â”€ Handler'lar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Handlers
 
   /**
    * Tamamla / Geri Al
    *
-   * AkÄ±ÅŸ:
-   *  1. dispatch â†’ useOptimistic anÄ±nda UI gÃ¼nceller (0 ms)
-   *  2. Server Action â†’ Prisma + revalidatePath (aÄŸ gecikmesi)
-   *  3. invalidate â†’ TQ cache temizlenir â†’ refetch baÅŸlar
-   *  4. Hata â†’ useOptimistic otomatik eski state'e dÃ¶ner + toast
+   * Akış:
+   * 1) dispatch -> useOptimistic UI'ı anında günceller
+   * 2) server action -> Prisma + revalidatePath
+   * 3) invalidate -> query yeniden çekilir
+   * 4) hata -> toast + bir sonraki server verisiyle toparlanır
    */
   function handleToggle(id: string, completed: boolean, note?: string) {
     setPendingId(id);
     startToggle(async () => {
       dispatch({ type: "toggle", id, completed, note });
 
-      // â”€â”€ All Done detection (optimistic) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (!completed) {
+        playComplete();
         const todayUTC = new Date();
         todayUTC.setUTCHours(0, 0, 0, 0);
         const todayISO = todayUTC.toISOString();
@@ -177,14 +177,14 @@ export function RoutineList({ initialRoutines }: Props) {
         if (allDone && !allDoneFiredRef.current) {
           allDoneFiredRef.current = true;
           hapticSuccess();
-          // KÃ¼Ã§Ã¼k gecikme â€” tek rutin konfetisi bittikten sonra bÃ¼yÃ¼k kutlama
+          // Small delay so completion animation finishes first.
           setTimeout(() => {
             fireAllDoneConfetti();
             toast.success(t("allDone"), { duration: 4000 });
           }, 400);
         }
       } else {
-        // Geri al durumunda allDone sÄ±fÄ±rla
+        // Undo resets allDone marker.
         allDoneFiredRef.current = false;
       }
 
@@ -262,7 +262,7 @@ export function RoutineList({ initialRoutines }: Props) {
     });
   }
 
-  // â”€â”€ TÃ¼rev veriler (optimistic veriden beslenir) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Derived values from optimistic data.
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(optimisticRoutines.map((r) => r.category))).sort();
@@ -280,7 +280,7 @@ export function RoutineList({ initialRoutines }: Props) {
   // Display label for ALL category
   const getCategoryLabel = (cat: string) => cat === ALL ? t("allCategories") : cat;
 
-  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Render
 
   return (
     <div className="space-y-6">
@@ -301,11 +301,11 @@ export function RoutineList({ initialRoutines }: Props) {
         </Button>
       </div>
 
-      {/* FREE limit uyarÄ±sÄ± */}
+      {/* FREE limit warning */}
       {atLimit && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 px-4 py-3 flex items-center justify-between gap-4 text-sm">
           <p className="text-amber-800 dark:text-amber-200">
-            <span className="font-semibold">3/3</span> â€” {t("limitWarning", { count: 3, max: 3 })}
+            <span className="font-semibold">3/3</span> — {t("limitWarning", { count: 3, max: 3 })}
           </p>
           <Button size="sm" asChild>
             <a href="/settings">{t("upgradeCta")}</a>
@@ -313,12 +313,12 @@ export function RoutineList({ initialRoutines }: Props) {
         </div>
       )}
 
-      {/* Progress bar â€” optimistic veriden beslenir â†’ anÄ±nda gÃ¼ncellenir */}
+      {/* Progress bar */}
       {optimisticRoutines.length > 0 && (
         <RoutineProgressBar routines={optimisticRoutines} />
       )}
 
-      {/* Kategori filtre tabs â€” optimistic veriden beslenir */}
+      {/* Category filter tabs */}
       {categories.length > 2 && (
         <div className="flex gap-1.5 flex-wrap">
           {categories.map((cat) => {
@@ -354,7 +354,7 @@ export function RoutineList({ initialRoutines }: Props) {
         </div>
       )}
 
-      {/* Rutin listesi */}
+      {/* Routine list */}
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -446,7 +446,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center gap-4">
       <div className="size-12 rounded-full bg-muted flex items-center justify-center text-2xl">
-        âœ“
+        ✓
       </div>
       <div>
         <p className="font-medium">{t("emptyTitle")}</p>

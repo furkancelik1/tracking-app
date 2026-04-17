@@ -1,7 +1,7 @@
 ﻿"use client";
 
-import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Undo2, Trash2, Share2, Flame, MoreVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ import { useTranslations } from "next-intl";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
 import { ICON_MAP } from "@/lib/routine-icons";
 
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Helpers
 
 function getTodayISO(): string {
   const d = new Date();
@@ -24,12 +24,11 @@ function getTodayISO(): string {
   return d.toISOString();
 }
 
-function isCompletedToday(logs: RoutineWithMeta["logs"]): boolean {
-  const todayISO = getTodayISO();
+function isCompletedToday(logs: RoutineWithMeta["logs"], todayISO: string): boolean {
   return logs.some((l) => l.completedAt >= todayISO);
 }
 
-// â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Props
 
 interface RoutineCardProps {
   routine: RoutineWithMeta;
@@ -40,7 +39,7 @@ interface RoutineCardProps {
   index: number;
 }
 
-// â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Component
 
 export function RoutineCard({
   routine,
@@ -50,15 +49,30 @@ export function RoutineCard({
   isPending,
 }: RoutineCardProps) {
   const t = useTranslations("dashboard.routineCard");
-  const completed = isCompletedToday(routine.logs);
+  const [todayISO, setTodayISO] = useState<string | null>(null);
+  const completed = useMemo(
+    () => (todayISO ? isCompletedToday(routine.logs, todayISO) : false),
+    [routine.logs, todayISO]
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const [isPressing, setIsPressing] = useState(false);
   const [showShimmer, setShowShimmer] = useState(false);
   const iconColor = routine.color ?? "#3b82f6";
   const Icon = ICON_MAP[routine.icon ?? ""];
   const prevCompletedRef = useRef(completed);
+  const didInitCompletedRef = useRef(false);
+
+  // Hydration-safe day key: run only on client after mount.
+  useEffect(() => {
+    setTodayISO(getTodayISO());
+  }, []);
 
   useEffect(() => {
+    if (!didInitCompletedRef.current) {
+      prevCompletedRef.current = completed;
+      didInitCompletedRef.current = true;
+      return;
+    }
     if (!prevCompletedRef.current && completed) {
       setShowShimmer(true);
       const timer = window.setTimeout(() => setShowShimmer(false), 750);

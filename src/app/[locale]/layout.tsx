@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { QueryProvider } from "@/components/query-provider";
 import { AuthProvider } from "@/components/auth-provider";
+import { getSession } from "@/lib/auth";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -158,6 +159,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   const messages = await getMessages();
+  const session = await getSession();
 
   return (
     <html lang={locale} suppressHydrationWarning className={inter.variable}>
@@ -176,7 +178,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body suppressHydrationWarning className="font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
-            <AuthProvider>
+            <AuthProvider session={session}>
               <ThemeProvider
                 attribute="class"
                 defaultTheme="system"

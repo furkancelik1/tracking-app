@@ -33,7 +33,13 @@ export function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       aria-label="Primary"
     >
-      <div className="mx-auto flex h-[3.75rem] max-w-lg items-stretch justify-around px-1 pt-0.5">
+      <div
+        className="flex h-[3.75rem] w-full max-w-none items-stretch justify-between gap-0 px-0.5 pt-0.5 sm:justify-around sm:px-1"
+        style={{
+          paddingLeft: "max(0.25rem, env(safe-area-inset-left, 0px))",
+          paddingRight: "max(0.25rem, env(safe-area-inset-right, 0px))",
+        }}
+      >
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;

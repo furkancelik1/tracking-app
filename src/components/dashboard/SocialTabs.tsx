@@ -151,16 +151,16 @@ export function SocialTabs({
   ];
 
   return (
-    <Card className="border border-white/5 bg-zinc-950/90 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
-      <CardHeader className="pb-0">
-        <div className="flex gap-1 rounded-xl border border-white/5 bg-black/40 p-1">
+    <Card className="overflow-hidden border border-white/5 bg-zinc-950/90 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
+      <CardHeader className="space-y-0 p-0 sm:p-6 sm:pb-0">
+        <div className="flex gap-0.5 rounded-none border-b border-white/5 bg-black/40 p-1 sm:gap-1 sm:rounded-xl sm:border sm:border-white/5 sm:border-b-0">
           {tabs.map(({ key, label, icon: Icon, count }) => (
             <button
               key={key}
               type="button"
               onClick={() => setTab(key)}
               className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
+                "flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md px-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wide transition-colors sm:gap-1.5 sm:rounded-lg sm:px-2 sm:text-sm",
                 tab === key
                   ? "bg-[#D6FF00] text-black shadow-[0_0_24px_rgba(214,255,0,0.2)]"
                   : "text-zinc-500 hover:text-white"
@@ -185,7 +185,7 @@ export function SocialTabs({
         </div>
       </CardHeader>
 
-      <CardContent className="pt-4">
+      <CardContent className="p-4 pt-4 sm:p-6 sm:pt-4">
         {tab === "followers" && (
           <div>
             {followers.length === 0 ? (

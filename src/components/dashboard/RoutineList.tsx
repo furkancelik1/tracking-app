@@ -202,6 +202,7 @@ export function RoutineList({ initialRoutines }: Props) {
             typeof navigator !== "undefined" && !navigator.onLine;
           if (offline) {
             await enqueuePendingRoutineLog({ routineId: id, note });
+            playComplete();
             toast.success(tc("queuedOfflineCompletion"), { duration: 4000 });
             window.dispatchEvent(new CustomEvent("coins-updated"));
           } else {

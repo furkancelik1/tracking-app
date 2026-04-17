@@ -11,7 +11,7 @@ type Props = {
   routines: RoutineWithMeta[];
 };
 
-/** BugÃ¼n tamamlanmamÄ±ÅŸ ve aktif serisi olan rutinleri dÃ¶ner */
+/** Bugün tamamlanmamış ve aktif serisi olan rutinleri döner. */
 function getAtRiskRoutines(routines: RoutineWithMeta[]): RoutineWithMeta[] {
   const todayUTC = new Date();
   todayUTC.setUTCHours(0, 0, 0, 0);
@@ -28,7 +28,8 @@ function getAtRiskRoutines(routines: RoutineWithMeta[]): RoutineWithMeta[] {
 export function StreakAlert({ routines }: Props) {
   const t = useTranslations("dashboard.streakAlert");
   const atRisk = getAtRiskRoutines(routines);
-  if (atRisk.length === 0) return null;
+  const atRiskCount = atRisk.length;
+  if (atRiskCount === 0) return null;
 
   return (
     <motion.div
@@ -49,9 +50,9 @@ export function StreakAlert({ routines }: Props) {
       </motion.div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-red-700 dark:text-red-400">
-          {atRisk.length === 1
-            ? t("titleSingle", { count: atRisk.length })
-            : t("title", { count: atRisk.length })}
+          {atRiskCount === 1
+            ? t("titleSingle", { count: atRiskCount })
+            : t("title", { count: atRiskCount })}
         </p>
         <p className="text-xs text-red-600/80 dark:text-red-400/70 mt-0.5">
           {atRisk.map((r) => (
@@ -64,7 +65,7 @@ export function StreakAlert({ routines }: Props) {
                 style={{ backgroundColor: r.color }}
               />
               <span className="font-medium">{r.title}</span>
-              <span className="text-red-500">ğŸ”¥{r.currentStreak}</span>
+              <span className="text-red-500">🔥{r.currentStreak}</span>
             </span>
           ))}
         </p>

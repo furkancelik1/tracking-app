@@ -70,11 +70,10 @@ export default async function StatsPage({
   }));
 
   return (
-    <div className="space-y-8 px-4 py-8 sm:px-6">
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+    <div className="space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
           <p className="text-muted-foreground">
             {t("subtitle")}
           </p>

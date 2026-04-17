@@ -294,9 +294,10 @@ export default async function DashboardPage({
       return (
         <>
           <DashboardNav />
-          <main className="mx-auto max-w-3xl px-6 py-12">
+          <main className="mx-auto max-w-3xl px-4 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] pt-8 sm:px-6 sm:pb-12 sm:pt-12 md:pb-12">
             <DashboardEmptyState />
           </main>
+          <BottomNav />
         </>
       );
     }
@@ -304,7 +305,7 @@ export default async function DashboardPage({
     return (
       <>
         <DashboardNav />
-        <main className="mx-auto max-w-3xl px-4 md:px-8 py-8 md:py-12 space-y-10 pb-24 md:pb-12">
+        <main className="mx-auto max-w-3xl space-y-8 px-4 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] pt-6 sm:space-y-10 sm:px-6 md:px-8 md:pb-12 md:pt-8 lg:py-12">
           {/* ── Daily motto — whisper at the top ── */}
           <MottoDisplay />
 
@@ -312,11 +313,13 @@ export default async function DashboardPage({
           <DashboardCharts gaugeData={gaugeData} />
 
           {/* ── Level bar + AI coach button ── */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="min-w-0 flex-1">
               <LevelProgressBar xp={userXp} />
             </div>
-            <AICoachButton xp={userXp} initialInsight={null} isPro={isPro} />
+            <div className="flex shrink-0 justify-end sm:justify-start">
+              <AICoachButton xp={userXp} initialInsight={null} isPro={isPro} />
+            </div>
           </div>
 
           {/* ── Streak alert (subtle, only shows when at risk) ── */}
@@ -346,21 +349,22 @@ function DashboardError({ title, message, retry }: { title?: string; message: st
   return (
     <>
       <DashboardNav />
-      <main className="mx-auto max-w-6xl px-6 py-8">
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
-          <div className="h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center">
+      <main className="mx-auto max-w-6xl px-4 py-8 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:pb-8">
+        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center sm:min-h-[60vh]">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
             <AlertTriangle className="h-7 w-7 text-destructive" />
           </div>
           <h2 className="text-xl font-semibold">{title ?? "Error"}</h2>
-          <p className="text-muted-foreground max-w-md">{message}</p>
+          <p className="max-w-md text-muted-foreground">{message}</p>
           <a
             href="/dashboard"
-            className="mt-2 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="mt-2 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             {retry ?? "Retry"}
           </a>
         </div>
       </main>
+      <BottomNav />
     </>
   );
 }

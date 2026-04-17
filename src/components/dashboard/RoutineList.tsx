@@ -301,14 +301,13 @@ export function RoutineList({ initialRoutines }: Props) {
       <RoutineCompletionFlash label={flashLabel} />
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {t("subtitle")}
-          </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{t("title")}</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Button
+          className="w-full shrink-0 sm:w-auto"
           onClick={() => setDialogOpen(true)}
           disabled={atLimit}
           title={atLimit ? t("limitWarning", { count: 3, max: 3 }) : undefined}

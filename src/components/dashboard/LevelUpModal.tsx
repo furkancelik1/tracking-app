@@ -22,7 +22,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
     if (!open) return;
     const t = setTimeout(onClose, 4000);
 
-    // Minimalist neon confetti patlamasÄ±
+    // Minimal neon confetti burst
     confetti({
       particleCount: 55,
       spread: 70,
@@ -41,9 +41,9 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
   return (
     <AnimatePresence>
       {open && (
-        // Full-screen positioner â€” pointer-events: none so the rest of the UI stays interactive
+        // Full-screen positioner — pointer-events: none so the rest of the UI stays interactive
         <motion.div
-          className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+          className="pointer-events-none fixed inset-0 z-[200] flex items-center justify-center px-4 pb-[env(safe-area-inset-bottom,0px)] pt-[env(safe-area-inset-top,0px)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -67,7 +67,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
             onClick={onClose}
           >
             <div
-              className="relative rounded-2xl border bg-background/95 px-12 py-9 text-center shadow-2xl backdrop-blur-xl overflow-hidden"
+              className="relative max-w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border bg-background/95 px-6 py-6 text-center shadow-2xl backdrop-blur-xl sm:px-12 sm:py-9"
               style={{
                 borderColor: `${rankColor}50`,
                 boxShadow: `0 0 80px ${rankColor}25, 0 24px 64px rgba(0,0,0,0.45)`,
@@ -84,7 +84,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
               <div className="relative space-y-2">
                 {/* Star burst */}
                 <motion.div
-                  className="text-5xl"
+                  className="text-4xl sm:text-5xl"
                   animate={{ rotate: [0, 10, -10, 8, -6, 0] }}
                   transition={{ duration: 0.8, delay: 0.15 }}
                 >
@@ -101,7 +101,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
 
                 {/* Giant level number */}
                 <motion.div
-                  className="text-8xl font-black tabular-nums leading-none"
+                  className="text-6xl font-black tabular-nums leading-none sm:text-8xl"
                   style={{ color: rankColor }}
                   initial={{ scale: 0.4 }}
                   animate={{ scale: 1 }}
@@ -126,7 +126,7 @@ export function LevelUpModal({ open, level, rank, rankColor, onClose }: Props) {
                 <p className="text-[10px] text-muted-foreground/40 pt-1">tap to dismiss</p>
               </div>
 
-              {/* Bottom progress bar â€” drains over 4 s to signal auto-dismiss */}
+              {/* Bottom progress bar — drains over 4s (auto-dismiss) */}
               <motion.div
                 className="absolute bottom-0 left-0 h-[2px] rounded-b-2xl"
                 style={{ backgroundColor: rankColor }}

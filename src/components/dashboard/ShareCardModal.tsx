@@ -26,12 +26,15 @@ type Props = {
   cardProps: ShareCardProps;
 };
 
+const MAX_CONTAINER = 672;
+
 export function ShareCardModal({ open, onClose, cardProps }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [layout, setLayout] = useState<ShareCardLayout>("landscape");
   const [canNativeShare, setCanNativeShare] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(MAX_CONTAINER);
   const t = useTranslations("share");
 
   useEffect(() => {
@@ -40,6 +43,16 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
         typeof navigator.share === "function" &&
         typeof navigator.canShare === "function"
     );
+  }, []);
+
+  useEffect(() => {
+    const update = () => {
+      if (typeof window === "undefined") return;
+      setContainerWidth(Math.min(MAX_CONTAINER, Math.max(280, window.innerWidth - 32)));
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
 
   const getFilename = useCallback(() => {
@@ -72,12 +85,10 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
         t("nativeShareText")
       );
       if (!shared) {
-        // Fallback: download
         await downloadShareCard(cardRef.current, getFilename());
         toast.success(t("downloaded"));
       }
     } catch (err) {
-      // AbortError means the user cancelled the share dialog â€” not an error
       if (err instanceof Error && err.name === "AbortError") return;
       toast.error(t("downloadError"));
     } finally {
@@ -88,104 +99,103 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
   const isPortrait = layout === "portrait";
   const previewW = isPortrait ? 1080 : 1200;
   const previewH = isPortrait ? 1920 : 630;
-  // Scale to fit in a max-w-2xl (672px) container
-  const scale = isPortrait ? 672 / previewW * 0.55 : 0.5;
+  const cw = containerWidth;
+  const scale = isPortrait ? (cw / previewW) * 0.55 : (cw / previewW) * 0.89;
 
   return (
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
           />
 
-          {/* Modal */}
           <motion.div
             key="modal"
-            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            initial={{ opacity: 0, scale: 0.96, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 30 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none overflow-y-auto"
+            exit={{ opacity: 0, scale: 0.96, y: 24 }}
+            transition={{ type: "spring", damping: 26, stiffness: 320 }}
+            className="pointer-events-none fixed inset-0 z-[61] flex items-start justify-center overflow-y-auto overscroll-contain px-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:items-center sm:px-4 sm:pb-8"
           >
-            <div className="pointer-events-auto w-full max-w-2xl flex flex-col gap-4 my-auto">
-              {/* Ãœst bar: Layout toggle + Kapat */}
-              <div className="flex items-center justify-between">
-                {/* Layout Toggle */}
-                <div className="flex items-center gap-1 rounded-full bg-white/10 p-1">
+            <div className="pointer-events-auto my-auto flex w-full max-w-2xl flex-col gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-1 rounded-full bg-white/10 p-1">
                   <button
+                    type="button"
                     onClick={() => setLayout("landscape")}
-                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                    className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium transition-all sm:px-3 ${
                       layout === "landscape"
-                        ? "bg-indigo-600 text-white shadow-sm"
+                        ? "bg-[#D6FF00] text-black shadow-sm"
                         : "text-white/50 hover:text-white/80"
                     }`}
                   >
-                    <Monitor className="size-3.5" />
-                    {t("layoutLandscape")}
+                    <Monitor className="size-3.5 shrink-0" aria-hidden />
+                    <span className="truncate">{t("layoutLandscape")}</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => setLayout("portrait")}
-                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                    className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium transition-all sm:px-3 ${
                       layout === "portrait"
-                        ? "bg-indigo-600 text-white shadow-sm"
+                        ? "bg-[#D6FF00] text-black shadow-sm"
                         : "text-white/50 hover:text-white/80"
                     }`}
                   >
-                    <Smartphone className="size-3.5" />
-                    {t("layoutPortrait")}
+                    <Smartphone className="size-3.5 shrink-0" aria-hidden />
+                    <span className="truncate">{t("layoutPortrait")}</span>
                   </button>
                 </div>
 
                 <button
+                  type="button"
                   onClick={onClose}
-                  className="rounded-full bg-white/10 p-2 text-white/60 hover:bg-white/20 hover:text-white transition-colors"
+                  className="rounded-full bg-white/10 p-2 text-white/60 transition-colors hover:bg-white/20 hover:text-white"
+                  aria-label={t("close")}
                 >
                   <X className="size-5" />
                 </button>
               </div>
 
-              {/* Kart Ã–nizleme â€” Ã¶lÃ§eklenmiÅŸ */}
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-indigo-500/20 ring-1 ring-white/10">
-                <div
-                  style={{
-                    transform: `scale(${scale})`,
-                    transformOrigin: "top left",
-                    width: previewW,
-                    height: previewH,
-                  }}
-                >
-                  <ShareCard ref={cardRef} {...cardProps} layout={layout} />
+              <div className="max-h-[min(70dvh,560px)] w-full overflow-auto rounded-2xl ring-1 ring-white/10 sm:max-h-none">
+                <div className="relative overflow-hidden rounded-2xl shadow-2xl shadow-black/40 ring-1 ring-white/10">
+                  <div
+                    style={{
+                      transform: `scale(${scale})`,
+                      transformOrigin: "top left",
+                      width: previewW,
+                      height: previewH,
+                    }}
+                  >
+                    <ShareCard ref={cardRef} {...cardProps} layout={layout} />
+                  </div>
+                  <div
+                    style={{ paddingBottom: `${(previewH / previewW) * scale * 100}%` }}
+                    className="pointer-events-none"
+                  />
                 </div>
-                {/* Ã–lÃ§eklenmiÅŸ boyuta uygun container */}
-                <div
-                  style={{ paddingBottom: `${(previewH / previewW) * scale * 100}%` }}
-                  className="pointer-events-none"
-                />
               </div>
 
-              {/* Aksiyon butonlarÄ± */}
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
                 <Button
                   onClick={handleDownload}
                   disabled={downloading || sharing}
-                  className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="w-full gap-2 bg-[#D6FF00] font-semibold text-black hover:bg-[#c8f000] sm:w-auto"
                   size="lg"
                 >
                   {downloading ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin" aria-hidden />
                       {t("preparing")}
                     </>
                   ) : (
                     <>
-                      <Download className="size-4" />
+                      <Download className="size-4" aria-hidden />
                       {t("download")}
                     </>
                   )}
@@ -195,17 +205,17 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
                   <Button
                     onClick={handleNativeShare}
                     disabled={downloading || sharing}
-                    className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="w-full gap-2 border border-white/15 bg-zinc-900 text-white hover:bg-zinc-800 sm:w-auto"
                     size="lg"
                   >
                     {sharing ? (
                       <>
-                        <Loader2 className="size-4 animate-spin" />
+                        <Loader2 className="size-4 animate-spin" aria-hidden />
                         {t("preparing")}
                       </>
                     ) : (
                       <>
-                        <Share2 className="size-4" />
+                        <Share2 className="size-4" aria-hidden />
                         {t("shareNative")}
                       </>
                     )}
@@ -216,7 +226,7 @@ export function ShareCardModal({ open, onClose, cardProps }: Props) {
                   variant="outline"
                   onClick={onClose}
                   size="lg"
-                  className="border-white/10 text-white/70 hover:bg-white/5"
+                  className="w-full border-white/10 text-white/70 hover:bg-white/5 sm:w-auto"
                 >
                   {t("close")}
                 </Button>

@@ -82,8 +82,8 @@ export function DuelInviteDialog({ friends }: Props) {
           {t("sendInvite")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md border border-white/10 bg-zinc-950">
-        <DialogHeader>
+      <DialogContent className="flex max-w-md min-h-0 flex-col gap-4 border border-white/10 bg-zinc-950">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2 font-black uppercase tracking-tight text-white">
             <Swords className="size-5 text-[#D6FF00]" aria-hidden />
             {t("readyQuestion")}
@@ -93,7 +93,7 @@ export function DuelInviteDialog({ friends }: Props) {
         <div className="space-y-4 pt-2">
           <div className="space-y-2">
             <Label className="text-xs font-semibold text-zinc-400">{t("subtitle")}</Label>
-            <div className="grid max-h-[200px] gap-2 overflow-y-auto pr-1">
+            <div className="grid max-h-[min(220px,45dvh)] gap-2 overflow-y-auto overscroll-contain pr-1">
               {friends.length === 0 ? (
                 <p className="py-4 text-center text-xs text-zinc-500">{t("noDuelDesc")}</p>
               ) : (

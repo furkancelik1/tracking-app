@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import React from "react";
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useTransition, useState, useEffect } from "react";
@@ -48,11 +49,17 @@ export function LanguageSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="gap-1.5 text-xs"
+          className="gap-1 px-1.5 text-xs sm:gap-1.5 sm:px-3"
           disabled={isPending}
+          aria-label={current.label}
         >
-          <Globe className="size-3.5" />
-          {isMounted && `${current.flag} ${current.value.toUpperCase()}`}
+          <Globe className="size-3.5 shrink-0" aria-hidden />
+          {isMounted && (
+            <>
+              <span className="hidden sm:inline">{`${current.flag} ${current.value.toUpperCase()}`}</span>
+              <span className="sm:hidden">{current.flag}</span>
+            </>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[120px]">

@@ -1,5 +1,6 @@
 ﻿"use client"
 
+import * as React from "react"
 import {
   CircleCheck,
   Info,
@@ -18,7 +19,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
-      className="toaster group"
+      position="top-center"
+      className="toaster group !top-[calc(0.75rem+env(safe-area-inset-top,0px))] md:!top-4"
+      offset={16}
       icons={{
         success: <CircleCheck className="h-4 w-4" />,
         info: <Info className="h-4 w-4" />,

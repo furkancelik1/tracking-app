@@ -51,7 +51,7 @@ export function OnboardingDialog() {
     try {
       const result = await completeTour();
       setOpen(false);
-      // Navbar coin gÃ¶stergesini anÄ±nda gÃ¼ncelle
+      // Refresh navbar coin display immediately
       window.dispatchEvent(new CustomEvent("coins-updated"));
       router.refresh();
       toast.success(t("rewardToast"), { duration: 5000 });
@@ -80,9 +80,9 @@ export function OnboardingDialog() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleSkip()}>
-      <DialogContent className="sm:max-w-md gap-0 p-0 overflow-hidden">
+      <DialogContent className="flex min-h-0 flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
         {/* Header gradient */}
-        <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-6 pt-6 pb-4">
+        <div className="relative shrink-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-6 pb-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))]">
           <Button
             variant="ghost"
             size="sm"
@@ -100,10 +100,10 @@ export function OnboardingDialog() {
           <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
 
-        {/* Step content */}
-        <div className="px-6 py-6">
+        {/* Step content (scrolls on short viewports) */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-6">
           {/* Step indicators */}
-          <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="mb-6 flex items-center justify-center gap-2">
             {STEPS.map((_, i) => (
               <div
                 key={i}
@@ -141,7 +141,7 @@ export function OnboardingDialog() {
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between px-6 pb-6 pt-2">
+        <div className="flex shrink-0 items-center justify-between px-6 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] pt-3">
           <Button
             variant="ghost"
             size="sm"
@@ -176,7 +176,7 @@ export function OnboardingDialog() {
         </div>
 
         {/* Reward hint */}
-        <div className="bg-muted/50 border-t px-6 py-3 text-center">
+        <div className="shrink-0 border-t bg-muted/50 px-6 py-3 text-center">
           <p className="text-xs text-muted-foreground">
             <Coins className="inline h-3 w-3 text-yellow-500 mr-1" />
             {t("rewardHint")}

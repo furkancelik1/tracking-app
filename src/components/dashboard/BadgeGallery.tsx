@@ -73,8 +73,8 @@ export function BadgeGallery({ open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="flex min-h-0 flex-col gap-4 sm:max-w-lg">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5" style={{ color: "#39FF14", filter: "drop-shadow(0 0 6px #39FF14)" }} />
             {t("title")}
@@ -85,7 +85,7 @@ export function BadgeGallery({ open, onOpenChange }: Props) {
         </DialogHeader>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex min-h-[160px] flex-1 items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : badges.length === 0 ? (
@@ -94,8 +94,8 @@ export function BadgeGallery({ open, onOpenChange }: Props) {
             <p className="text-sm text-muted-foreground">{t("empty")}</p>
           </div>
         ) : (
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-            {/* KazanÄ±lan rozetler */}
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pr-1">
+            {/* Earned badges */}
             {earned.length > 0 && (
               <div>
                 <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
@@ -136,7 +136,7 @@ export function BadgeGallery({ open, onOpenChange }: Props) {
               </div>
             )}
 
-            {/* Kilitli rozetler */}
+            {/* Locked badges */}
             {locked.length > 0 && (
               <div>
                 <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">

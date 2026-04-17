@@ -86,8 +86,8 @@ export function ShopDialog({ open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border border-white/10 bg-zinc-950 sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex min-h-0 flex-col gap-4 border border-white/10 bg-zinc-950 sm:max-w-md">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2 font-black uppercase tracking-tight text-white">
             <ShoppingBag className="h-5 w-5 text-[#D6FF00]" aria-hidden />
             {t("title")}
@@ -95,7 +95,7 @@ export function ShopDialog({ open, onOpenChange }: Props) {
           <DialogDescription className="text-zinc-500">{t("description")}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center justify-center gap-2 rounded-xl border border-[#D6FF00]/25 bg-[#D6FF00]/8 p-3 shadow-[inset_0_0_0_1px_rgba(214,255,0,0.08)]">
+        <div className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D6FF00]/25 bg-[#D6FF00]/8 p-3 shadow-[inset_0_0_0_1px_rgba(214,255,0,0.08)]">
           <Coins className="h-5 w-5 text-[#D6FF00]" aria-hidden />
           <span className="text-lg font-black tabular-nums text-[#D6FF00]">
             {coins.toLocaleString("en-US")}
@@ -103,19 +103,19 @@ export function ShopDialog({ open, onOpenChange }: Props) {
           <span className="text-sm text-zinc-500">{t("coins")}</span>
         </div>
 
-        <Separator className="bg-white/10" />
+        <Separator className="shrink-0 bg-white/10" />
 
         {loading ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex min-h-[120px] items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-[#D6FF00]" aria-hidden />
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
+          <div className="flex min-h-[120px] flex-col items-center justify-center py-8 text-center">
             <Package className="mb-2 h-10 w-10 text-zinc-600" aria-hidden />
             <p className="text-sm text-zinc-500">{t("emptyShop")}</p>
           </div>
         ) : (
-          <div className="max-h-[50vh] space-y-3 overflow-y-auto pr-1">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1">
             {items.map((item) => (
               <div
                 key={item.id}

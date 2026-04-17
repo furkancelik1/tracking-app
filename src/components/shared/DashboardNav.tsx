@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
@@ -74,8 +74,11 @@ export function DashboardNav() {
     : "U";
 
   return (
-    <header className="border-b bg-card sticky top-0 z-40">
-      <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">
+    <header
+      className="sticky top-0 z-40 border-b border-white/10 bg-zinc-950/90 backdrop-blur-md supports-[backdrop-filter]:bg-zinc-950/80"
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+    >
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:px-6">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2 group select-none">
           {/* Mountain icon â€” cropped from logo.png (top-center portion) */}
@@ -89,8 +92,10 @@ export function DashboardNav() {
               sizes="32px"
             />
           </div>
-          <span className="text-sm font-black tracking-[0.2em] uppercase"
-            style={{ color: "#00FF80", textShadow: "0 0 8px #00FF8050" }}>
+          <span
+            className="max-w-[5.5rem] truncate text-xs font-black uppercase tracking-[0.15em] sm:max-w-none sm:text-sm sm:tracking-[0.2em]"
+            style={{ color: "#D6FF00", textShadow: "0 0 10px rgba(214,255,0,0.35)" }}
+          >
             ZENITH
           </span>
         </Link>
@@ -114,27 +119,30 @@ export function DashboardNav() {
         </nav>
 
         {/* User menu */}
-        <div className="flex items-center gap-2">
-          {/* Coin display & shop */}
+        <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
           <Button
             variant="ghost"
             size="sm"
-            className="gap-1.5 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/10"
+            className="gap-1 px-2 text-[#D6FF00] hover:bg-[#D6FF00]/10 sm:gap-1.5 sm:px-3"
             onClick={() => setShopOpen(true)}
+            aria-label={t("shop")}
           >
-            <Coins className="h-4 w-4" />
-            <span className="text-sm font-semibold tabular-nums" suppressHydrationWarning>
+            <Coins className="h-4 w-4 shrink-0" aria-hidden />
+            <span
+              className="hidden text-sm font-semibold tabular-nums sm:inline"
+              suppressHydrationWarning
+            >
               {coins !== null ? coins.toLocaleString("en-US") : "—"}
             </span>
           </Button>
-          {/* Badge gallery */}
           <Button
             variant="ghost"
             size="sm"
-            className="gap-1 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 px-2"
+            className="px-2 text-[#D6FF00]/90 hover:bg-[#D6FF00]/10"
             onClick={() => setBadgesOpen(true)}
+            aria-label={t("badges")}
           >
-            <Trophy className="h-4 w-4" />
+            <Trophy className="h-4 w-4" aria-hidden />
           </Button>
           <LanguageSwitcher />
           <DropdownMenu>

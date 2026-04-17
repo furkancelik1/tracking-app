@@ -87,7 +87,7 @@ export function DayDetailModal({ date, onClose }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md border-zinc-800/60 bg-card/95 backdrop-blur-md">
+      <DialogContent className="flex min-h-0 flex-col gap-4 border-zinc-800/60 bg-card/95 backdrop-blur-md sm:max-w-md">
         {isPending || !data ? (
           <div className="space-y-4 py-4">
             <Skeleton className="h-6 w-48" />
@@ -100,7 +100,7 @@ export function DayDetailModal({ date, onClose }: Props) {
           </div>
         ) : (
           <>
-            <DialogHeader>
+            <DialogHeader className="shrink-0">
               <div className="flex items-center gap-3">
                 <div
                   className={cn(
@@ -115,13 +115,13 @@ export function DayDetailModal({ date, onClose }: Props) {
                 </div>
                 <div>
                   <DialogTitle className="text-base">
-                    {data.day} â€” {data.date}
+                    {data.day} — {data.date}
                   </DialogTitle>
-                  <DialogDescription className="flex items-center gap-2 mt-0.5">
+                  <DialogDescription className="mt-0.5 flex items-center gap-2">
                     <span className={cn("font-semibold tabular-nums", config?.color)}>
                       %{data.score}
                     </span>
-                    <span>Â·</span>
+                    <span>·</span>
                     <span>
                       {completedCount}/{totalCount} {t("completed")}
                     </span>
@@ -130,7 +130,7 @@ export function DayDetailModal({ date, onClose }: Props) {
               </div>
             </DialogHeader>
 
-            <div className="mt-2 space-y-1.5 max-h-[50vh] overflow-y-auto pr-1">
+            <div className="mt-2 min-h-0 flex-1 max-h-[min(52dvh,50vh)] space-y-1.5 overflow-y-auto overscroll-contain pr-1">
               {data.routines.map((routine, idx) => (
                 <motion.div
                   key={routine.id}
@@ -156,7 +156,7 @@ export function DayDetailModal({ date, onClose }: Props) {
             </div>
 
             {/* Status badge */}
-            <div className="flex justify-center pt-2">
+            <div className="flex shrink-0 justify-center pt-2">
               <Badge
                 variant="outline"
                 className={cn(

@@ -43,7 +43,7 @@ export default async function SettingsPage({
   const isPro = tier === "PRO";
 
   return (
-    <div className="px-6 py-8 space-y-8 max-w-2xl">
+    <div className="mx-auto max-w-2xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">

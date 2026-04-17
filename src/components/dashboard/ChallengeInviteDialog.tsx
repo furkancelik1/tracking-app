@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { sendChallengeAction } from "@/actions/challenge.actions";
 import type { FriendEntry } from "@/actions/social.actions";
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Helpers
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -32,11 +32,11 @@ function getInitials(name: string | null): string {
     .toUpperCase();
 }
 
-// â”€â”€â”€ Duration Options â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Duration options
 
 const DURATIONS = [3, 7, 14, 21, 30] as const;
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Component
 
 type Props = {
   friends: FriendEntry[];
@@ -104,7 +104,7 @@ export function ChallengeInviteDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md overflow-hidden">
+      <DialogContent className="flex min-h-0 flex-col gap-4 sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
@@ -136,7 +136,7 @@ export function ChallengeInviteDialog({
                   <p className="text-sm text-muted-foreground">{t("selectFriend")}</p>
                 </div>
               ) : (
-                <div className="space-y-1.5 max-h-[280px] overflow-y-auto pr-1">
+                <div className="max-h-[min(280px,42dvh)] space-y-1.5 overflow-y-auto overscroll-contain pr-1">
                   {friends.map((friend) => (
                     <motion.button
                       key={friend.id}

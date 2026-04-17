@@ -69,7 +69,7 @@ export default async function LeaderboardPage({
   const t = await getTranslations("leaderboard");
 
   return (
-    <div className="px-6 py-8 space-y-10">
+    <div className="space-y-8 px-4 py-6 sm:space-y-10 sm:px-6 sm:py-8">
       <section>
         <div className="flex items-center gap-3 mb-8">
           <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">

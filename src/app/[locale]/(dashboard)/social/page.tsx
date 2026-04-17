@@ -69,7 +69,7 @@ export default async function SocialPage({
   ]);
 
   return (
-    <div className="px-6 py-8 space-y-8">
+    <div className="space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8">
       {/* Header — Nike Elite */}
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#D6FF00]/30 bg-[#D6FF00]/10 shadow-[0_0_28px_rgba(214,255,0,0.12)]">

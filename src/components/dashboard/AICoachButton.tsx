@@ -36,11 +36,11 @@ export function AICoachButton({ xp, initialInsight, isPro }: Props) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+        <DialogContent className="flex min-h-0 flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
           <DialogHeader className="sr-only">
             <DialogTitle>{t("title")}</DialogTitle>
           </DialogHeader>
-          <div className="p-1">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1 sm:p-2">
             <AICoachBriefing
               xp={xp}
               initialInsight={initialInsight}

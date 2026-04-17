@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Coins, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { addTestCoins } from "@/actions/dev.actions";
@@ -29,7 +29,7 @@ export function DevCoinButton() {
       onClick={handleClick}
       disabled={loading}
       title="Add 1000 test coins (dev only)"
-      className="fixed bottom-24 right-4 z-50 flex items-center gap-1.5 rounded-full border border-yellow-500/40 bg-black/80 px-3 py-1.5 text-xs font-medium text-yellow-400 shadow-lg backdrop-blur-sm transition-opacity hover:opacity-100 opacity-60 disabled:cursor-not-allowed"
+      className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-3 z-[60] flex items-center gap-1.5 rounded-full border border-[#D6FF00]/35 bg-black/85 px-3 py-1.5 text-xs font-medium text-[#D6FF00] shadow-lg backdrop-blur-sm transition-opacity hover:opacity-100 disabled:cursor-not-allowed md:bottom-6 md:right-4 opacity-80 hover:opacity-100"
     >
       {loading ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />

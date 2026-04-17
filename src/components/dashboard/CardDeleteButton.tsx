@@ -49,7 +49,7 @@ export function CardDeleteButton({ id, title }: Props) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="flex min-h-0 flex-col gap-4 sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Delete card?</DialogTitle>
             <DialogDescription>
@@ -58,7 +58,7 @@ export function CardDeleteButton({ id, title }: Props) {
               in their basket will lose it. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="shrink-0 sm:justify-end">
             <Button
               variant="ghost"
               onClick={() => setOpen(false)}
@@ -71,7 +71,7 @@ export function CardDeleteButton({ id, title }: Props) {
               onClick={handleDelete}
               disabled={deleting}
             >
-              {deleting ? "Deletingâ€¦" : "Delete"}
+              {deleting ? "Deleting…" : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

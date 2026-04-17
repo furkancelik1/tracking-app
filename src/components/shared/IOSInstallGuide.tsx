@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Share, Plus, X } from "lucide-react";
+import { Share, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   Dialog,
@@ -19,28 +19,22 @@ export function IOSInstallGuide({ open, onOpenChange }: Props) {
 
   const steps = [
     {
-      icon: (
-        <Share className="h-5 w-5" />
-      ),
+      icon: <Share className="h-5 w-5" />,
       text: t("step1"),
     },
     {
-      icon: (
-        <Plus className="h-5 w-5" />
-      ),
+      icon: <Plus className="h-5 w-5" />,
       text: t("step2"),
     },
     {
-      icon: (
-        <span className="text-base font-bold">âœ“</span>
-      ),
+      icon: <span className="text-base font-bold">✓</span>,
       text: t("step3"),
     },
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="flex min-h-0 flex-col gap-4 sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-center text-lg">
             {t("title")}
@@ -51,7 +45,7 @@ export function IOSInstallGuide({ open, onOpenChange }: Props) {
           {t("subtitle")}
         </p>
 
-        <div className="mt-2 space-y-4">
+        <div className="max-h-[min(52dvh,320px)] space-y-4 overflow-y-auto overscroll-contain pr-1">
           {steps.map((step, i) => (
             <div key={i} className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -65,8 +59,9 @@ export function IOSInstallGuide({ open, onOpenChange }: Props) {
         </div>
 
         <button
+          type="button"
           onClick={() => onOpenChange(false)}
-          className="mt-4 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          className="w-full shrink-0 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
         >
           {t("gotIt")}
         </button>

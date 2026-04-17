@@ -127,10 +127,10 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="flex min-h-0 flex-col gap-4 sm:max-w-lg">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            {/* Ã–nizleme: seÃ§ilen ikon + renk */}
+            {/* Preview: selected icon + color */}
             <span
               className="size-7 rounded-lg flex items-center justify-center shrink-0"
               style={{ backgroundColor: color + "22", color }}
@@ -147,7 +147,8 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5 py-1">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain py-1 pr-1">
           {atLimit && (
             <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               {t("limitDescription", { max: 3 })}
@@ -410,8 +411,9 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
               })}
             </div>
           </div>
+          </div>
 
-          <DialogFooter className="pt-1">
+          <DialogFooter className="shrink-0 border-t border-border/60 pt-3">
             <Button
               type="button"
               variant="ghost"

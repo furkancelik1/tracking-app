@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import type { WeeklyInsightPayload } from "@/actions/ai.actions";
 
-// â”€â”€â”€ Social Icons (inline SVG) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Social icons (inline SVG)
 
 function XIcon({ className }: { className?: string }) {
   return (
@@ -41,7 +41,7 @@ function LinkedInIcon({ className }: { className?: string }) {
   );
 }
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Types
 
 interface ShareInsightModalProps {
   open: boolean;
@@ -49,7 +49,7 @@ interface ShareInsightModalProps {
   data: WeeklyInsightPayload;
 }
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Component
 
 export function ShareInsightModal({
   open,
@@ -139,37 +139,39 @@ export function ShareInsightModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
           />
 
           {/* Modal */}
           <motion.div
             key="share-modal"
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            exit={{ opacity: 0, scale: 0.96 }}
             transition={{ type: "spring", damping: 28, stiffness: 350 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+            className="pointer-events-none fixed inset-0 z-[61] flex items-start justify-center overflow-y-auto overscroll-contain px-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:items-center sm:p-4 sm:pb-8"
           >
-            <div className="pointer-events-auto w-full max-w-md rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-gray-950 via-indigo-950/50 to-gray-950 shadow-2xl shadow-indigo-500/10 overflow-hidden">
-              {/* â”€â”€ Header â”€â”€ */}
-              <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <div className="pointer-events-auto my-auto flex max-h-[min(92dvh,100svh)] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-[#D6FF00]/25 bg-gradient-to-br from-zinc-950 via-zinc-900/90 to-zinc-950 shadow-2xl shadow-black/40">
+              {/* Header */}
+              <div className="flex shrink-0 items-center justify-between px-4 pt-4 pb-3 sm:px-5 sm:pt-5">
                 <div className="flex items-center gap-2">
-                  <Share2 className="h-4.5 w-4.5 text-indigo-400" />
+                  <Share2 className="h-4.5 w-4.5 text-[#D6FF00]" />
                   <h2 className="text-sm font-semibold text-white">
                     {t("shareTitle")}
                   </h2>
                 </div>
                 <button
+                  type="button"
                   onClick={onClose}
-                  className="rounded-full p-1.5 text-white/40 hover:bg-white/10 hover:text-white transition-colors"
+                  className="rounded-full p-1.5 text-white/40 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              {/* â”€â”€ OG Image Preview â”€â”€ */}
-              <div className="mx-5 mb-4">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              {/* OG image preview */}
+              <div className="mx-4 mb-4 sm:mx-5">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
                   {t("sharePreview")}
                 </p>
@@ -177,14 +179,14 @@ export function ShareInsightModal({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="relative rounded-xl overflow-hidden border border-indigo-500/20"
+                  className="relative overflow-hidden rounded-xl border border-[#D6FF00]/20"
                 >
                   {/* Loading skeleton */}
                   {!ogLoaded && (
-                    <div className="flex items-center justify-center bg-gradient-to-br from-indigo-950 via-violet-950 to-indigo-950 aspect-[1200/630]">
-                      <div className="flex flex-col items-center gap-2 text-indigo-300/50">
+                    <div className="flex aspect-[1200/630] items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900">
+                      <div className="flex flex-col items-center gap-2 text-[#D6FF00]/40">
                         <ImageIcon className="h-6 w-6 animate-pulse" />
-                        <span className="text-[10px]">{t("sharePreview")}â€¦</span>
+                        <span className="text-[10px]">{t("sharePreview")}…</span>
                       </div>
                     </div>
                   )}
@@ -200,8 +202,8 @@ export function ShareInsightModal({
                 </motion.div>
               </div>
 
-              {/* â”€â”€ Social Buttons â”€â”€ */}
-              <div className="px-5 pb-3">
+              {/* Social buttons */}
+              <div className="px-4 pb-3 sm:px-5">
                 <div className="grid grid-cols-3 gap-2">
                   {/* X (Twitter) */}
                   <motion.button
@@ -244,13 +246,13 @@ export function ShareInsightModal({
                 </div>
               </div>
 
-              {/* â”€â”€ Copy Link + Native Share â”€â”€ */}
-              <div className="px-5 pb-5 flex gap-2">
+              {/* Copy link + native share */}
+              <div className="flex flex-col gap-2 px-4 pb-5 sm:flex-row sm:px-5">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleCopyLink}
-                  className="flex-1 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:shadow-md hover:shadow-indigo-500/10 transition-all"
+                  className="flex-1 border-[#D6FF00]/35 text-[#D6FF00] transition-all hover:bg-[#D6FF00]/10 hover:text-[#e8ff4d] hover:shadow-md hover:shadow-[#D6FF00]/10"
                 >
                   {copied ? (
                     <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-400" />
@@ -265,12 +267,13 @@ export function ShareInsightModal({
                     variant="outline"
                     size="sm"
                     onClick={handleNativeShare}
-                    className="border-violet-500/30 text-violet-300 hover:bg-violet-500/10 hover:text-violet-200 hover:shadow-md hover:shadow-violet-500/10 transition-all"
+                    className="border-white/15 text-white/80 transition-all hover:bg-white/10 hover:text-white sm:flex-1"
                   >
                     <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                     {t("shareSystemShare")}
                   </Button>
                 )}
+              </div>
               </div>
             </div>
           </motion.div>

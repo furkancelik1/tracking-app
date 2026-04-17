@@ -147,15 +147,15 @@ export function CreateDuel() {
           {t("privateDuel")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md border border-white/10 bg-zinc-950">
-        <DialogHeader>
+      <DialogContent className="flex max-w-md min-h-0 flex-col gap-4 border border-white/10 bg-zinc-950">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2 font-black uppercase tracking-tight text-white">
             <Swords className="size-5 text-[#D6FF00]" aria-hidden />
             {t("privateDuel")}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex gap-2 rounded-xl border border-white/5 bg-black/40 p-1">
+        <div className="flex shrink-0 gap-2 rounded-xl border border-white/5 bg-black/40 p-1">
           <button
             type="button"
             onClick={() => {
@@ -189,6 +189,7 @@ export function CreateDuel() {
           </button>
         </div>
 
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <AnimatePresence mode="wait">
           {mode === "create" ? (
             <motion.div
@@ -316,6 +317,7 @@ export function CreateDuel() {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </DialogContent>
     </Dialog>
   );

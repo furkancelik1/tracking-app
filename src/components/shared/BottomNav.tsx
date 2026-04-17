@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import React from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
 import { motion } from "framer-motion";
@@ -20,7 +21,7 @@ const NAV_ITEMS = [
   { href: "/settings" as Route, key: "settings", icon: Settings },
 ] as const;
 
-const NEON_GREEN = "#39FF14";
+const VOLT = "#D6FF00";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -28,52 +29,57 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-zinc-800/50 bg-card/90 backdrop-blur-xl"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-zinc-950/95 backdrop-blur-xl md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      aria-label="Primary"
     >
-      <div className="flex items-center justify-around h-14 max-w-lg mx-auto px-2">
+      <div className="mx-auto flex h-[3.75rem] max-w-lg items-stretch justify-around px-1 pt-0.5">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
 
           return (
-            <Link key={item.href} href={item.href} className="flex-1">
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex min-h-[48px] min-w-0 flex-1 touch-manipulation items-stretch justify-center"
+            >
               <motion.div
-                whileTap={{ scale: 0.85 }}
-                className="relative flex flex-col items-center gap-0.5 py-1"
+                whileTap={{ scale: 0.92 }}
+                className="relative flex w-full min-w-0 flex-col items-center justify-center gap-0.5 px-0.5 py-1"
               >
                 <Icon
-                  className="h-5 w-5 transition-colors"
+                  className="h-[22px] w-[22px] shrink-0 transition-colors"
+                  aria-hidden
                   style={
                     isActive
                       ? {
-                          color: NEON_GREEN,
-                          filter: `drop-shadow(0 0 6px ${NEON_GREEN}) drop-shadow(0 0 14px ${NEON_GREEN}80)`,
+                          color: VOLT,
+                          filter: `drop-shadow(0 0 6px ${VOLT}) drop-shadow(0 0 12px ${VOLT}99)`,
                         }
                       : { color: "hsl(var(--muted-foreground))" }
                   }
                 />
                 <span
-                  className="text-[10px] font-medium leading-none transition-colors"
+                  className="max-w-full truncate text-center text-[10px] font-semibold leading-tight transition-colors"
                   style={
                     isActive
                       ? {
-                          color: NEON_GREEN,
-                          textShadow: `0 0 6px ${NEON_GREEN}60`,
+                          color: VOLT,
+                          textShadow: `0 0 8px ${VOLT}66`,
                         }
                       : { color: "hsl(var(--muted-foreground))" }
                   }
                 >
                   {t(item.key)}
                 </span>
-                {/* Active indicator dot */}
                 {isActive && (
                   <motion.div
                     layoutId="bottomNavIndicator"
-                    className="absolute -top-px left-1/2 -translate-x-1/2 h-[2px] w-8 rounded-full"
+                    className="absolute -top-px left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full"
                     style={{
-                      background: NEON_GREEN,
-                      boxShadow: `0 0 8px ${NEON_GREEN}, 0 0 16px ${NEON_GREEN}60`,
+                      background: VOLT,
+                      boxShadow: `0 0 10px ${VOLT}, 0 0 18px ${VOLT}66`,
                     }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />

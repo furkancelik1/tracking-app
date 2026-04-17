@@ -15,7 +15,7 @@ export async function generateMetadata({
 
 function MarketplaceFallback() {
   return (
-    <div className="px-6 py-12 space-y-6">
+    <div className="space-y-6 px-4 py-8 sm:px-6 sm:py-12">
       <Skeleton className="h-10 w-64" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (

@@ -66,31 +66,33 @@ export function ProGate({ children, feature }: Props) {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="flex min-h-0 flex-col gap-4 sm:max-w-md">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{t("title")}</DialogTitle>
             <DialogDescription>
               {t("description", { feature: featureLabel })}
             </DialogDescription>
           </DialogHeader>
 
-          <ul className="space-y-2 py-2">
+          <ul className="max-h-[min(40dvh,280px)] space-y-2 overflow-y-auto overscroll-contain py-1">
             {STRIPE_PLANS.PRO.features.map((f) => (
               <li key={f} className="flex items-center gap-2 text-sm">
-                <span className="text-green-500">âœ“</span>
+                <span className="text-green-500" aria-hidden>
+                  ✓
+                </span>
                 {f}
               </li>
             ))}
           </ul>
 
-          <p className="text-sm text-muted-foreground">
-            <span className="font-bold text-foreground text-lg">
+          <p className="shrink-0 text-sm text-muted-foreground">
+            <span className="text-lg font-bold text-foreground">
               {STRIPE_PLANS.PRO.price}
             </span>
-            /{STRIPE_PLANS.PRO.interval} â€” {t("cancelAnytime")}
+            /{STRIPE_PLANS.PRO.interval} — {t("cancelAnytime")}
           </p>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0 sm:justify-end">
             <Button variant="ghost" onClick={() => setOpen(false)}>
               {t("maybeLater")}
             </Button>

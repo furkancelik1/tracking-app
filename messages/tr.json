@@ -298,7 +298,14 @@
       "confirmDelete": "Sil",
       "cancelDelete": "İptal",
       "shareRoutine": "Rutini Paylaş",
-      "undo": "Geri Al"
+      "undo": "Geri Al",
+      "guidedBadge": "Rehberli",
+      "coachTipLabel": "Koç ipucu",
+      "intensity": {
+        "low": "Düşük",
+        "medium": "Orta",
+        "high": "Yüksek"
+      }
     },
     "addRoutine": {
       "title": "Yeni Rutin",
@@ -322,7 +329,18 @@
       "limitTitle": "Rutin Limitine Ulaşıldı",
       "limitDescription": "Ücretsiz plan en fazla {max} rutine izin verir. Sınırsız rutin için PRO'ya yükseltin.",
       "limitUpgrade": "PRO'ya Yükselt",
-      "limitClose": "Kapat"
+      "limitClose": "Kapat",
+      "performanceSection": "Performans",
+      "intensityLabel": "Yoğunluk",
+      "intensityLow": "Düşük",
+      "intensityMedium": "Orta",
+      "intensityHigh": "Yüksek",
+      "estimatedMinutesLabel": "Tahmini süre (dk)",
+      "imageUrlLabel": "Kapak görseli URL (isteğe bağlı)",
+      "imageUrlPlaceholder": "https://…",
+      "guidedLabel": "Rehberli seans (koç ipuçları)",
+      "coachTipLabel": "Koç ipucu",
+      "coachTipPlaceholder": "Bu rutin için kısa kılavuz (ör. duruş, nefes)…"
     }
   },
   "aiInsight": {
@@ -394,10 +412,16 @@
     "emptyDescription": "Rutinlerini tamamlayarak XP kazan ve liderlik tablosuna gir!",
     "usersAmong": "{total} kullanıcı arasında #{rank}",
     "tabs": {
-      "global": "Dünya Geneli",
+      "global": "Genel sıralama",
+      "league": "Lig sıralaması",
+      "challenges": "Topluluk görevi",
       "friends": "Arkadaşlar"
     },
-    "friendsEmpty": "Henüz arkadaşın yok. Kullanıcı ara ve takip et!"
+    "friendsEmpty": "Henüz arkadaşın yok. Kullanıcı ara ve takip et!",
+    "leagueEmpty": "Bu ligde henüz oyuncu görünmüyor.",
+    "globalChallengeTitle": "Topluluk haftası",
+    "globalChallengeSubtitle": "Bu hafta birlikte 10.000 rutin tamamlıyoruz. Her tekrar sayılır.",
+    "globalChallengeProgress": "Bu hafta {current} / {target} rutin"
   },
   "social": {
     "title": "Arkadaşlar",
@@ -423,6 +447,12 @@
     "noRequests": "Bekleyen istek yok",
     "pageTitle": "Sosyal",
     "pageSubtitle": "Arkadaşlarınla bağlan, birlikte ilerle!",
+    "activityFeed": {
+      "title": "Takım akışı",
+      "empty": "Arkadaş ekleyerek tamamlanan rutinleri ve rozetleri burada gör.",
+      "completedRoutine": "«{name}» tamamlandı",
+      "earnedBadge": "Rozet kazanıldı: {badge}"
+    },
     "metadata": {
       "title": "Sosyal",
       "description": "Arkadaşlarınla bağlan, düello gönder ve birlikte yarış."

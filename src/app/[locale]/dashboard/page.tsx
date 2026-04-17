@@ -134,6 +134,11 @@ export default async function DashboardPage({
             daysOfWeek: [],
             stackParentId: null,
             lastCompletedAt: null,
+            intensity: "MEDIUM" as const,
+            estimatedMinutes: 30,
+            imageUrl: null,
+            isGuided: false,
+            coachTip: null,
           }));
         }
       })(),
@@ -176,6 +181,15 @@ export default async function DashboardPage({
       weeklyTarget: r.weeklyTarget ?? 1,
       daysOfWeek: r.daysOfWeek ?? [],
       stackParentId: r.stackParentId ?? null,
+      intensity: ((): "LOW" | "MEDIUM" | "HIGH" => {
+        const i = (r as { intensity?: string }).intensity;
+        if (i === "LOW" || i === "MEDIUM" || i === "HIGH") return i;
+        return "MEDIUM";
+      })(),
+      estimatedMinutes: (r as { estimatedMinutes?: number }).estimatedMinutes ?? 30,
+      imageUrl: (r as { imageUrl?: string | null }).imageUrl ?? null,
+      isGuided: (r as { isGuided?: boolean }).isGuided ?? false,
+      coachTip: (r as { coachTip?: string | null }).coachTip ?? null,
       isActive: r.isActive ?? true,
       sortOrder: r.sortOrder ?? 0,
       category: r.category ?? "Genel",

@@ -266,6 +266,22 @@ export async function getWeeklyXpLeaderboard(limit = 10): Promise<LeaderboardPay
   return { topTen, currentUser, totalUsers };
 }
 
+const GLOBAL_COMMUNITY_WEEK_TARGET = 10_000;
+
+/** Topluluk: bu hafta (UTC) tamamlanan rutin sayısı vs haftalık hedef — XP'yi değiştirmez. */
+export async function getGlobalCommunityChallengeAction() {
+  const { start, end } = getWeekRangeUtc();
+  const weekCompletions = await prisma.routineLog.count({
+    where: { completedAt: { gte: start, lt: end } },
+  });
+  return {
+    target: GLOBAL_COMMUNITY_WEEK_TARGET,
+    weekCompletions,
+    weekStart: start.toISOString(),
+    weekEnd: end.toISOString(),
+  };
+}
+
 export async function resetWeeklyLeagueWindowAction(input?: { force?: boolean }) {
   const now = new Date();
   const { start, end } = getWeekRangeUtc(now);

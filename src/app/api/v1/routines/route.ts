@@ -41,6 +41,11 @@ const createRoutineSchema = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "GeÃ§ersiz renk").default("#3b82f6"),
   icon: z.string().max(50).default("CheckCircle"),
   sortOrder: z.number().int().min(0).default(0),
+  intensity: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+  estimatedMinutes: z.number().int().min(1).max(480).optional(),
+  imageUrl: z.union([z.string().url().max(2048), z.literal("")]).nullable().optional(),
+  isGuided: z.boolean().optional(),
+  coachTip: z.string().max(2000).optional().nullable(),
 });
 
 // GET /api/v1/routines â€” kullanÄ±cÄ±nÄ±n rutinlerini listele
@@ -114,6 +119,11 @@ export async function GET() {
         weeklyTarget: routine.frequency === "DAILY" ? 1 : 3,
         daysOfWeek: [],
         stackParentId: null,
+        intensity: "MEDIUM",
+        estimatedMinutes: 30,
+        imageUrl: null,
+        isGuided: false,
+        coachTip: null,
       }));
     }
 
@@ -202,6 +212,10 @@ export async function POST(req: Request) {
     const resolvedDaysOfWeek = Array.from(new Set(parsed.data.daysOfWeek ?? [])).sort();
     const resolvedWeeklyTarget =
       resolvedFrequencyType === "WEEKLY" ? parsed.data.weeklyTarget ?? 3 : 1;
+    const resolvedIntensity = parsed.data.intensity ?? "MEDIUM";
+    const resolvedMinutes = Math.min(480, Math.max(1, parsed.data.estimatedMinutes ?? 30));
+    const resolvedImageUrl = parsed.data.imageUrl?.trim() || null;
+    const resolvedCoachTip = parsed.data.coachTip?.trim() || null;
 
     if (resolvedFrequencyType === "SPECIFIC_DAYS" && resolvedDaysOfWeek.length === 0) {
       return NextResponse.json<ApiResponse<never>>(
@@ -251,6 +265,11 @@ export async function POST(req: Request) {
           weeklyTarget: resolvedWeeklyTarget,
           daysOfWeek: resolvedFrequencyType === "SPECIFIC_DAYS" ? resolvedDaysOfWeek : [],
           stackParentId: parsed.data.stackParentId ?? null,
+          intensity: resolvedIntensity,
+          estimatedMinutes: resolvedMinutes,
+          imageUrl: resolvedImageUrl,
+          isGuided: parsed.data.isGuided ?? false,
+          coachTip: resolvedCoachTip,
         } as any,
       });
     } catch (err) {
@@ -275,6 +294,11 @@ export async function POST(req: Request) {
         weeklyTarget: legacyRoutine.frequency === "DAILY" ? 1 : 3,
         daysOfWeek: [],
         stackParentId: null,
+        intensity: "MEDIUM",
+        estimatedMinutes: 30,
+        imageUrl: null,
+        isGuided: false,
+        coachTip: null,
       };
     }
 

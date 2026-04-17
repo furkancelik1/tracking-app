@@ -13,6 +13,11 @@ const updateRoutineSchema = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   icon: z.string().max(50).optional(),
   sortOrder: z.number().int().min(0).optional(),
+  intensity: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+  estimatedMinutes: z.number().int().min(1).max(480).optional(),
+  imageUrl: z.union([z.string().url().max(2048), z.literal("")]).nullable().optional(),
+  isGuided: z.boolean().optional(),
+  coachTip: z.string().max(2000).optional().nullable(),
 });
 
 // PATCH /api/v1/routines/[id] — rutin güncelle
@@ -64,9 +69,12 @@ export async function PATCH(
       );
     }
 
+    const data = { ...parsed.data } as Record<string, unknown>;
+    if (typeof data.imageUrl === "string" && data.imageUrl === "") data.imageUrl = null;
+
     const updated = await prisma.routine.update({
       where: { id },
-      data: parsed.data,
+      data: data as any,
     });
 
     return NextResponse.json<ApiResponse<Routine>>({ success: true, data: updated });

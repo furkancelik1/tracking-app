@@ -7,13 +7,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { LeaderboardEntry, LeaderboardPayload } from "@/actions/leaderboard.actions";
-import { Trophy, Medal, Flame, Crown, Sparkles, Globe, Shield } from "lucide-react";
+import { Trophy, Medal, Flame, Crown, Sparkles, Globe, Shield, Zap } from "lucide-react";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { getAvatarFrame } from "@/lib/level";
 import { getUserLeague } from "@/lib/level";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { getLeagueLeaderboard } from "@/actions/leaderboard.actions";
+import { getLeagueLeaderboard, getGlobalCommunityChallengeAction } from "@/actions/leaderboard.actions";
 
 // â”€â”€â”€ Podium renkleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -309,18 +309,22 @@ type Props = {
 
 export function Leaderboard({ data, isLoggedIn = false }: Props) {
   const t = useTranslations("leaderboard");
-  const [tab, setTab] = useState<"global" | "league">("global");
+  const [tab, setTab] = useState<"global" | "league" | "challenges">("global");
   const [leagueData, setLeagueData] = useState<LeaderboardPayload | null>(null);
+  const [challengeData, setChallengeData] = useState<Awaited<
+    ReturnType<typeof getGlobalCommunityChallengeAction>
+  > | null>(null);
   const [isPending, startTransition] = useTransition();
   const tabLabels = React.useMemo(
     () => ({
-      global: "Genel Sıralama",
-      league: "Lig Sıralaması",
+      global: t("tabs.global"),
+      league: t("tabs.league"),
+      challenges: t("tabs.challenges"),
     }),
-    []
+    [t]
   );
 
-  const handleTabChange = (newTab: "global" | "league") => {
+  const handleTabChange = (newTab: "global" | "league" | "challenges") => {
     setTab(newTab);
     if (newTab === "league" && !leagueData) {
       startTransition(async () => {
@@ -332,9 +336,24 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
         }
       });
     }
+    if (newTab === "challenges" && !challengeData) {
+      startTransition(async () => {
+        try {
+          const c = await getGlobalCommunityChallengeAction();
+          setChallengeData(c);
+        } catch {
+          setChallengeData({
+            target: 10_000,
+            weekCompletions: 0,
+            weekStart: new Date().toISOString(),
+            weekEnd: new Date().toISOString(),
+          });
+        }
+      });
+    }
   };
 
-  const activeData = tab === "global" ? data : leagueData ?? data;
+  const activeData = tab === "global" ? data : tab === "league" ? leagueData ?? data : data;
   const { topTen, currentUser, totalUsers } = activeData;
 
   return (
@@ -366,27 +385,71 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
             <Shield className="size-4" />
             {tabLabels.league}
           </button>
+          <button
+            onClick={() => handleTabChange("challenges")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              tab === "challenges"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Zap className="size-4" />
+            {tabLabels.challenges}
+          </button>
         </div>
       )}
 
       {/* Loading */}
-      {isPending && (
+      {isPending && tab !== "challenges" && (
         <div className="flex justify-center py-12">
           <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       )}
+      {isPending && tab === "challenges" && !challengeData && (
+        <div className="flex justify-center py-12">
+          <div className="size-6 animate-spin rounded-full border-2 border-[#D6FF00] border-t-transparent" />
+        </div>
+      )}
 
-      {/* Content */}
-      {!isPending && topTen.length === 0 ? (
+      {/* Global community challenge */}
+      {!isPending && tab === "challenges" && challengeData && (
+        <div className="rounded-2xl border border-[#D6FF00]/25 bg-black p-6 space-y-4 shadow-[0_0_40px_rgba(214,255,0,0.08)]">
+          <div className="flex items-center gap-2">
+            <Trophy className="size-6 text-[#D6FF00]" />
+            <h3 className="text-lg font-black uppercase tracking-tight text-[#D6FF00]">
+              {t("globalChallengeTitle")}
+            </h3>
+          </div>
+          <p className="text-sm text-muted-foreground">{t("globalChallengeSubtitle")}</p>
+          <div className="h-3 w-full rounded-full bg-white/10 overflow-hidden">
+            <div
+              className="h-full bg-[#D6FF00] transition-all duration-500"
+              style={{
+                width: `${Math.min(100, (challengeData.weekCompletions / challengeData.target) * 100)}%`,
+              }}
+            />
+          </div>
+          <p className="text-sm font-bold tabular-nums text-white">
+            {t("globalChallengeProgress", {
+              current: challengeData.weekCompletions,
+              target: challengeData.target,
+            })}
+          </p>
+        </div>
+      )}
+
+      {/* Rankings */}
+      {!isPending && tab !== "challenges" && topTen.length === 0 ? (
         tab === "league" ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Shield className="size-10 text-muted-foreground/30 mb-4" />
-            <p className="text-sm text-muted-foreground">Bu ligde henüz oyuncu görünmüyor.</p>
+            <p className="text-sm text-muted-foreground">{t("leagueEmpty")}</p>
           </div>
         ) : (
           <LeaderboardEmpty />
         )
-      ) : !isPending ? (
+      ) : !isPending && tab !== "challenges" ? (
         <>
           <Podium entries={topTen.slice(0, 3)} />
           <RankTable entries={topTen.slice(3)} />

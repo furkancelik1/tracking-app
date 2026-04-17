@@ -298,7 +298,14 @@
       "confirmDelete": "Delete",
       "cancelDelete": "Cancel",
       "shareRoutine": "Share Routine",
-      "undo": "Undo"
+      "undo": "Undo",
+      "guidedBadge": "Guided",
+      "coachTipLabel": "Coach tip",
+      "intensity": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      }
     },
     "addRoutine": {
       "title": "New Routine",
@@ -322,7 +329,18 @@
       "limitTitle": "Routine Limit Reached",
       "limitDescription": "Free plan allows up to {max} routines. Upgrade to PRO for unlimited routines.",
       "limitUpgrade": "Upgrade to PRO",
-      "limitClose": "Close"
+      "limitClose": "Close",
+      "performanceSection": "Performance",
+      "intensityLabel": "Intensity",
+      "intensityLow": "Low",
+      "intensityMedium": "Medium",
+      "intensityHigh": "High",
+      "estimatedMinutesLabel": "Est. duration (min)",
+      "imageUrlLabel": "Cover image URL (optional)",
+      "imageUrlPlaceholder": "https://…",
+      "guidedLabel": "Guided session (show coach tips)",
+      "coachTipLabel": "Coach tip",
+      "coachTipPlaceholder": "Short cue for this routine (e.g. posture, breathing)…"
     }
   },
   "aiInsight": {
@@ -395,9 +413,15 @@
     "usersAmong": "#{rank} among {total} users",
     "tabs": {
       "global": "Global",
+      "league": "League",
+      "challenges": "Challenges",
       "friends": "Friends"
     },
-    "friendsEmpty": "No friends yet. Search for users and follow them!"
+    "friendsEmpty": "No friends yet. Search for users and follow them!",
+    "leagueEmpty": "No players in this league yet.",
+    "globalChallengeTitle": "Community week",
+    "globalChallengeSubtitle": "This week we're aiming for 10,000 routine completions together. Every rep counts.",
+    "globalChallengeProgress": "{current} / {target} routines this week"
   },
   "social": {
     "title": "Friends",
@@ -423,6 +447,12 @@
     "noRequests": "No pending requests",
     "pageTitle": "Social",
     "pageSubtitle": "Connect with friends, track progress together!",
+    "activityFeed": {
+      "title": "Squad feed",
+      "empty": "Add friends to see their latest completions and badges.",
+      "completedRoutine": "Crushed “{name}”",
+      "earnedBadge": "Earned badge: {badge}"
+    },
     "metadata": {
       "title": "Social",
       "description": "Connect with friends, send challenges and compete together."

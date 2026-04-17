@@ -13,6 +13,11 @@ export type RoutineWithMeta = {
   weeklyTarget: number;
   daysOfWeek: number[];
   stackParentId: string | null;
+  intensity: "LOW" | "MEDIUM" | "HIGH";
+  estimatedMinutes: number;
+  imageUrl: string | null;
+  isGuided: boolean;
+  coachTip: string | null;
   isActive: boolean;
   sortOrder: number;
   category: string;
@@ -63,6 +68,11 @@ export function useCreateRoutine() {
       category?: string;
       color?: string;
       icon?: string;
+      intensity?: "LOW" | "MEDIUM" | "HIGH";
+      estimatedMinutes?: number;
+      imageUrl?: string | null;
+      isGuided?: boolean;
+      coachTip?: string | null;
     }) => {
       const res = await fetch("/api/v1/routines", {
         method: "POST",

@@ -10,7 +10,15 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Inter } from "next/font/google";
 import { PageTransition } from "@/components/shared/PageTransition";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
 
 const SITE_URL = "https://furkancelik.online";
 
@@ -152,7 +160,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning className={inter.variable}>
       <head>
         <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#000000" media="(prefers-color-scheme: light)" />
@@ -165,7 +173,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <meta name="msapplication-TileColor" content="#000000" />
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning className="font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
             <AuthProvider>

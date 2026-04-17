@@ -31,19 +31,23 @@
   }
 
   .dark {
-    /* Deep zinc/slate dark foundation */
-    --background: 240 10% 4%; /* #09090b */
-    --foreground: 210 20% 96%;
+    /* Nike-style deep black base */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
 
     /* Elevated surfaces */
-    --card: 240 4% 7%; /* #121214 */
-    --card-foreground: 210 20% 96%;
-    --popover: 240 4% 7%; /* #121214 */
-    --popover-foreground: 210 20% 96%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Volt accent — #D6FF00 */
+    --volt: 72 100% 50%;
+    --crimson: 0 85% 55%;
 
     /* Core semantic tokens */
-    --primary: 210 40% 98%;
-    --primary-foreground: 240 6% 10%;
+    --primary: 72 100% 50%;
+    --primary-foreground: 0 0% 4%;
     --secondary: 240 4% 13%;
     --secondary-foreground: 210 20% 96%;
     --muted: 240 4% 13%;
@@ -86,10 +90,16 @@
 
   .dark body {
     background-image: radial-gradient(
-      circle at top,
-      hsl(var(--accent-green) / 0.07),
-      transparent 42%
+      circle at 50% -10%,
+      hsl(var(--volt) / 0.12),
+      transparent 45%
     );
+  }
+
+  .font-display {
+    font-family: var(--font-inter, ui-sans-serif, system-ui), sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.04em;
   }
 }
 

@@ -31,6 +31,7 @@ import {
   subscribeRoutineSync,
 } from "@/lib/offline/routine-sync-manager";
 import { useSoundEffect } from "@/hooks/useSoundEffect";
+import { RoutineCompletionFlash } from "@/components/dashboard/RoutineCompletionFlash";
 
 // Optimistic reducer
 
@@ -100,6 +101,7 @@ export function RoutineList({ initialRoutines }: Props) {
     rankColor: string;
   } | null>(null);
   const { playComplete } = useSoundEffect();
+  const [flashLabel, setFlashLabel] = useState<string | null>(null);
 
   // Server data (TanStack Query).
   const { data: serverRoutines = [], isLoading } = useRoutines(initialRoutines);
@@ -137,6 +139,12 @@ export function RoutineList({ initialRoutines }: Props) {
     );
     if (!allDone) allDoneFiredRef.current = false;
   }, [serverRoutines]);
+
+  useEffect(() => {
+    if (!flashLabel) return;
+    const timer = window.setTimeout(() => setFlashLabel(null), 1100);
+    return () => window.clearTimeout(timer);
+  }, [flashLabel]);
 
   // useTransition wraps async server actions.
   const [, startToggle] = useTransition();
@@ -203,11 +211,16 @@ export function RoutineList({ initialRoutines }: Props) {
           if (offline) {
             await enqueuePendingRoutineLog({ routineId: id, note });
             playComplete();
+            setFlashLabel("DONE");
             toast.success(tc("queuedOfflineCompletion"), { duration: 4000 });
             window.dispatchEvent(new CustomEvent("coins-updated"));
           } else {
             const result = await completeRoutineAction(id, note);
             playComplete();
+            const leveled =
+              result &&
+              didLevelUp(result.totalXp - result.xpGain, result.totalXp);
+            setFlashLabel(leveled ? "CHAMPION" : "DONE");
             toast.success(t("completed"));
             window.dispatchEvent(new CustomEvent("coins-updated"));
 
@@ -285,6 +298,8 @@ export function RoutineList({ initialRoutines }: Props) {
 
   return (
     <div className="space-y-6">
+      <RoutineCompletionFlash label={flashLabel} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

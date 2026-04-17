@@ -565,3 +565,73 @@ export async function nudgeFriend(friendId: string): Promise<{
 }> {
   return sendStreakNudgeAction(friendId);
 }
+
+export type SocialActivityFeedItem =
+  | {
+      kind: "completion";
+      id: string;
+      at: string;
+      userName: string | null;
+      userImage: string | null;
+      routineTitle: string;
+      routineColor: string | null;
+    }
+  | {
+      kind: "badge";
+      id: string;
+      at: string;
+      userName: string | null;
+      userImage: string | null;
+      badgeName: string;
+    };
+
+export async function getSocialActivityFeedAction(): Promise<SocialActivityFeedItem[]> {
+  const session = await requireAuth();
+  const friends = await getFriendsAction();
+  const friendIds = friends.map((f) => f.id);
+  if (friendIds.length === 0) return [];
+
+  const [logs, badges] = await Promise.all([
+    prisma.routineLog.findMany({
+      where: { userId: { in: friendIds } },
+      orderBy: { completedAt: "desc" },
+      take: 24,
+      include: {
+        user: { select: { name: true, image: true } },
+        routine: { select: { title: true, color: true } },
+      },
+    }),
+    prisma.userBadge.findMany({
+      where: { userId: { in: friendIds } },
+      orderBy: { earnedAt: "desc" },
+      take: 24,
+      include: {
+        user: { select: { name: true, image: true } },
+        badge: { select: { name: true } },
+      },
+    }),
+  ]);
+
+  const merged: SocialActivityFeedItem[] = [
+    ...logs.map((l) => ({
+      kind: "completion" as const,
+      id: l.id,
+      at: l.completedAt.toISOString(),
+      userName: l.user.name,
+      userImage: l.user.image,
+      routineTitle: l.routine.title,
+      routineColor: l.routine.color,
+    })),
+    ...badges.map((b) => ({
+      kind: "badge" as const,
+      id: b.id,
+      at: b.earnedAt.toISOString(),
+      userName: b.user.name,
+      userImage: b.user.image,
+      badgeName: b.badge.name,
+    })),
+  ];
+
+  merged.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  return merged.slice(0, 28);
+}

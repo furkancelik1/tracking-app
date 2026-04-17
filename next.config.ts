@@ -76,6 +76,23 @@ const withPWA = withPWAInit({
           expiration: { maxEntries: 128, maxAgeSeconds: 30 * 24 * 60 * 60 },
         },
       },
+      // Routine images & audio — long-lived CacheFirst (PWA offline media)
+      {
+        urlPattern: /^https?:\/\/[^/]+\/(?:images|sounds|audio)\/.*\.(?:png|jpg|jpeg|gif|webp|svg|mp3|wav|ogg|m4a)$/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "media-longterm",
+          expiration: { maxEntries: 256, maxAgeSeconds: 365 * 24 * 60 * 60 },
+        },
+      },
+      {
+        urlPattern: /^https?:\/\/[^/]+\/icons\/.*\.(?:png|jpg|jpeg|webp|svg)$/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "icons-longterm",
+          expiration: { maxEntries: 64, maxAgeSeconds: 365 * 24 * 60 * 60 },
+        },
+      },
       // Google Fonts
       {
         urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,

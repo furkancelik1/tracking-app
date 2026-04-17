@@ -65,6 +65,12 @@ enum DuelStatus {
   EXPIRED
 }
 
+enum RoutineIntensity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model User {
   id                    String           @id @default(cuid())
   name                  String?
@@ -169,6 +175,11 @@ model Routine {
   weeklyTarget          Int                  @default(1)
   daysOfWeek            Int[]                @default([])
   stackParentId         String?
+  intensity             RoutineIntensity     @default(MEDIUM)
+  estimatedMinutes      Int                  @default(30)
+  imageUrl              String?
+  isGuided              Boolean              @default(false)
+  coachTip              String?
   isActive              Boolean              @default(true)
   sortOrder             Int                  @default(0)
   currentStreak         Int                  @default(0)

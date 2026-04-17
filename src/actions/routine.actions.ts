@@ -81,6 +81,11 @@ export async function createRoutineAction(input: {
   weeklyTarget?: number;
   daysOfWeek?: number[];
   stackParentId?: string | null;
+  intensity?: "LOW" | "MEDIUM" | "HIGH";
+  estimatedMinutes?: number;
+  imageUrl?: string | null;
+  isGuided?: boolean;
+  coachTip?: string | null;
 }) {
   const userId = await requireUser();
 
@@ -101,6 +106,11 @@ export async function createRoutineAction(input: {
     if (!parent) throw new Error("Bağlanacak üst alışkanlık bulunamadı.");
   }
 
+  const mins = Math.min(480, Math.max(1, input.estimatedMinutes ?? 30));
+  const intensity = input.intensity ?? "MEDIUM";
+  const imageUrl = input.imageUrl?.trim() || null;
+  const coachTip = input.coachTip?.trim() || null;
+
   const created = await prisma.routine.create({
     data: {
       userId,
@@ -114,6 +124,11 @@ export async function createRoutineAction(input: {
       weeklyTarget: frequencyType === "WEEKLY" ? Math.min(7, Math.max(1, input.weeklyTarget ?? 3)) : 1,
       daysOfWeek: frequencyType === "SPECIFIC_DAYS" ? normalizedDays : [],
       stackParentId: input.stackParentId ?? null,
+      intensity,
+      estimatedMinutes: mins,
+      imageUrl: imageUrl && imageUrl.length > 0 ? imageUrl : null,
+      isGuided: input.isGuided ?? false,
+      coachTip: coachTip && coachTip.length > 0 ? coachTip : null,
     },
   });
 

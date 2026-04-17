@@ -1,7 +1,13 @@
-import { getFollowersAction, getFollowingAction, getPendingRequestsAction } from "@/actions/social.actions";
+import React, { Suspense } from "react";
+import {
+  getFollowersAction,
+  getFollowingAction,
+  getPendingRequestsAction,
+  getFriendsAction,
+  getSocialActivityFeedAction,
+} from "@/actions/social.actions";
 import { getChallengesAction, getCompletedChallengesAction, distributeChallengeRewards } from "@/actions/challenge.actions";
 import { getActiveDuelAction, checkAndFinalizeDuels, getPendingPrivateDuel } from "@/actions/duel.actions";
-import { getFriendsAction } from "@/actions/social.actions";
 import { UserSearch } from "@/components/dashboard/UserSearch";
 import { SocialTabs } from "@/components/dashboard/SocialTabs";
 import { ConnectionList } from "@/components/dashboard/ConnectionList";
@@ -13,6 +19,7 @@ import { DuelInviteDialog } from "@/components/dashboard/DuelInviteDialog";
 import { CreateDuel } from "@/components/dashboard/CreateDuel";
 import { DuelLiveStatus } from "@/components/dashboard/DuelLiveStatus";
 import { Users } from "lucide-react";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/lib/auth";
 import { redirect } from "@/i18n/navigation";
@@ -21,6 +28,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "social.metadata" });
   return { title: t("title"), description: t("description") };
+}
+
+async function SocialActivityFeedSection() {
+  const items = await getSocialActivityFeedAction();
+  return <ActivityFeed items={items} />;
 }
 
 export default async function SocialPage({
@@ -75,6 +87,15 @@ export default async function SocialPage({
       {/* User Search */}
       <section>
         <UserSearch />
+      </section>
+
+      {/* Squad activity feed */}
+      <section>
+        <Suspense
+          fallback={<div className="h-48 animate-pulse rounded-2xl bg-zinc-900/50 border border-white/5" />}
+        >
+          <SocialActivityFeedSection />
+        </Suspense>
       </section>
 
       {/* Followers / Following / Requests Tabs */}

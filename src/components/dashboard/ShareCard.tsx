@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { forwardRef, useEffect, useState } from "react";
+import React, { forwardRef, useEffect, useState } from "react";
 import { Shield, Flame, Trophy, Zap, Target, Award, Star, Sunrise } from "lucide-react";
 import { calculateLevel, normalizeRankTitle } from "@/lib/level";
 import { useTranslations, useLocale } from "next-intl";
@@ -113,17 +113,20 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
         style={{
           width: w,
           height: h,
-          fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
+          fontFamily: "var(--font-inter, 'Inter'), 'Segoe UI', system-ui, sans-serif",
         }}
         className="relative overflow-hidden flex flex-col"
       >
-        {/* â”€â”€ BG Gradient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0f0b2e] via-[#1a1145] to-[#0d0a26]" />
-
-        {/* Dekoratif blur'lar */}
-        <div className="absolute -top-32 -left-32 size-96 rounded-full bg-indigo-600/20 blur-[120px]" />
-        <div className="absolute -bottom-40 -right-40 size-[28rem] rounded-full bg-purple-600/15 blur-[140px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-72 rounded-full bg-violet-500/10 blur-[100px]" />
+        <div className="absolute inset-0 bg-black" />
+        <div
+          className="absolute inset-0 opacity-90"
+          style={{
+            background:
+              "radial-gradient(120% 80% at 80% 10%, rgba(214,255,0,0.14) 0%, transparent 50%), radial-gradient(80% 60% at 10% 90%, rgba(220,38,38,0.08) 0%, transparent 45%)",
+          }}
+        />
+        <div className="absolute -top-24 -right-24 size-80 rounded-full bg-[#D6FF00]/10 blur-[100px]" />
+        <div className="absolute bottom-0 left-1/4 size-64 rounded-full bg-red-600/10 blur-[90px]" />
 
         {/* Grid dokusu */}
         <div
@@ -144,10 +147,10 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           {/* Ãœst Bar: Logo + RÃ¼tbe rozeti */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="size-10 rounded-full bg-indigo-500 flex items-center justify-center">
-                <Zap className="size-5 text-white" />
+              <div className="size-10 rounded-full bg-[#D6FF00] flex items-center justify-center">
+                <Zap className="size-5 text-black" />
               </div>
-              <span className="text-white/90 font-semibold text-lg tracking-tight">
+              <span className="text-white font-black text-xl tracking-tighter uppercase">
                 {tCommon("appName")}
               </span>
             </div>

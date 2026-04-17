@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,11 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
   const [category, setCategory] = useState("Genel");
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [icon, setIcon] = useState(DEFAULT_ICON);
+  const [intensity, setIntensity] = useState<"LOW" | "MEDIUM" | "HIGH">("MEDIUM");
+  const [estimatedMinutes, setEstimatedMinutes] = useState(30);
+  const [imageUrl, setImageUrl] = useState("");
+  const [isGuided, setIsGuided] = useState(false);
+  const [coachTip, setCoachTip] = useState("");
 
   const { mutate: createRoutine, isPending } = useCreateRoutine();
 
@@ -92,6 +97,11 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
         category: category.trim() || "Genel",
         color,
         icon,
+        intensity,
+        estimatedMinutes: Math.min(480, Math.max(1, estimatedMinutes || 30)),
+        imageUrl: imageUrl.trim() || null,
+        isGuided,
+        coachTip: coachTip.trim() || null,
       },
       {
         onSuccess: () => {
@@ -104,6 +114,11 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
           setCategory("Genel");
           setColor(DEFAULT_COLOR);
           setIcon(DEFAULT_ICON);
+          setIntensity("MEDIUM");
+          setEstimatedMinutes(30);
+          setImageUrl("");
+          setIsGuided(false);
+          setCoachTip("");
           onOpenChange(false);
         },
       }
@@ -164,6 +179,76 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
               maxLength={500}
               disabled={atLimit}
             />
+          </div>
+
+          {/* Performance & guidance */}
+          <div className="space-y-3 rounded-xl border border-white/10 bg-black/20 p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              {t("performanceSection")}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>{t("intensityLabel")}</Label>
+                <select
+                  value={intensity}
+                  onChange={(e) => setIntensity(e.target.value as "LOW" | "MEDIUM" | "HIGH")}
+                  disabled={atLimit}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="LOW">{t("intensityLow")}</option>
+                  <option value="MEDIUM">{t("intensityMedium")}</option>
+                  <option value="HIGH">{t("intensityHigh")}</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="routine-minutes">{t("estimatedMinutesLabel")}</Label>
+                <Input
+                  id="routine-minutes"
+                  type="number"
+                  min={1}
+                  max={480}
+                  value={estimatedMinutes}
+                  onChange={(e) =>
+                    setEstimatedMinutes(Math.min(480, Math.max(1, Number(e.target.value) || 1)))
+                  }
+                  disabled={atLimit}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="routine-image">{t("imageUrlLabel")}</Label>
+              <Input
+                id="routine-image"
+                type="url"
+                placeholder={t("imageUrlPlaceholder")}
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                disabled={atLimit}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isGuided}
+                onChange={(e) => setIsGuided(e.target.checked)}
+                disabled={atLimit}
+                className="rounded border-input"
+              />
+              {t("guidedLabel")}
+            </label>
+            <div className="space-y-1.5">
+              <Label htmlFor="routine-coach-tip">{t("coachTipLabel")}</Label>
+              <textarea
+                id="routine-coach-tip"
+                rows={3}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+                placeholder={t("coachTipPlaceholder")}
+                value={coachTip}
+                onChange={(e) => setCoachTip(e.target.value)}
+                maxLength={2000}
+                disabled={atLimit}
+              />
+            </div>
           </div>
 
           {/* Category */}

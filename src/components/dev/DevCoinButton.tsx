@@ -12,7 +12,7 @@ export function DevCoinButton() {
     setLoading(true);
     try {
       const { coins } = await addTestCoins(1000);
-      toast.success(`+1000 DP added â€” balance: ${coins.toLocaleString()}`, {
+      toast.success(`+1000 DP added — balance: ${coins.toLocaleString("en-US")}`, {
         description: "DEV MODE",
         duration: 3000,
       });

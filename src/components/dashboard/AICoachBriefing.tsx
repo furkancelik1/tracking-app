@@ -249,7 +249,7 @@ export function AICoachBriefing({
             ) : (
               <p className="text-xs text-muted-foreground" suppressHydrationWarning>
                 {xpToLegend > 0
-                  ? t("legendRemaining", { xp: xpToLegend.toLocaleString() })
+                  ? t("legendRemaining", { xp: xpToLegend.toLocaleString(locale) })
                   : t("legendReached")}
               </p>
             )}

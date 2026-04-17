@@ -379,7 +379,12 @@ function WeeklyInsightCardInner({ initialData, isPro }: WeeklyInsightCardProps) 
                 {data?.generatedAt && (
                   <span className="text-[11px] text-muted-foreground" suppressHydrationWarning>
                     {t("generatedAt", {
-                      date: new Date(data.generatedAt).toLocaleDateString(),
+                      date: new Intl.DateTimeFormat(locale, {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        timeZone: "UTC",
+                      }).format(new Date(data.generatedAt)),
                     })}
                   </span>
                 )}

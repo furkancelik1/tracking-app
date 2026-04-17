@@ -100,7 +100,7 @@ export function ShopDialog({ open, onOpenChange }: Props) {
         <div className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 p-3">
           <Coins className="h-5 w-5 text-yellow-500" />
           <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
-            {coins.toLocaleString()}
+            {coins.toLocaleString("en-US")}
           </span>
           <span className="text-sm text-muted-foreground">{t("coins")}</span>
         </div>

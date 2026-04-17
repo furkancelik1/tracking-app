@@ -124,7 +124,7 @@ export function DashboardNav() {
           >
             <Coins className="h-4 w-4" />
             <span className="text-sm font-semibold tabular-nums" suppressHydrationWarning>
-              {coins !== null ? coins.toLocaleString("en-US") : "â€”"}
+              {coins !== null ? coins.toLocaleString("en-US") : "—"}
             </span>
           </Button>
           {/* Badge gallery */}

@@ -93,11 +93,12 @@ export default async function SettingsPage({
           plan={STRIPE_PLANS.PRO}
           periodEnd={
             user.stripeCurrentPeriodEnd
-              ? user.stripeCurrentPeriodEnd.toLocaleDateString(locale, {
+              ? new Intl.DateTimeFormat(locale, {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
-                })
+                  timeZone: "UTC",
+                }).format(user.stripeCurrentPeriodEnd)
               : null
           }
         />

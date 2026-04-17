@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { Shield, Flame, Trophy, Zap, Target, Award, Star, Sunrise } from "lucide-react";
 import { calculateLevel, normalizeRankTitle } from "@/lib/level";
 import { useTranslations, useLocale } from "next-intl";
@@ -91,6 +91,18 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
 
     const isPortrait = layout === "portrait";
     const stickers = getStickers(currentStreak, totalCompletions, weeklyRate, level);
+    const [renderDate, setRenderDate] = useState("");
+
+    useEffect(() => {
+      setRenderDate(
+        new Intl.DateTimeFormat(locale, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          timeZone: "UTC",
+        }).format(new Date())
+      );
+    }, [locale]);
 
     const w = isPortrait ? 1080 : 1200;
     const h = isPortrait ? 1920 : 630;
@@ -383,12 +395,8 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             <p className="text-white/30 text-xs">
               {tCommon("site")} â€¢ {t("footerBrand")}
             </p>
-            <p className="text-white/30 text-xs">
-              {new Date().toLocaleDateString(locale, {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+            <p className="text-white/30 text-xs" suppressHydrationWarning>
+              {renderDate || " "}
             </p>
           </div>
         </div>

@@ -575,6 +575,9 @@ export type SocialActivityFeedItem =
       userImage: string | null;
       routineTitle: string;
       routineColor: string | null;
+      routineIntensity: "LOW" | "MEDIUM" | "HIGH";
+      estimatedMinutes: number;
+      routineImageUrl: string | null;
     }
   | {
       kind: "badge";
@@ -598,7 +601,15 @@ export async function getSocialActivityFeedAction(): Promise<SocialActivityFeedI
       take: 24,
       include: {
         user: { select: { name: true, image: true } },
-        routine: { select: { title: true, color: true } },
+        routine: {
+          select: {
+            title: true,
+            color: true,
+            intensity: true,
+            estimatedMinutes: true,
+            imageUrl: true,
+          },
+        },
       },
     }),
     prisma.userBadge.findMany({
@@ -621,6 +632,9 @@ export async function getSocialActivityFeedAction(): Promise<SocialActivityFeedI
       userImage: l.user.image,
       routineTitle: l.routine.title,
       routineColor: l.routine.color,
+      routineIntensity: l.routine.intensity,
+      estimatedMinutes: l.routine.estimatedMinutes,
+      routineImageUrl: l.routine.imageUrl,
     })),
     ...badges.map((b) => ({
       kind: "badge" as const,

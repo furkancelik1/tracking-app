@@ -19,7 +19,7 @@ import { DuelInviteDialog } from "@/components/dashboard/DuelInviteDialog";
 import { CreateDuel } from "@/components/dashboard/CreateDuel";
 import { DuelLiveStatus } from "@/components/dashboard/DuelLiveStatus";
 import { Users } from "lucide-react";
-import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { ActivityFeed, ActivityFeedSkeleton } from "@/components/dashboard/ActivityFeed";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/lib/auth";
 import { redirect } from "@/i18n/navigation";
@@ -91,9 +91,7 @@ export default async function SocialPage({
 
       {/* Squad activity feed */}
       <section>
-        <Suspense
-          fallback={<div className="h-48 animate-pulse rounded-2xl bg-zinc-900/50 border border-white/5" />}
-        >
+        <Suspense fallback={<ActivityFeedSkeleton />}>
           <SocialActivityFeedSection />
         </Suspense>
       </section>

@@ -355,6 +355,9 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
 
   const activeData = tab === "global" ? data : tab === "league" ? leagueData ?? data : data;
   const { topTen, currentUser, totalUsers } = activeData;
+  const challengeProgress = challengeData
+    ? Math.max(0, Math.min(100, (challengeData.weekCompletions / challengeData.target) * 100))
+    : 0;
 
   return (
     <div>
@@ -414,29 +417,55 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
 
       {/* Global community challenge */}
       {!isPending && tab === "challenges" && challengeData && (
-        <div className="rounded-2xl border border-[#D6FF00]/25 bg-black p-6 space-y-4 shadow-[0_0_40px_rgba(214,255,0,0.08)]">
-          <div className="flex items-center gap-2">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="relative overflow-hidden rounded-3xl border border-[#D6FF00]/35 bg-black p-6 sm:p-7 space-y-5 shadow-[0_0_60px_rgba(214,255,0,0.12)]"
+        >
+          <div className="absolute -top-20 -right-10 size-64 rounded-full bg-[#D6FF00]/10 blur-3xl" />
+          <div className="absolute -bottom-24 left-1/4 size-64 rounded-full bg-[#D6FF00]/5 blur-3xl" />
+
+          <div className="relative z-10 flex items-center gap-2">
             <Trophy className="size-6 text-[#D6FF00]" />
-            <h3 className="text-lg font-black uppercase tracking-tight text-[#D6FF00]">
+            <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#D6FF00]">
               {t("globalChallengeTitle")}
             </h3>
           </div>
-          <p className="text-sm text-muted-foreground">{t("globalChallengeSubtitle")}</p>
-          <div className="h-3 w-full rounded-full bg-white/10 overflow-hidden">
-            <div
-              className="h-full bg-[#D6FF00] transition-all duration-500"
+          <p className="relative z-10 text-sm text-zinc-300">{t("globalChallengeSubtitle")}</p>
+
+          <motion.p
+            key={challengeData.weekCompletions}
+            initial={{ scale: 0.92, opacity: 0.7 }}
+            animate={{ scale: [1, 1.09, 1], opacity: 1 }}
+            transition={{ duration: 0.55, ease: "easeOut" }}
+            className="relative z-10 text-3xl sm:text-4xl font-black tracking-tight text-white tabular-nums"
+          >
+            <span className="text-[#D6FF00]">{challengeData.weekCompletions.toLocaleString()}</span>
+            <span className="text-zinc-400"> / {challengeData.target.toLocaleString()}</span>
+          </motion.p>
+
+          <div className="relative z-10 h-4 sm:h-5 w-full rounded-full bg-zinc-900 border border-white/10 overflow-hidden">
+            <motion.div
+              className="h-full"
+              animate={{ width: `${challengeProgress}%` }}
+              transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
               style={{
-                width: `${Math.min(100, (challengeData.weekCompletions / challengeData.target) * 100)}%`,
+                background:
+                  challengeProgress >= 60
+                    ? "linear-gradient(90deg, #6a8b00 0%, #D6FF00 65%, #efff9f 100%)"
+                    : "linear-gradient(90deg, #334155 0%, #84cc16 100%)",
               }}
             />
           </div>
-          <p className="text-sm font-bold tabular-nums text-white">
+
+          <p className="relative z-10 text-sm font-semibold text-zinc-300">
             {t("globalChallengeProgress", {
               current: challengeData.weekCompletions,
               target: challengeData.target,
             })}
           </p>
-        </div>
+        </motion.div>
       )}
 
       {/* Rankings */}

@@ -26,12 +26,12 @@ export function ActiveChallenges({ challenges, friends }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="size-9 rounded-lg bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center">
-            <Swords className="size-4 text-indigo-400" />
+          <div className="size-9 rounded-lg bg-[#D6FF00]/10 border border-[#D6FF00]/25 flex items-center justify-center">
+            <Swords className="size-4 text-[#D6FF00]" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold">{t("title")}</h3>
-            <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
+            <h3 className="text-sm font-black uppercase tracking-wide text-white">{t("title")}</h3>
+            <p className="text-xs text-zinc-400">{t("subtitle")}</p>
           </div>
         </div>
         <ChallengeInviteDialog friends={friends} />
@@ -39,11 +39,11 @@ export function ActiveChallenges({ challenges, friends }: Props) {
 
       {/* Challenge Cards */}
       {challenges.length === 0 ? (
-        <Card>
+        <Card className="border-white/5 bg-zinc-950">
           <CardContent className="py-10 text-center">
-            <Swords className="size-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-sm font-medium">{t("empty")}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t("emptyDesc")}</p>
+            <Swords className="size-10 text-[#D6FF00]/60 mx-auto mb-3" />
+            <p className="text-sm font-bold text-white">{t("empty")}</p>
+            <p className="text-xs text-zinc-400 mt-1">{t("emptyDesc")}</p>
           </CardContent>
         </Card>
       ) : (

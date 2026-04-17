@@ -65,12 +65,12 @@ function VsBadge() {
       className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
     >
       <div className="relative">
-        <div className="size-14 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg shadow-red-500/30">
-          <span className="text-lg font-black text-white tracking-tighter">VS</span>
+        <div className="size-14 rounded-full bg-[#D6FF00] flex items-center justify-center shadow-lg shadow-[#D6FF00]/35">
+          <span className="text-lg font-black text-black tracking-tighter">VS</span>
         </div>
         {/* Pulse ring */}
         <motion.div
-          className="absolute inset-0 rounded-full border-2 border-red-400/50"
+          className="absolute inset-0 rounded-full border-2 border-[#D6FF00]/50"
           animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0, 0.6] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -102,10 +102,10 @@ function PlayerCard({
       className={cn(
         "flex-1 flex flex-col items-center gap-3 rounded-xl p-4 border relative overflow-hidden",
         isWinner
-          ? "border-yellow-400/50 bg-gradient-to-b from-yellow-400/10 to-transparent"
+          ? "border-[#D6FF00]/50 bg-gradient-to-b from-[#D6FF00]/10 to-transparent"
           : isCurrentUser
-            ? "border-indigo-500/30 bg-indigo-500/5"
-            : "border-border bg-card/50"
+            ? "border-[#D6FF00]/25 bg-[#D6FF00]/5"
+            : "border-white/10 bg-zinc-950/80"
       )}
     >
       {isWinner && (
@@ -114,7 +114,7 @@ function PlayerCard({
           animate={{ scale: 1 }}
           className="absolute -top-1 -right-1"
         >
-          <Trophy className="size-6 text-yellow-400" />
+          <Trophy className="size-6 text-[#D6FF00]" />
         </motion.div>
       )}
 
@@ -122,10 +122,10 @@ function PlayerCard({
         className={cn(
           "size-16 ring-2",
           isWinner
-            ? "ring-yellow-400"
+            ? "ring-[#D6FF00]"
             : isCurrentUser
-              ? "ring-indigo-400"
-              : "ring-border"
+              ? "ring-[#D6FF00]/70"
+              : "ring-white/15"
         )}
       >
         <AvatarImage src={player.image ?? undefined} alt={player.name ?? "?"} />
@@ -148,7 +148,7 @@ function PlayerCard({
         animate={{ scale: 1 }}
         className={cn(
           "text-3xl font-black tabular-nums",
-          isWinner ? "text-yellow-400" : isCurrentUser ? "text-indigo-400" : "text-foreground"
+          isWinner ? "text-[#D6FF00]" : isCurrentUser ? "text-[#D6FF00]" : "text-white"
         )}
       >
         {score}
@@ -250,11 +250,11 @@ function ResultBanner({
       className={cn(
         "rounded-lg border px-4 py-3 text-center",
         isWin
-          ? "bg-yellow-400/10 border-yellow-400/40"
-          : "bg-destructive/10 border-destructive/30"
+          ? "bg-[#D6FF00]/10 border-[#D6FF00]/40"
+          : "bg-zinc-500/10 border-zinc-500/30"
       )}
     >
-      <p className={cn("text-sm font-bold", isWin ? "text-yellow-500" : "text-destructive")}>
+      <p className={cn("text-sm font-bold", isWin ? "text-[#D6FF00]" : "text-zinc-300")}>
         {isWin ? t("resultWin", { amount: pot }) : t("resultLoss", { amount: duel.stake })}
       </p>
     </motion.div>
@@ -293,7 +293,7 @@ function PendingActions({
     <div className="flex gap-3">
       <Button
         variant="default"
-        className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600"
+        className="flex-1 bg-[#D6FF00] text-black hover:bg-[#c8f000]"
         disabled={isPending}
         onClick={() => handleRespond(true)}
       >
@@ -352,8 +352,8 @@ function DuelEmptyState() {
   const t = useTranslations("duel");
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="size-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
-        <Swords className="size-8 text-red-400" />
+      <div className="size-16 rounded-2xl bg-[#D6FF00]/10 border border-[#D6FF00]/20 flex items-center justify-center mb-4">
+        <Swords className="size-8 text-[#D6FF00]" />
       </div>
       <h3 className="text-base font-semibold">{t("noDuel")}</h3>
       <p className="text-sm text-muted-foreground mt-1 max-w-xs">{t("noDuelDesc")}</p>
@@ -370,7 +370,7 @@ const CHALLENGE_CARDS = [
     topic: "Disiplin Yarışı",
     message: "Focus Mode açıldı: Bugün en az 3 rutin tamamlayacağım. Hazır mısın?",
     icon: Rocket,
-    className: "border-indigo-500/30 bg-indigo-500/10",
+    className: "border-[#D6FF00]/35 bg-[#D6FF00]/10",
   },
   {
     id: "streak-rush",
@@ -378,7 +378,7 @@ const CHALLENGE_CARDS = [
     topic: "Streak Koruma",
     message: "Streak Rush kartımı oynadım. Serini koru, ben de tempoyu artırıyorum!",
     icon: Flame,
-    className: "border-orange-500/30 bg-orange-500/10",
+    className: "border-[#D6FF00]/30 bg-zinc-900",
   },
   {
     id: "shield-up",
@@ -386,7 +386,7 @@ const CHALLENGE_CARDS = [
     topic: "Son Tur Savunması",
     message: "Shield Up! Bugünü boş geçmiyorum. Düello son ana kadar açık.",
     icon: Shield,
-    className: "border-emerald-500/30 bg-emerald-500/10",
+    className: "border-[#D6FF00]/30 bg-black",
   },
 ] as const;
 
@@ -438,11 +438,11 @@ function ChallengeCards({
                 card.className
               )}
             >
-              <div className="mb-2 inline-flex rounded-md bg-background/70 p-1.5">
-                <Icon className="size-4" />
+              <div className="mb-2 inline-flex rounded-md bg-[#D6FF00]/10 p-1.5">
+                <Icon className="size-4 text-[#D6FF00]" />
               </div>
-              <p className="text-sm font-semibold">{card.title}</p>
-              <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
+              <p className="text-sm font-black uppercase tracking-wide text-white">{card.title}</p>
+              <div className="mt-2 space-y-1 text-[11px] text-zinc-400">
                 <p>Konu: {card.topic}</p>
                 <p>Ödül: {duel.stake * 2} altın</p>
                 <p>Süre: {durationLabel}</p>
@@ -504,18 +504,18 @@ export function DuelArena({ duel }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-lg bg-gradient-to-br from-red-500/15 to-orange-500/15 flex items-center justify-center">
-            <Swords className="size-5 text-red-400" />
+          <div className="size-10 rounded-lg bg-[#D6FF00]/10 border border-[#D6FF00]/25 flex items-center justify-center">
+            <Swords className="size-5 text-[#D6FF00]" />
           </div>
           <div>
-            <h2 className="text-base font-bold">{t("arenaTitle")}</h2>
+            <h2 className="text-base font-black uppercase tracking-wide text-white">{t("arenaTitle")}</h2>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-[10px] gap-1">
                 <Coins className="size-3" />
                 {t("potTotal", { amount: pot })}
               </Badge>
               {isActive && (
-                <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 text-[10px]">
+                <Badge className="bg-[#D6FF00]/10 text-[#D6FF00] border-[#D6FF00]/35 text-[10px]">
                   {t("battleStarted")}
                 </Badge>
               )}
@@ -566,7 +566,7 @@ export function DuelArena({ duel }: Props) {
             </div>
             <Progress
               value={challengerPct}
-              className="h-3 [&>div]:bg-gradient-to-r [&>div]:from-blue-400 [&>div]:to-indigo-500"
+              className="h-3 bg-zinc-900 [&>div]:bg-[#D6FF00]"
             />
           </div>
           <div className="space-y-1">
@@ -580,7 +580,7 @@ export function DuelArena({ duel }: Props) {
             </div>
             <Progress
               value={opponentPct}
-              className="h-3 [&>div]:bg-gradient-to-r [&>div]:from-red-400 [&>div]:to-orange-500"
+              className="h-3 bg-zinc-900 [&>div]:bg-[#D6FF00]"
             />
           </div>
         </div>

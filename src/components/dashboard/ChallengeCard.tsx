@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -44,19 +44,19 @@ function VsBadge() {
     <div className="relative shrink-0">
       {/* Outer glow ring */}
       <motion.div
-        className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 blur-md"
+        className="absolute inset-0 rounded-full bg-[#D6FF00] blur-md"
         animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }}
         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       />
       {/* Inner badge */}
       <motion.div
-        className="relative h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg"
+        className="relative h-12 w-12 rounded-full bg-[#D6FF00] flex items-center justify-center shadow-lg shadow-[#D6FF00]/40"
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
       >
         <motion.span
-          className="text-sm font-black text-white tracking-wider"
+          className="text-sm font-black text-black tracking-wider"
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
         >
@@ -94,7 +94,7 @@ function WinnerSparkle({ children }: { children: React.ReactNode }) {
             ease: "easeInOut",
           }}
         >
-          <Sparkles className="size-3 text-amber-400" />
+          <Sparkles className="size-3 text-[#D6FF00]" />
         </motion.div>
       ))}
     </div>
@@ -132,7 +132,7 @@ function PlayerSide({
     >
       {!isRight && (
         <div className="relative">
-          <Avatar className={`size-11 ring-2 shadow-md ${isWinner ? "ring-amber-400" : "ring-border"}`}>
+          <Avatar className={`size-11 ring-2 shadow-md ${isWinner ? "ring-[#D6FF00]" : "ring-white/15"}`}>
             <AvatarImage src={image ?? undefined} />
             <AvatarFallback className="text-xs font-semibold">{getInitials(name)}</AvatarFallback>
           </Avatar>
@@ -141,15 +141,15 @@ function PlayerSide({
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", delay: 0.5 }}
-              className="absolute -top-1.5 -right-1.5 rounded-full bg-amber-400 p-0.5"
+              className="absolute -top-1.5 -right-1.5 rounded-full bg-[#D6FF00] p-0.5"
             >
-              <Crown className="size-2.5 text-white" />
+              <Crown className="size-2.5 text-black" />
             </motion.div>
           )}
         </div>
       )}
       <div className="min-w-0">
-        <p className="text-xs font-medium truncate text-muted-foreground">
+        <p className="text-xs font-medium truncate text-zinc-400">
           {isYou ? t("you") : name}
         </p>
         <motion.p
@@ -164,7 +164,7 @@ function PlayerSide({
       </div>
       {isRight && (
         <div className="relative">
-          <Avatar className={`size-11 ring-2 shadow-md ${isWinner ? "ring-amber-400" : "ring-border"}`}>
+          <Avatar className={`size-11 ring-2 shadow-md ${isWinner ? "ring-[#D6FF00]" : "ring-white/15"}`}>
             <AvatarImage src={image ?? undefined} />
             <AvatarFallback className="text-xs font-semibold">{getInitials(name)}</AvatarFallback>
           </Avatar>
@@ -173,9 +173,9 @@ function PlayerSide({
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", delay: 0.5 }}
-              className="absolute -top-1.5 -left-1.5 rounded-full bg-amber-400 p-0.5"
+              className="absolute -top-1.5 -left-1.5 rounded-full bg-[#D6FF00] p-0.5"
             >
-              <Crown className="size-2.5 text-white" />
+              <Crown className="size-2.5 text-black" />
             </motion.div>
           )}
         </div>
@@ -261,15 +261,15 @@ export function ChallengeCard({ challenge }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 200, damping: 25 }}
     >
-      <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-b from-card to-card/80">
+      <Card className="overflow-hidden border border-white/5 shadow-lg bg-gradient-to-b from-zinc-950 to-black">
         {/* Animated top bar */}
         <motion.div
           className={`h-1 ${
             isCompleted
-              ? "bg-gradient-to-r from-amber-400 to-yellow-500"
+              ? "bg-[#D6FF00]"
               : isActive
-                ? "bg-gradient-to-r from-emerald-400 to-cyan-400"
-                : "bg-gradient-to-r from-amber-400 to-orange-400"
+                ? "bg-[#D6FF00]"
+                : "bg-zinc-700"
           }`}
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -281,8 +281,8 @@ export function ChallengeCard({ challenge }: Props) {
           {/* Header: routine title + status badge */}
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="font-bold text-sm">{challenge.routineTitle}</p>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+              <p className="font-black text-sm text-white">{challenge.routineTitle}</p>
+              <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1">
                 <Timer className="size-3" />
                 {isActive
                   ? t("daysLeft", { count: challenge.daysLeft })
@@ -297,10 +297,10 @@ export function ChallengeCard({ challenge }: Props) {
               variant={isActive ? "default" : "secondary"}
               className={
                 isCompleted
-                  ? "bg-amber-500/10 text-amber-500 border-amber-500/30 gap-1"
+                  ? "bg-[#D6FF00]/10 text-[#D6FF00] border-[#D6FF00]/30 gap-1"
                   : isActive
-                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30 gap-1"
-                    : ""
+                    ? "bg-[#D6FF00]/10 text-[#D6FF00] border-[#D6FF00]/30 gap-1"
+                    : "bg-zinc-900 text-zinc-300 border-white/10"
               }
             >
               {isCompleted && <Trophy className="size-3" />}
@@ -317,7 +317,7 @@ export function ChallengeCard({ challenge }: Props) {
               isWinner={isCompleted && challengerIsWinning}
               isYou={challenge.isChallenger}
               align="left"
-              color="text-indigo-400"
+              color="text-[#D6FF00]"
             />
 
             <VsBadge />
@@ -329,7 +329,7 @@ export function ChallengeCard({ challenge }: Props) {
               isWinner={isCompleted && opponentIsWinning}
               isYou={!challenge.isChallenger}
               align="right"
-              color="text-orange-400"
+              color="text-[#D6FF00]"
             />
           </div>
 
@@ -340,12 +340,12 @@ export function ChallengeCard({ challenge }: Props) {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <Progress value={progress} className="h-1.5" />
+              <Progress value={progress} className="h-1.5 bg-zinc-900 [&>div]:bg-[#D6FF00]" />
               <div className="flex justify-between mt-1">
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[10px] text-zinc-500">
                   {totalDays - challenge.daysLeft}/{totalDays}
                 </span>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[10px] text-zinc-500">
                   {Math.round(progress)}%
                 </span>
               </div>
@@ -362,11 +362,11 @@ export function ChallengeCard({ challenge }: Props) {
                 rounded-xl px-4 py-3 text-center text-sm font-semibold
                 ${
                   challenge.winnerId === null
-                    ? "bg-zinc-500/10 text-zinc-400"
+                    ? "bg-zinc-500/10 text-zinc-300"
                     : (challenge.isChallenger && challengerIsWinning) ||
                         (!challenge.isChallenger && opponentIsWinning)
-                      ? "bg-gradient-to-r from-amber-500/10 to-yellow-500/10 text-amber-400 border border-amber-500/20"
-                      : "bg-zinc-500/10 text-muted-foreground"
+                      ? "bg-[#D6FF00]/10 text-[#D6FF00] border border-[#D6FF00]/25"
+                      : "bg-zinc-500/10 text-zinc-400"
                 }
               `}
             >
@@ -388,7 +388,7 @@ export function ChallengeCard({ challenge }: Props) {
                   variant="outline"
                   onClick={handleDecline}
                   disabled={isPending}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs border-white/15 text-zinc-300"
                 >
                   {t("decline")}
                 </Button>
@@ -397,7 +397,7 @@ export function ChallengeCard({ challenge }: Props) {
                     size="sm"
                     onClick={handleAccept}
                     disabled={isPending}
-                    className="h-8 text-xs gap-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+                    className="h-8 text-xs gap-1 bg-[#D6FF00] text-black hover:bg-[#c8f000]"
                   >
                     <Swords className="size-3" />
                     {t("accept")}
@@ -414,7 +414,7 @@ export function ChallengeCard({ challenge }: Props) {
                   variant={checkedIn ? "secondary" : "default"}
                   className={`h-8 text-xs gap-1 ${
                     !checkedIn
-                      ? "bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600"
+                      ? "bg-[#D6FF00] text-black hover:bg-[#c8f000]"
                       : ""
                   }`}
                 >

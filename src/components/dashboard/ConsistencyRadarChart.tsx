@@ -50,16 +50,16 @@ export function ConsistencyRadarChart({ data }: Props) {
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
+          <div className="h-[300px] min-h-[300px] flex items-center justify-center text-sm text-muted-foreground">
             {t("noData")}
           </div>
         ) : !mounted ? (
-          <div style={{ height: "280px", minHeight: "280px", width: "100%" }}>
+          <div style={{ height: "300px", minHeight: "300px", width: "100%" }}>
             <Skeleton className="h-full w-full rounded-md" />
           </div>
         ) : (
-          <div style={{ height: "280px", minHeight: "280px", width: "100%" }}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
+          <div style={{ height: "300px", minHeight: "300px", width: "100%" }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <RadarChart data={localizedData} cx="50%" cy="50%" outerRadius="70%">
                 <PolarGrid
                   stroke="hsl(var(--border))"

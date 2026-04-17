@@ -81,11 +81,11 @@ export function WeeklyProgressChart({ data }: Props) {
       </CardHeader>
 
       <CardContent className="pb-6">
-        <div style={{ height: "200px", minHeight: "200px", width: "100%", touchAction: "manipulation" }}>
+        <div style={{ height: "300px", minHeight: "300px", width: "100%", touchAction: "manipulation" }}>
           {!mounted ? (
             <Skeleton className="h-full w-full rounded-md" />
           ) : (
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <AreaChart
                 data={safeData}
                 margin={{ top: 4, right: 4, left: -24, bottom: 0 }}

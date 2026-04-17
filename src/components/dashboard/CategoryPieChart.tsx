@@ -67,16 +67,16 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
+          <div className="h-[300px] min-h-[300px] flex items-center justify-center text-sm text-muted-foreground">
             HenÃ¼z kategori verisi yok
           </div>
         ) : !mounted ? (
-          <div style={{ height: "260px", minHeight: "260px", width: "100%" }}>
+          <div style={{ height: "300px", minHeight: "300px", width: "100%" }}>
             <Skeleton className="h-full w-full rounded-md" />
           </div>
         ) : (
-          <div style={{ height: "260px", minHeight: "260px", width: "100%", touchAction: "manipulation" }}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={260}>
+          <div style={{ height: "300px", minHeight: "300px", width: "100%", touchAction: "manipulation" }}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
             <PieChart>
               <Pie
                 data={safeData}

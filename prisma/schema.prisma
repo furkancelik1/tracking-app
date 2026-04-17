@@ -18,10 +18,11 @@ enum RoutineFrequency {
   MONTHLY
 }
 
-enum RoutineFrequencyType {
-  DAILY
-  WEEKLY
-  SPECIFIC_DAYS
+// --- NIKE İÇİN EKLENEN YENİ ENUM ---
+enum RoutineIntensity {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 enum ItemType {
@@ -65,64 +66,57 @@ enum DuelStatus {
   EXPIRED
 }
 
-enum RoutineIntensity {
-  LOW
-  MEDIUM
-  HIGH
-}
-
 model User {
-  id                    String           @id @default(cuid())
-  name                  String?
-  email                 String?          @unique
-  emailVerified         DateTime?
-  image                 String?
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+  id                        String           @id @default(cuid())
+  name                      String?
+  email                     String?          @unique
+  emailVerified             DateTime?
+  image                     String?
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
 
-  subscriptionTier        SubscriptionTier @default(FREE)
-  emailNotificationsEnabled Boolean        @default(true)
-  stripeCustomerId        String?          @unique
-  stripeSubscriptionId    String?          @unique
-  stripeCurrentPeriodEnd  DateTime?
+  subscriptionTier          SubscriptionTier @default(FREE)
+  emailNotificationsEnabled Boolean          @default(true)
+  stripeCustomerId          String?          @unique
+  stripeSubscriptionId      String?          @unique
+  stripeCurrentPeriodEnd    DateTime?
+  reminderEnabled           Boolean          @default(false)
+  reminderTime              String?
+  reminderTimezone          String?
 
-  reminderEnabled         Boolean          @default(false)
-  reminderTime            String?
-  reminderTimezone        String?
+  xp                        Int              @default(0)
+  level                     Int              @default(1)
+  coins                     Int              @default(0)
+  isPublic                  Boolean          @default(true)
+  hasSeenTour               Boolean          @default(false)
+  language                  String           @default("en")
 
-  xp                      Int              @default(0)
-  level                   Int              @default(1)
-  coins                   Int              @default(0)
-  isPublic                Boolean          @default(true)
-  hasSeenTour             Boolean          @default(false)
-  language                String           @default("en")
+  equippedTheme             String?
+  equippedFrame             String?
 
-  equippedTheme           String?          // ShopItem.id referansı
-  equippedFrame           String?          // ShopItem.id referansı
-
-  accounts              Account[]
-  sessions              Session[]
-  routines              Routine[]
-  routineLogs           RoutineLog[]
-  userItems             UserItem[]
-  userBadges            UserBadge[]
-  pushSubscriptions     PushSubscription[]
+  accounts                  Account[]
+  sessions                  Session[]
+  routines                  Routine[]
+  routineLogs               RoutineLog[]
+  userItems                 UserItem[]
+  userBadges                UserBadge[]
+  pushSubscriptions         PushSubscription[]
 
   // Social
-  sentFollows           Friendship[]    @relation("FollowerRelation")
-  receivedFollows       Friendship[]    @relation("FollowingRelation")
-  sentChallenges        Challenge[]     @relation("ChallengerRelation")
-  receivedChallenges    Challenge[]     @relation("OpponentRelation")
-  challengeLogs         ChallengeLog[]
-  weeklyInsights        WeeklyInsight[]
-  purchases             Purchase[]
-  dailyCoachMessages    DailyCoachMessage[]
+  sentFollows               Friendship[]    @relation("FollowerRelation")
+  receivedFollows           Friendship[]    @relation("FollowingRelation")
+  sentChallenges            Challenge[]     @relation("ChallengerRelation")
+  receivedChallenges        Challenge[]     @relation("OpponentRelation")
+  challengeLogs             ChallengeLog[]
+  weeklyInsights            WeeklyInsight[]
+  purchases                 Purchase[]
+  dailyCoachMessages        DailyCoachMessage[]
 
   // Duels
-  sentDuels             Duel[]          @relation("DuelChallengerRelation")
-  receivedDuels         Duel[]          @relation("DuelOpponentRelation")
-  currentDuelId         String?
-  duelMessages          DuelMessage[]
+  sentDuels                 Duel[]          @relation("DuelChallengerRelation")
+  receivedDuels             Duel[]          @relation("DuelOpponentRelation")
+  currentDuelId             String?
+  duelMessages              DuelMessage[]
 }
 
 model Account {
@@ -139,7 +133,6 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -171,31 +164,28 @@ model Routine {
   category              String               @default("Genel")
   color                 String?              @default("#3b82f6")
   frequency             RoutineFrequency     @default(DAILY)
-  frequencyType         RoutineFrequencyType @default(DAILY)
-  weeklyTarget          Int                  @default(1)
-  daysOfWeek            Int[]                @default([])
-  stackParentId         String?
-  intensity             RoutineIntensity     @default(MEDIUM)
-  estimatedMinutes      Int                  @default(30)
-  imageUrl              String?
-  isGuided              Boolean              @default(false)
-  coachTip              String?
   isActive              Boolean              @default(true)
   sortOrder             Int                  @default(0)
   currentStreak         Int                  @default(0)
   longestStreak         Int                  @default(0)
   lastCompletedAt       DateTime?
+  
+  // --- NIKE ELITE ALANLARI ---
+  intensity             RoutineIntensity     @default(MEDIUM)
+  estimatedMinutes      Int                  @default(0)
+  imageUrl              String?
+  isGuided              Boolean              @default(false)
+  coachTip              String?              @db.Text
+  // ---------------------------
+
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
 
   user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parentRoutine         Routine?             @relation("HabitStacking", fields: [stackParentId], references: [id], onDelete: SetNull)
-  childRoutines         Routine[]            @relation("HabitStacking")
   logs                  RoutineLog[]
 
   @@index([userId])
   @@index([userId, isActive])
-  @@index([stackParentId])
 }
 
 model VerificationToken {
@@ -230,7 +220,6 @@ model Item {
   price       Int
   description String?
   icon        String?
-
   userItems   UserItem[]
 }
 
@@ -348,12 +337,12 @@ model ChallengeLog {
 // ─── AI Weekly Insight Cache ─────────────────────────────────────────────────
 
 model WeeklyInsight {
-  id                 String   @id @default(cuid())
-  userId             String
-  weekKey            String   // "2026-W15" formatında (ISO hafta)
-  locale             String   @default("en")
-  summary            String   @db.Text
-  chartAnalysis      String?  @db.Text
+  id                   String   @id @default(cuid())
+  userId               String
+  weekKey              String   // "2026-W15" formatında (ISO hafta)
+  locale               String   @default("en")
+  summary              String   @db.Text
+  chartAnalysis        String?  @db.Text
   challengeTitle       String?
   challengeDescription String?
   challengeCategory    String?
@@ -361,7 +350,7 @@ model WeeklyInsight {
   challengeProgress    Int      @default(0)
   challengeCompleted   Boolean  @default(false)
   successHighlight     String?
-  createdAt          DateTime @default(now())
+  createdAt            DateTime @default(now())
 
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

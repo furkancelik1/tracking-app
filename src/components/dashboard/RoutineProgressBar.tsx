@@ -1,34 +1,38 @@
-﻿"use client";
+﻿“use client”;
 
-import React from "react";
+import React, { useState, useEffect } from “react”;
 
-import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
-import type { RoutineWithMeta } from "@/hooks/useRoutines";
+import { motion } from “framer-motion”;
+import { useTranslations } from “next-intl”;
+import type { RoutineWithMeta } from “@/hooks/useRoutines”;
 
 type Props = {
   routines: RoutineWithMeta[];
 };
 
-/** BugÃ¼nÃ¼n UTC baÅŸlangÄ±cÄ± ile karÅŸÄ±laÅŸtÄ±r â€” 30 gÃ¼nlÃ¼k loglardan sadece bugÃ¼nkÃ¼leri say */
-function isTodayCompleted(routine: RoutineWithMeta): boolean {
-  const todayUTC = new Date();
-  todayUTC.setUTCHours(0, 0, 0, 0);
-  return routine.logs.some((l) => new Date(l.completedAt) >= todayUTC);
+function isTodayCompleted(routine: RoutineWithMeta, todayISO: string): boolean {
+  return routine.logs.some((l) => l.completedAt >= todayISO);
 }
 
-/** 0-100 arasÄ± yÃ¼zdeyi renk geÃ§iÅŸine Ã§evir: kÄ±rmÄ±zÄ± â†’ turuncu â†’ sarÄ± â†’ yeÅŸil */
 function getProgressColor(pct: number): string {
-  if (pct <= 25) return `hsl(${pct * 1.2}, 85%, 50%)`;       // kÄ±rmÄ±zÄ± â†’ turuncu
-  if (pct <= 50) return `hsl(${30 + (pct - 25) * 0.8}, 85%, 50%)`; // turuncu â†’ sarÄ±
-  if (pct <= 75) return `hsl(${50 + (pct - 50) * 1.2}, 80%, 45%)`; // sarÄ± â†’ yeÅŸil-sarÄ±
-  return `hsl(${80 + (pct - 75) * 1.6}, 75%, 42%)`;            // yeÅŸil-sarÄ± â†’ yeÅŸil
+  if (pct <= 25) return `hsl(${pct * 1.2}, 85%, 50%)`;
+  if (pct <= 50) return `hsl(${30 + (pct - 25) * 0.8}, 85%, 50%)`;
+  if (pct <= 75) return `hsl(${50 + (pct - 50) * 1.2}, 80%, 45%)`;
+  return `hsl(${80 + (pct - 75) * 1.6}, 75%, 42%)`;
 }
 
 export function RoutineProgressBar({ routines }: Props) {
-  const t = useTranslations("dashboard.progressBar");
+  const t = useTranslations(“dashboard.progressBar”);
+  const [todayISO, setTodayISO] = useState<string | null>(null);
+
+  useEffect(() => {
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    setTodayISO(d.toISOString());
+  }, []);
+
   const total = routines.length;
-  const completed = routines.filter(isTodayCompleted).length;
+  const completed = todayISO ? routines.filter((r) => isTodayCompleted(r, todayISO)).length : 0;
   const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
   const color = getProgressColor(pct);
 

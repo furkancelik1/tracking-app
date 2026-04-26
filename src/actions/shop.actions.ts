@@ -8,8 +8,18 @@ import { calculateLevel } from "@/lib/level";
 
 async function requireUser() {
   const session = await getSession();
-  if (!session?.user) throw new Error("Oturum bulunamadÄ±.");
+  if (!session?.user) throw new Error("Oturum bulunamadi.");
   return (session.user as any).id as string;
+}
+
+const STREAK_FREEZE_PRICE = 50;
+
+async function getOwnedFreezesForUser(userId: string): Promise<number> {
+  const rows = await prisma.userItem.findMany({
+    where: { userId, item: { type: "STREAK_FREEZE" }, count: { gt: 0 } },
+    select: { count: true },
+  });
+  return rows.reduce((sum, r) => sum + r.count, 0);
 }
 
 /** DÃ¼kkan Ã¼rÃ¼nlerini getir + kullanÄ±cÄ±nÄ±n coin bakiyesini ve envanterini dÃ¶ndÃ¼r */
@@ -95,6 +105,70 @@ export async function getInventoryCount(type: "STREAK_FREEZE"): Promise<number> 
   return items.reduce((sum, i) => sum + i.count, 0);
 }
 
+/** Streak Freeze satin al (50 coin, atomik islem) */
+export async function buyStreakFreeze(): Promise<{
+  success: boolean;
+  message: string;
+  coins: number;
+  owned: number;
+}> {
+  const userId = await requireUser();
+
+  // Ensure the catalog item exists (upsert by unique name)
+  const item = await prisma.item.upsert({
+    where: { name: "Streak Freeze" },
+    create: {
+      name: "Streak Freeze",
+      type: "STREAK_FREEZE",
+      price: STREAK_FREEZE_PRICE,
+      description: "Prevents streak loss on a missed day.",
+      icon: "shield-check",
+    },
+    update: {},
+  });
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { coins: true },
+  });
+
+  const currentOwned = await getOwnedFreezesForUser(userId);
+
+  if (!user) {
+    return { success: false, message: "USER_NOT_FOUND", coins: 0, owned: currentOwned };
+  }
+  if (user.coins < STREAK_FREEZE_PRICE) {
+    return { success: false, message: "NOT_ENOUGH_COINS", coins: user.coins, owned: currentOwned };
+  }
+
+  const itemId = item.id;
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { coins: { decrement: STREAK_FREEZE_PRICE } },
+    }),
+    prisma.userItem.upsert({
+      where: { userId_itemId: { userId, itemId } },
+      create: { userId, itemId, count: 1 },
+      update: { count: { increment: 1 } },
+    }),
+  ]);
+
+  const [updatedUser, newOwned] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { coins: true } }),
+    getOwnedFreezesForUser(userId),
+  ]);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/marketplace");
+  return {
+    success: true,
+    message: "PURCHASE_SUCCESS",
+    coins: updatedUser?.coins ?? 0,
+    owned: newOwned,
+  };
+}
+
 /** Streak Freeze kullan â€” bir adet dÃ¼ÅŸ */
 export async function useStreakFreeze(userId: string): Promise<boolean> {
   const userItem = await prisma.userItem.findFirst({
@@ -124,7 +198,7 @@ export async function useStreakFreeze(userId: string): Promise<boolean> {
 export async function getMarketplaceItems(category?: ShopItemCategory) {
   const userId = await requireUser();
 
-  const [user, shopItems, purchases] = await Promise.all([
+  const [user, shopItems, purchases, streakFreezeOwned] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { coins: true, xp: true, equippedTheme: true, equippedFrame: true },
@@ -137,6 +211,7 @@ export async function getMarketplaceItems(category?: ShopItemCategory) {
       where: { userId },
       select: { shopItemId: true },
     }),
+    getOwnedFreezesForUser(userId),
   ]);
 
   const ownedIds = new Set(purchases.map((p) => p.shopItemId));
@@ -147,6 +222,8 @@ export async function getMarketplaceItems(category?: ShopItemCategory) {
     userLevel,
     equippedTheme: user?.equippedTheme ?? null,
     equippedFrame: user?.equippedFrame ?? null,
+    streakFreezeOwned,
+    streakFreezePrice: STREAK_FREEZE_PRICE,
     items: shopItems.map((item) => ({
       ...item,
       metadata: item.metadata as Record<string, string> | null,

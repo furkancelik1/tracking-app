@@ -12,6 +12,7 @@ import {
   unequipItem,
 } from "@/actions/shop.actions";
 import { firePurchaseConfetti } from "@/lib/celebrations";
+import { StreakFreezeShop } from "@/components/dashboard/StreakFreezeShop";
 
 type MarketplaceItem = {
   id: string;
@@ -31,6 +32,8 @@ type MarketplaceData = {
   userLevel: number;
   equippedTheme: string | null;
   equippedFrame: string | null;
+  streakFreezeOwned: number;
+  streakFreezePrice: number;
   items: MarketplaceItem[];
 };
 
@@ -203,6 +206,13 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
           </div>
         </div>
       </div>
+
+      {/* Streak Freeze Shop */}
+      <StreakFreezeShop
+        initialCoins={coins}
+        initialOwned={initialData.streakFreezeOwned}
+        price={initialData.streakFreezePrice}
+      />
 
       {/* Tabs */}
       <div className="flex gap-1.5 flex-wrap">

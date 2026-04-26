@@ -275,7 +275,7 @@ export function RoutineCard({
         variant={completed ? "outline" : "default"}
         size="sm"
         className={cn(
-          "w-full gap-2 font-bold uppercase tracking-wide text-xs relative z-[1]",
+          "w-full gap-2 font-bold uppercase tracking-wide text-xs relative z-[1] min-h-[44px]",
           completed
             ? "border-white/15 text-zinc-300 hover:bg-white/5"
             : "bg-[#D6FF00] text-black hover:bg-[#c8f000] border-0"

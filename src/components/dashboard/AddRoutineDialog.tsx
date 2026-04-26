@@ -15,9 +15,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useCreateRoutine } from "@/hooks/useRoutines";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
+import { generateCoachTip } from "@/actions/coach.actions";
+import { Sparkles } from "lucide-react";
 import {
   ICON_MAP,
   ICON_OPTIONS,
@@ -47,6 +49,7 @@ type Props = {
 export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines = [] }: Props) {
   const t = useTranslations("dashboard.addRoutine");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [frequencyType, setFrequencyType] = useState<FrequencyType>("DAILY");
@@ -63,6 +66,25 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
   const [coachTip, setCoachTip] = useState("");
 
   const { mutate: createRoutine, isPending } = useCreateRoutine();
+  const [isGeneratingTip, setIsGeneratingTip] = useState(false);
+
+  async function handleGenerateTip() {
+    if (!title.trim()) {
+      toast.error(locale === "tr" ? "Önce rutin başlığını gir." : "Enter a routine title first.");
+      return;
+    }
+    setIsGeneratingTip(true);
+    try {
+      const result = await generateCoachTip(title.trim(), intensity, locale);
+      if (result.success) {
+        setCoachTip(result.tip);
+      } else {
+        toast.error(result.error);
+      }
+    } finally {
+      setIsGeneratingTip(false);
+    }
+  }
 
   async function handleUpgrade() {
     try {
@@ -238,7 +260,20 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
               {t("guidedLabel")}
             </label>
             <div className="space-y-1.5">
-              <Label htmlFor="routine-coach-tip">{t("coachTipLabel")}</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="routine-coach-tip">{t("coachTipLabel")}</Label>
+                <button
+                  type="button"
+                  onClick={handleGenerateTip}
+                  disabled={atLimit || isGeneratingTip || isPending}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-[#D6FF00]/30 bg-[#D6FF00]/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-[#D6FF00] transition-colors hover:bg-[#D6FF00]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Sparkles className="size-3" />
+                  {isGeneratingTip
+                    ? (locale === "tr" ? "Üretiliyor…" : "Generating…")
+                    : (locale === "tr" ? "AI ile Oluştur" : "Generate with AI")}
+                </button>
+              </div>
               <textarea
                 id="routine-coach-tip"
                 rows={3}

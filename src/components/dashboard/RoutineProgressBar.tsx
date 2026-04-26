@@ -1,10 +1,9 @@
-﻿“use client”;
+"use client";
 
-import React, { useState, useEffect } from “react”;
-
-import { motion } from “framer-motion”;
-import { useTranslations } from “next-intl”;
-import type { RoutineWithMeta } from “@/hooks/useRoutines”;
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
+import type { RoutineWithMeta } from "@/hooks/useRoutines";
 
 type Props = {
   routines: RoutineWithMeta[];
@@ -22,7 +21,7 @@ function getProgressColor(pct: number): string {
 }
 
 export function RoutineProgressBar({ routines }: Props) {
-  const t = useTranslations(“dashboard.progressBar”);
+  const t = useTranslations("dashboard.progressBar");
   const [todayISO, setTodayISO] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,7 +31,9 @@ export function RoutineProgressBar({ routines }: Props) {
   }, []);
 
   const total = routines.length;
-  const completed = todayISO ? routines.filter((r) => isTodayCompleted(r, todayISO)).length : 0;
+  const completed = todayISO
+    ? routines.filter((r) => isTodayCompleted(r, todayISO)).length
+    : 0;
   const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
   const color = getProgressColor(pct);
 
@@ -58,7 +59,6 @@ export function RoutineProgressBar({ routines }: Props) {
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
         />
-        {/* Shimmer efekti */}
         {pct > 0 && (
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full opacity-25"

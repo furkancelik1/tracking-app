@@ -1,6 +1,6 @@
 ﻿import type { SubscriptionTier } from "@/lib/stripe";
 
-// â”€â”€â”€ API Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ API Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â—
 
 export type ApiResponse<T> =
   | { success: true; data: T }
@@ -13,8 +13,7 @@ export type PaginatedResponse<T> = {
   pageSize: number;
 };
 
-// â”€â”€â”€ Session User â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+// â”€â”€â”€ Session User â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â—
 /** User shape exposed in NextAuth session (augmented in next-auth.d.ts) */
 export type SessionUser = {
   id: string;
@@ -23,3 +22,16 @@ export type SessionUser = {
   image: string | null;
   subscriptionTier: SubscriptionTier;
 };
+
+import { CoachTip } from './coach';
+
+export interface ICoach {
+  id: string;
+  name: string;
+}
+
+export interface CoachTip extends ICoach {
+  message: string;
+  seen?: boolean;
+}
+

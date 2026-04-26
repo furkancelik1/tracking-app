@@ -24,22 +24,17 @@ type Props = {
   data: WeeklyChartPoint[];
 };
 
-function useIsMobile() {
+export function WeeklyProgressChart({ data }: Props) {
+  const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
+    setMounted(true);
     const mql = window.matchMedia("(max-width: 767px)");
     setIsMobile(mql.matches);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
   }, []);
-  return isMobile;
-}
-
-export function WeeklyProgressChart({ data }: Props) {
-  const [mounted, setMounted] = useState(false);
-  const isMobile = useIsMobile();
-  useEffect(() => setMounted(true), []);
 
   const safeData = data ?? [];
   const total = safeData.reduce((s, d) => s + (d.completed ?? 0), 0);

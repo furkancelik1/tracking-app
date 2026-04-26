@@ -18,18 +18,6 @@ type Props = {
   total: number;
 };
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 767px)");
-    setIsMobile(mql.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, []);
-  return isMobile;
-}
-
 const NEON_GREEN = "#39FF14";
 
 function getThemeColor() {
@@ -51,22 +39,30 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
   const [isMounted, setIsMounted] = useState(false);
   const [ringColor, setRingColor] = useState(NEON_GREEN);
   const [glowColor, setGlowColor] = useState(`${NEON_GREEN}30`);
-  const isMobile = useIsMobile();
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
     setRingColor(getThemeColor());
     setGlowColor(getThemeGlow());
 
-    const handler = () => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mql.matches);
+    const mobileHandler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", mobileHandler);
+
+    const themeHandler = () => {
       // small delay so ThemeOverlay has time to apply CSS vars
       setTimeout(() => {
         setRingColor(getThemeColor());
         setGlowColor(getThemeGlow());
       }, 80);
     };
-    window.addEventListener("theme-changed", handler);
-    return () => window.removeEventListener("theme-changed", handler);
+    window.addEventListener("theme-changed", themeHandler);
+    return () => {
+      window.removeEventListener("theme-changed", themeHandler);
+      mql.removeEventListener("change", mobileHandler);
+    };
   }, []);
 
   if (!isMounted) {

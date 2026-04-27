@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import Image from "next/image";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
@@ -42,6 +43,7 @@ export function DashboardNav() {
   const [shopOpen, setShopOpen] = useState(false);
   const [badgesOpen, setBadgesOpen] = useState(false);
   const [coins, setCoins] = useState<number | null>(null);
+  const [optimisticDelta, setOptimisticDelta] = useState<number>(0);
 
   const refreshCoins = useCallback(() => {
     getUserCoins().then(setCoins).catch(() => {});
@@ -55,11 +57,35 @@ export function DashboardNav() {
     if (auth.status === "authenticated") refreshCoins();
   }, [auth.status, refreshCoins]);
 
-  // Coin deÄŸiÅŸikliklerini dinle (onboarding, shop, rutin tamamlama vb.)
+  // Coin değişikliklerini dinle (onboarding, shop, rutin tamamlama vb.)
   useEffect(() => {
-    const handler = () => refreshCoins();
+    const handler = () => {
+      // Server confirmed: refresh authoritative coins and clear optimistic delta
+      refreshCoins();
+      setOptimisticDelta(0);
+    };
+    const optHandler = (e: Event) => {
+      const ev = e as CustomEvent;
+      const gain = ev?.detail?.coinGain ?? 0;
+      if (typeof gain === "number" && gain > 0) {
+        setOptimisticDelta((d) => d + gain);
+        toast.success(`+${gain} DP`, { duration: 1200 });
+      }
+    };
+    const rollbackHandler = (_e: Event) => {
+      // Rollback optimistic change, inform user
+      setOptimisticDelta(0);
+      toast.error("Ödül alınamadı, işlem geri alındı.");
+    };
+
     window.addEventListener("coins-updated", handler);
-    return () => window.removeEventListener("coins-updated", handler);
+    window.addEventListener("coins-optimistic", optHandler as EventListener);
+    window.addEventListener("coins-rollback", rollbackHandler as EventListener);
+    return () => {
+      window.removeEventListener("coins-updated", handler);
+      window.removeEventListener("coins-optimistic", optHandler as EventListener);
+      window.removeEventListener("coins-rollback", rollbackHandler as EventListener);
+    };
   }, [refreshCoins]);
 
   if (auth.status !== "authenticated") return null;
@@ -132,7 +158,9 @@ export function DashboardNav() {
               className="hidden text-sm font-semibold tabular-nums sm:inline"
               suppressHydrationWarning
             >
-              {coins !== null ? coins.toLocaleString("en-US") : "—"}
+              {coins !== null
+                ? (coins + optimisticDelta).toLocaleString("en-US")
+                : "—"}
             </span>
           </Button>
           <Button

@@ -32,12 +32,17 @@ function getAtRiskRoutines(
 
 export function StreakAlert({ routines }: Props) {
   const t = useTranslations("dashboard.streakAlert");
+  const [isMounted, setIsMounted] = useState(false);
   const [todayIso, setTodayIso] = useState<string | null>(null);
   useEffect(() => {
+    setIsMounted(true);
     const d = new Date();
     d.setUTCHours(0, 0, 0, 0);
     setTodayIso(d.toISOString());
   }, []);
+
+  // Don't render alert until mounted to avoid SSR/CSR mismatch
+  if (!isMounted) return null;
   const atRisk = useMemo(() => getAtRiskRoutines(routines, todayIso), [routines, todayIso]);
   const atRiskCount = atRisk.length;
   if (atRiskCount === 0) return null;

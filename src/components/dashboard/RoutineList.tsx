@@ -18,6 +18,7 @@ import {
   undoRoutineAction,
   deleteRoutineAction,
 } from "@/actions/routine.actions";
+import { XP_PER_COMPLETION, XP_ALL_DONE_BONUS, COINS_PER_COMPLETION, COINS_ALL_DONE_BONUS } from "@/constants/rewards";
 import { fireAllDoneConfetti, fireLevelUpConfetti, hapticSuccess } from "@/lib/celebrations";
 import { calculateLevel, didLevelUp } from "@/lib/level";
 import { fireDuelToast } from "@/lib/duel-notifications";
@@ -153,6 +154,29 @@ export function RoutineList({ initialRoutines }: Props) {
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
 
+  if (!isMounted) {
+    // Render a server-compatible fallback until client mounts to avoid hydration mismatch.
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="h-6 w-48 bg-muted rounded-md" />
+            <div className="mt-1 h-4 w-64 bg-muted rounded-md" />
+          </div>
+          <div className="w-full sm:w-auto">
+            <div className="h-10 w-32 bg-muted rounded-md ml-auto" />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-56 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const auth = useAuth();
   const isPro = auth.status === "authenticated" && auth.isPro;
   // Guard with isMounted: server and client initial render both see atLimit=false
@@ -186,6 +210,12 @@ export function RoutineList({ initialRoutines }: Props) {
         const allDone = afterToggle.length > 0 && afterToggle.every((r) =>
           r.logs.some((l) => l.completedAt >= todayISO)
         );
+        // Optimistic XP/coin calculation (client-side estimate)
+        const optimisticXp = XP_PER_COMPLETION + (allDone ? XP_ALL_DONE_BONUS : 0);
+        const optimisticCoins = COINS_PER_COMPLETION + (allDone ? COINS_ALL_DONE_BONUS : 0);
+        try {
+          window.dispatchEvent(new CustomEvent("coins-optimistic", { detail: { xpGain: optimisticXp, coinGain: optimisticCoins, routineId: id } }));
+        } catch (e) {}
         if (allDone && !allDoneFiredRef.current) {
           allDoneFiredRef.current = true;
           hapticSuccess();
@@ -195,6 +225,8 @@ export function RoutineList({ initialRoutines }: Props) {
             toast.success(t("allDone"), { duration: 4000 });
           }, 400);
         }
+              // Server confirmed: refresh authoritative coins/xp display
+              window.dispatchEvent(new CustomEvent("coins-updated"));
       } else {
         // Undo resets allDone marker.
         allDoneFiredRef.current = false;
@@ -256,6 +288,10 @@ export function RoutineList({ initialRoutines }: Props) {
           }
         }
       } catch (err) {
+        // Rollback optimistic balance changes
+        try {
+          window.dispatchEvent(new CustomEvent("coins-rollback", { detail: { routineId: id } }));
+        } catch (e) {}
         toast.error(err instanceof Error ? err.message : t("actionFailed"));
         allDoneFiredRef.current = false;
       } finally {

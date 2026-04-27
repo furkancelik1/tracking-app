@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { RoutineWithMeta } from "@/hooks/useRoutines";
@@ -22,8 +23,22 @@ function getProgressColor(pct: number): string {
 
 export function RoutineProgressBar({ routines }: Props) {
   const t = useTranslations("dashboard.progressBar");
+  const [isMounted, setIsMounted] = useState(false);
   const [todayISO, setTodayISO] = useState<string | null>(null);
 
+  useEffect(() => { setIsMounted(true); }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">{t("label")}</span>
+          <span className="font-medium tabular-nums">...</span>
+        </div>
+        <Skeleton className="h-2.5 w-full rounded-full" />
+      </div>
+    );
+  }
   useEffect(() => {
     const d = new Date();
     d.setUTCHours(0, 0, 0, 0);

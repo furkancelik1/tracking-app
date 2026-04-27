@@ -112,6 +112,20 @@ export function RoutineList({ initialRoutines }: Props) {
   // useOptimistic: instant UI, then server truth.
   const [optimisticRoutines, dispatch] = useOptimistic(serverRoutines, optimisticReducer);
 
+  // Derived values from optimistic data (declare hooks before any early return)
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(optimisticRoutines.map((r) => r.category))).sort();
+    return [ALL, ...cats];
+  }, [optimisticRoutines]);
+
+  const filtered = useMemo(
+    () =>
+      activeCategory === ALL
+        ? optimisticRoutines
+        : optimisticRoutines.filter((r) => r.category === activeCategory),
+    [optimisticRoutines, activeCategory]
+  );
+
   // Çevrimdışı kuyruk: sayfa açılışında ve tekrar çevrimiçi olunca senkronize et
   useEffect(() => {
     const run = async () => {
@@ -318,19 +332,7 @@ export function RoutineList({ initialRoutines }: Props) {
   }
 
   // Derived values from optimistic data.
-
-  const categories = useMemo(() => {
-    const cats = Array.from(new Set(optimisticRoutines.map((r) => r.category))).sort();
-    return [ALL, ...cats];
-  }, [optimisticRoutines]);
-
-  const filtered = useMemo(
-    () =>
-      activeCategory === ALL
-        ? optimisticRoutines
-        : optimisticRoutines.filter((r) => r.category === activeCategory),
-    [optimisticRoutines, activeCategory]
-  );
+  // (moved earlier to satisfy hooks ordering)
 
   // Display label for ALL category
   const getCategoryLabel = (cat: string) => cat === ALL ? t("allCategories") : cat;

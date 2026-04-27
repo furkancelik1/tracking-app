@@ -1,5 +1,5 @@
 
-import { SplashScreen } from '../../../components/SplashScreen';
+import { SplashScreen } from '../../../components/ui/SplashScreen';
 
 export default async function DashboardLayout({
   children,

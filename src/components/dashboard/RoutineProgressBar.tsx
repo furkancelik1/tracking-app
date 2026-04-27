@@ -28,6 +28,12 @@ export function RoutineProgressBar({ routines }: Props) {
 
   useEffect(() => { setIsMounted(true); }, []);
 
+  useEffect(() => {
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    setTodayISO(d.toISOString());
+  }, []);
+
   if (!isMounted) {
     return (
       <div className="space-y-2">
@@ -39,11 +45,7 @@ export function RoutineProgressBar({ routines }: Props) {
       </div>
     );
   }
-  useEffect(() => {
-    const d = new Date();
-    d.setUTCHours(0, 0, 0, 0);
-    setTodayISO(d.toISOString());
-  }, []);
+  
 
   const total = routines.length;
   const completed = todayISO

@@ -41,10 +41,11 @@ export function StreakAlert({ routines }: Props) {
     setTodayIso(d.toISOString());
   }, []);
 
-  // Don't render alert until mounted to avoid SSR/CSR mismatch
-  if (!isMounted) return null;
   const atRisk = useMemo(() => getAtRiskRoutines(routines, todayIso), [routines, todayIso]);
   const atRiskCount = atRisk.length;
+
+  // Don't render alert until mounted to avoid SSR/CSR mismatch
+  if (!isMounted) return null;
   if (atRiskCount === 0) return null;
 
   return (

@@ -150,6 +150,8 @@ export function RoutineList({ initialRoutines }: Props) {
   // useTransition wraps async server actions.
   const [, startToggle] = useTransition();
   const [, startDelete] = useTransition();
+  const auth = useAuth();
+  const isPro = auth.status === "authenticated" && auth.isPro;
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
@@ -177,8 +179,6 @@ export function RoutineList({ initialRoutines }: Props) {
     );
   }
 
-  const auth = useAuth();
-  const isPro = auth.status === "authenticated" && auth.isPro;
   // Guard with isMounted: server and client initial render both see atLimit=false
   // to avoid hydration mismatch from useSession() returning status:"loading" on client.
   const atLimit = isMounted && !isPro && serverRoutines.length >= 3;

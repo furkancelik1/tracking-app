@@ -38,7 +38,7 @@ const ROUTINES_KEY = ["routines"] as const;
 async function fetchRoutines(): Promise<RoutineWithMeta[]> {
   const res = await fetch("/api/v1/routines");
   const json: ApiResponse<RoutineWithMeta[]> = await res.json();
-  if (!json.success) throw new Error((json as any).error);
+  if (!json.success) throw new Error(json.error);
   return json.data;
 }
 
@@ -80,7 +80,7 @@ export function useCreateRoutine() {
         body: JSON.stringify(data),
       });
       const json: ApiResponse<RoutineWithMeta> = await res.json();
-      if (!json.success) throw new Error((json as any).error);
+      if (!json.success) throw new Error(json.error);
       return json.data;
     },
     onSuccess: () => {

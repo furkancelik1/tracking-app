@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect } from "react";
+import { memo, useMemo } from "react";
 import {
   PieChart,
   Pie,
@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export type CategorySlice = {
   category: string;
@@ -39,22 +38,21 @@ const COLORS = [
   "#f97316",
 ];
 
-export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  const safeData = data ?? [];
-  const hasData = safeData.length > 0;
-  const total = safeData.reduce((s, d) => s + (d.count ?? 0), 0);
+function CategoryPieChartImpl({ data, rangeDays = 30 }: Props) {
+  const { safeData, total, hasData } = useMemo(() => {
+    const safe = data ?? [];
+    const sum = safe.reduce((s, d) => s + (d.count ?? 0), 0);
+    return { safeData: safe, total: sum, hasData: safe.length > 0 };
+  }, [data]);
 
   return (
     <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm h-full">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle className="text-base">Kategori DaÄŸÄ±lÄ±mÄ±</CardTitle>
+            <CardTitle className="text-base">Kategori Dağılımı</CardTitle>
             <CardDescription className="mt-0.5">
-              Son {rangeDays} gÃ¼nde tamamlamalar
+              Son {rangeDays} günde tamamlamalar
             </CardDescription>
           </div>
           {hasData && (
@@ -68,62 +66,63 @@ export function CategoryPieChart({ data, rangeDays = 30 }: Props) {
       <CardContent>
         {!hasData ? (
           <div className="h-[300px] min-h-[300px] flex items-center justify-center text-sm text-muted-foreground">
-            HenÃ¼z kategori verisi yok
-          </div>
-        ) : !mounted ? (
-          <div style={{ height: "300px", minHeight: "300px", width: "100%" }}>
-            <Skeleton className="h-full w-full rounded-md" />
+            Henüz kategori verisi yok
           </div>
         ) : (
-          <div style={{ height: "300px", minHeight: "300px", width: "100%", touchAction: "manipulation" }}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
-            <PieChart>
-              <Pie
-                data={safeData}
-                dataKey="count"
-                nameKey="category"
-                cx="50%"
-                cy="50%"
-                outerRadius={82}
-                innerRadius={48}
-                paddingAngle={3}
-                label={({ name, value }: { name?: string; value?: number }) =>
-                  `${name ?? ""} (${Math.round(((value ?? 0) / total) * 100)}%)`
-                }
-                labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
-              >
-                {safeData.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                    stroke="hsl(var(--background))"
-                    strokeWidth={2}
-                  />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                  fontSize: "13px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,.15)",
-                }}
-                formatter={(value, name) => [
-                  `${value} (${Math.round((Number(value ?? 0) / total) * 100)}%)`,
-                  String(name),
-                ]}
-              />
-              <Legend
-                wrapperStyle={{ fontSize: "12px" }}
-                iconType="circle"
-                iconSize={8}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <div
+            style={{
+              height: "300px",
+              minHeight: "300px",
+              width: "100%",
+              touchAction: "manipulation",
+            }}
+          >
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
+              <PieChart>
+                <Pie
+                  data={safeData}
+                  dataKey="count"
+                  nameKey="category"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={82}
+                  innerRadius={48}
+                  paddingAngle={3}
+                  label={({ name, value }: { name?: string; value?: number }) =>
+                    `${name ?? ""} (${Math.round(((value ?? 0) / total) * 100)}%)`
+                  }
+                  labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
+                >
+                  {safeData.map((_, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                      stroke="hsl(var(--background))"
+                      strokeWidth={2}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                    fontSize: "13px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,.15)",
+                  }}
+                  formatter={(value, name) => [
+                    `${value} (${Math.round((Number(value ?? 0) / total) * 100)}%)`,
+                    String(name),
+                  ]}
+                />
+                <Legend wrapperStyle={{ fontSize: "12px" }} iconType="circle" iconSize={8} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
+
+export const CategoryPieChart = memo(CategoryPieChartImpl);

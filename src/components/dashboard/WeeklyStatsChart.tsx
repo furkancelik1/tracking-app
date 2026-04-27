@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -28,29 +28,32 @@ type Props = {
   isPro: boolean;
 };
 
-export function WeeklyStatsChart({ data, isPro }: Props) {
+function WeeklyStatsChartImpl({ data, isPro }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const safeData = data ?? [];
-  const totalThisWeek = safeData.reduce((sum, d) => sum + (d.count ?? 0), 0);
-  const bestDay = safeData.reduce(
-    (best, d) => ((d.count ?? 0) > best.count ? d : best),
-    safeData[0] ?? { name: "", count: 0 }
-  );
+  const { safeData, totalThisWeek, bestDay } = useMemo(() => {
+    const safe = data ?? [];
+    const total = safe.reduce((sum, d) => sum + (d.count ?? 0), 0);
+    const seed: DayStat = safe[0] ?? { name: "", count: 0 };
+    const best = safe.reduce(
+      (b, d) => ((d.count ?? 0) > b.count ? d : b),
+      seed
+    );
+    return { safeData: safe, totalThisWeek: total, bestDay: best };
+  }, [data]);
 
   return (
     <Card>
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle className="text-base">HaftalÄ±k Ä°statistikler</CardTitle>
+            <CardTitle className="text-base">Haftalık İstatistikler</CardTitle>
             <CardDescription className="mt-0.5">
-              Son 7 gÃ¼nde tamamlanan rutinler
+              Son 7 günde tamamlanan rutinler
             </CardDescription>
           </div>
 
-          {/* Ã–zet sayÄ±lar â€” sadece PRO */}
           {isPro && totalThisWeek > 0 && (
             <div className="flex gap-5 text-right shrink-0">
               <div>
@@ -59,7 +62,7 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
               </div>
               <div>
                 <p className="text-lg font-semibold tabular-nums">{bestDay.count}</p>
-                <p className="text-xs text-muted-foreground">En iyi gÃ¼n</p>
+                <p className="text-xs text-muted-foreground">En iyi gün</p>
               </div>
             </div>
           )}
@@ -67,7 +70,6 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
       </CardHeader>
 
       <CardContent className="pb-6 relative">
-        {/* Grafik â€” FREE'de blur */}
         <div
           className={cn(
             "transition-[filter]",
@@ -75,94 +77,73 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
           )}
         >
           <div style={{ height: "300px", minHeight: "300px", width: "100%" }}>
-          {!mounted ? (
-            <Skeleton className="h-full w-full rounded-md" />
-          ) : (
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
-            <AreaChart
-              data={safeData}
-              margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="routineGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="hsl(var(--primary))"
-                    stopOpacity={0.25}
+            {!mounted ? (
+              <Skeleton className="h-full w-full rounded-md" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
+                <AreaChart
+                  data={safeData}
+                  margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="routineGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
                   />
-                  <stop
-                    offset="95%"
-                    stopColor="hsl(var(--primary))"
-                    stopOpacity={0}
+                  <YAxis
+                    allowDecimals={false}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                    width={32}
                   />
-                </linearGradient>
-              </defs>
 
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="hsl(var(--border))"
-              />
+                  <Tooltip
+                    cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      fontSize: "13px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,.08)",
+                    }}
+                    labelStyle={{ fontWeight: 600, marginBottom: 2 }}
+                    formatter={(value) => [value ?? 0, "Tamamlanan rutin"]}
+                  />
 
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-              />
-              <YAxis
-                allowDecimals={false}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                width={32}
-              />
-
-              <Tooltip
-                cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                  fontSize: "13px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,.08)",
-                }}
-                labelStyle={{ fontWeight: 600, marginBottom: 2 }}
-                formatter={(value) => [value ?? 0, "Tamamlanan rutin"]}
-              />
-
-              <Area
-                type="monotone"
-                dataKey="count"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                fill="url(#routineGradient)"
-                dot={{
-                  r: 3,
-                  fill: "hsl(var(--primary))",
-                  strokeWidth: 0,
-                }}
-                activeDot={{
-                  r: 5,
-                  fill: "hsl(var(--primary))",
-                  strokeWidth: 0,
-                }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-          )}
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    fill="url(#routineGradient)"
+                    dot={{ r: 3, fill: "hsl(var(--primary))", strokeWidth: 0 }}
+                    activeDot={{ r: 5, fill: "hsl(var(--primary))", strokeWidth: 0 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
-        {/* FREE paywall overlay */}
         {!isPro && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
             <div className="rounded-xl border bg-card/90 backdrop-blur-sm px-6 py-4 text-center shadow-sm space-y-3">
               <p className="text-sm font-medium">
-                GeliÅŸmiÅŸ istatistikler PRO&apos;ya Ã¶zeldir
+                Gelişmiş istatistikler PRO&apos;ya özeldir
               </p>
               <Button size="sm" asChild>
-                <a href="/settings">PRO&apos;ya GeÃ§</a>
+                <a href="/settings">PRO&apos;ya Geç</a>
               </Button>
             </div>
           </div>
@@ -171,3 +152,5 @@ export function WeeklyStatsChart({ data, isPro }: Props) {
     </Card>
   );
 }
+
+export const WeeklyStatsChart = memo(WeeklyStatsChartImpl);

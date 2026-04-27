@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -24,9 +24,10 @@ type Props = {
   data: WeeklyChartPoint[];
 };
 
-export function WeeklyProgressChart({ data }: Props) {
+function WeeklyProgressChartImpl({ data }: Props) {
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     setMounted(true);
     const mql = window.matchMedia("(max-width: 767px)");
@@ -36,22 +37,30 @@ export function WeeklyProgressChart({ data }: Props) {
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  const safeData = data ?? [];
-  const total = safeData.reduce((s, d) => s + (d.completed ?? 0), 0);
-  const bestDay = safeData.reduce(
-    (best, d) => ((d.completed ?? 0) > best.completed ? d : best),
-    safeData[0] ?? { name: "", completed: 0 }
-  );
-  const avg = safeData.length > 0 ? (total / safeData.length).toFixed(1) : "0";
+  const { safeData, total, avg, bestDay } = useMemo(() => {
+    const safe = data ?? [];
+    const sum = safe.reduce((s, d) => s + (d.completed ?? 0), 0);
+    const seed: WeeklyChartPoint = safe[0] ?? ({ name: "", completed: 0 } as WeeklyChartPoint);
+    const peak = safe.reduce(
+      (b, d) => ((d.completed ?? 0) > b.completed ? d : b),
+      seed
+    );
+    return {
+      safeData: safe,
+      total: sum,
+      avg: safe.length > 0 ? (sum / safe.length).toFixed(1) : "0",
+      bestDay: peak,
+    };
+  }, [data]);
 
   return (
     <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle className="text-base">HaftalÄ±k Ä°lerleme</CardTitle>
+            <CardTitle className="text-base">Haftalık İlerleme</CardTitle>
             <CardDescription className="mt-0.5">
-              Son 7 gÃ¼nde tamamlanan rutinler
+              Son 7 günde tamamlanan rutinler
             </CardDescription>
           </div>
           <div className="flex gap-5 text-right shrink-0">
@@ -61,13 +70,11 @@ export function WeeklyProgressChart({ data }: Props) {
             </div>
             <div>
               <p className="text-lg font-semibold tabular-nums">{avg}</p>
-              <p className="text-[11px] text-muted-foreground">Ort/gÃ¼n</p>
+              <p className="text-[11px] text-muted-foreground">Ort/gün</p>
             </div>
             {bestDay.completed > 0 && (
               <div>
-                <p className="text-lg font-semibold tabular-nums">
-                  {bestDay.completed}
-                </p>
+                <p className="text-lg font-semibold tabular-nums">{bestDay.completed}</p>
                 <p className="text-[11px] text-muted-foreground">Zirve</p>
               </div>
             )}
@@ -76,23 +83,21 @@ export function WeeklyProgressChart({ data }: Props) {
       </CardHeader>
 
       <CardContent className="pb-6">
-        <div style={{ height: "300px", minHeight: "300px", width: "100%", touchAction: "manipulation" }}>
+        <div
+          style={{
+            height: "300px",
+            minHeight: "300px",
+            width: "100%",
+            touchAction: "manipulation",
+          }}
+        >
           {!mounted ? (
             <Skeleton className="h-full w-full rounded-md" />
           ) : (
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
-              <AreaChart
-                data={safeData}
-                margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
-              >
+              <AreaChart data={safeData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
                 <defs>
-                  <linearGradient
-                    id="weeklyProgressGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
+                  <linearGradient id="weeklyProgressGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#818cf8" stopOpacity={0.35} />
                     <stop offset="50%" stopColor="#6366f1" stopOpacity={0.15} />
                     <stop offset="100%" stopColor="#4f46e5" stopOpacity={0} />
@@ -111,7 +116,7 @@ export function WeeklyProgressChart({ data }: Props) {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                  tickFormatter={(val: string) => isMobile ? val.charAt(0) : val}
+                  tickFormatter={(val: string) => (isMobile ? val.charAt(0) : val)}
                 />
                 <YAxis
                   allowDecimals={false}
@@ -140,18 +145,8 @@ export function WeeklyProgressChart({ data }: Props) {
                   stroke="#818cf8"
                   strokeWidth={2.5}
                   fill="url(#weeklyProgressGradient)"
-                  dot={{
-                    r: 4,
-                    fill: "#6366f1",
-                    stroke: "#312e81",
-                    strokeWidth: 2,
-                  }}
-                  activeDot={{
-                    r: 6,
-                    fill: "#818cf8",
-                    stroke: "#312e81",
-                    strokeWidth: 2,
-                  }}
+                  dot={{ r: 4, fill: "#6366f1", stroke: "#312e81", strokeWidth: 2 }}
+                  activeDot={{ r: 6, fill: "#818cf8", stroke: "#312e81", strokeWidth: 2 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -161,3 +156,5 @@ export function WeeklyProgressChart({ data }: Props) {
     </Card>
   );
 }
+
+export const WeeklyProgressChart = memo(WeeklyProgressChartImpl);

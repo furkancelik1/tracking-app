@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import React, { useState, useEffect } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import type { DuelEntry } from "@/actions/duel.actions";
 import { Timer, Swords, Coins, Trophy, Flame } from "lucide-react";
+
+const TOTAL_DUEL_DURATION_MS = 24 * 60 * 60 * 1000;
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -33,17 +35,19 @@ function formatTimeLeft(ms: number): { h: number; m: number; s: number } {
 
 function LiveCountdown({ endTimeMs }: { endTimeMs: number }) {
   const t = useTranslations("duel");
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
   }, []);
 
   const ms = Math.max(0, endTimeMs - now);
   const { h, m, s } = formatTimeLeft(ms);
-  const totalDuration = 24 * 60 * 60 * 1000;
-  const progressPct = Math.max(0, Math.min(100, ((totalDuration - ms) / totalDuration) * 100));
+  const progressPct = Math.max(
+    0,
+    Math.min(100, ((TOTAL_DUEL_DURATION_MS - ms) / TOTAL_DUEL_DURATION_MS) * 100)
+  );
 
   if (ms <= 0) {
     return (
@@ -80,7 +84,7 @@ function LiveCountdown({ endTimeMs }: { endTimeMs: number }) {
   );
 }
 
-function PlayerPanel({
+const PlayerPanel = memo(function PlayerPanel({
   player,
   score,
   maxScore,
@@ -112,7 +116,11 @@ function PlayerPanel({
       )}
     >
       {isWinner && (
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -right-2 -top-2">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="absolute -right-2 -top-2"
+        >
           <Trophy className="size-5 text-[#D6FF00]" aria-hidden />
         </motion.div>
       )}
@@ -120,15 +128,23 @@ function PlayerPanel({
       <Avatar
         className={cn(
           "size-14 ring-2",
-          isWinner ? "ring-[#D6FF00]" : isCurrentUser ? "ring-[#D6FF00]/70" : "ring-white/10"
+          isWinner
+            ? "ring-[#D6FF00]"
+            : isCurrentUser
+              ? "ring-[#D6FF00]/70"
+              : "ring-white/10"
         )}
       >
         <AvatarImage src={player.image ?? undefined} alt={player.name ?? "?"} />
-        <AvatarFallback className="text-sm font-semibold">{getInitials(player.name)}</AvatarFallback>
+        <AvatarFallback className="text-sm font-semibold">
+          {getInitials(player.name)}
+        </AvatarFallback>
       </Avatar>
 
       <div className="space-y-0.5 text-center">
-        <p className="max-w-[90px] truncate text-xs font-semibold text-white">{player.name ?? "?"}</p>
+        <p className="max-w-[90px] truncate text-xs font-semibold text-white">
+          {player.name ?? "?"}
+        </p>
         <LevelBadge xp={player.xp} compact />
       </div>
 
@@ -138,7 +154,11 @@ function PlayerPanel({
         animate={{ scale: 1 }}
         className={cn(
           "text-2xl font-black tabular-nums",
-          isWinner ? "text-[#D6FF00]" : isCurrentUser ? "text-[#D6FF00]" : "text-zinc-300"
+          isWinner
+            ? "text-[#D6FF00]"
+            : isCurrentUser
+              ? "text-[#D6FF00]"
+              : "text-zinc-300"
         )}
       >
         {score}
@@ -163,9 +183,9 @@ function PlayerPanel({
       </div>
     </motion.div>
   );
-}
+});
 
-function VsBadge() {
+const VsBadge = memo(function VsBadge() {
   return (
     <motion.div
       initial={{ scale: 0, rotate: -20 }}
@@ -174,11 +194,13 @@ function VsBadge() {
       className="-mx-3 z-10"
     >
       <div className="flex size-12 items-center justify-center rounded-full bg-[#D6FF00] shadow-[0_0_28px_rgba(214,255,0,0.35)]">
-        <span className="text-sm font-black tracking-tighter text-black">VS</span>
+        <span className="text-sm font-black tracking-tighter text-black">
+          VS
+        </span>
       </div>
     </motion.div>
   );
-}
+});
 
 type Props = {
   duel: DuelEntry;
@@ -187,12 +209,22 @@ type Props = {
 export function DuelLiveStatus({ duel }: Props) {
   const t = useTranslations("duel");
 
-  const isActive = duel.status === "ACTIVE";
-  const isFinished = duel.status === "FINISHED";
-  const endTimeMs = duel.endTime ? new Date(duel.endTime).getTime() : 0;
-  const pot = duel.stake * 2;
-
-  const maxScore = Math.max(duel.challengerScore, duel.opponentScore, 1);
+  const { isActive, isFinished, endTimeMs, pot, maxScore } = useMemo(
+    () => ({
+      isActive: duel.status === "ACTIVE",
+      isFinished: duel.status === "FINISHED",
+      endTimeMs: duel.endTime ? new Date(duel.endTime).getTime() : 0,
+      pot: duel.stake * 2,
+      maxScore: Math.max(duel.challengerScore, duel.opponentScore, 1),
+    }),
+    [
+      duel.status,
+      duel.endTime,
+      duel.stake,
+      duel.challengerScore,
+      duel.opponentScore,
+    ]
+  );
 
   if (!duel.opponent) return null;
 
@@ -254,7 +286,9 @@ export function DuelLiveStatus({ duel }: Props) {
         {isActive && endTimeMs > 0 && <LiveCountdown endTimeMs={endTimeMs} />}
 
         {isActive && (
-          <p className="text-center text-[11px] text-zinc-500">{t("completeRoutines")}</p>
+          <p className="text-center text-[11px] text-zinc-500">
+            {t("completeRoutines")}
+          </p>
         )}
       </CardContent>
     </Card>

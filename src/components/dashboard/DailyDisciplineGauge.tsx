@@ -1,16 +1,10 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
 
 type Props = {
   score: number;
@@ -19,51 +13,52 @@ type Props = {
 };
 
 const NEON_GREEN = "#39FF14";
+const DEFAULT_GLOW = `${NEON_GREEN}30`;
 
-function getThemeColor() {
-  const primary = getComputedStyle(document.documentElement)
-    .getPropertyValue("--shop-primary")
-    .trim();
-  return primary || NEON_GREEN;
+function readThemeColor(prop: string, fallback: string): string {
+  if (typeof document === "undefined") return fallback;
+  const v = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+  return v || fallback;
 }
 
-function getThemeGlow() {
-  const glow = getComputedStyle(document.documentElement)
-    .getPropertyValue("--shop-primary-glow")
-    .trim();
-  return glow || `${NEON_GREEN}30`;
-}
-
-export function DailyDisciplineGauge({ score, completed, total }: Props) {
-  const t = useTranslations("gauge");
+function DailyDisciplineGaugeImpl({ score }: Props) {
   const [isMounted, setIsMounted] = useState(false);
   const [ringColor, setRingColor] = useState(NEON_GREEN);
-  const [glowColor, setGlowColor] = useState(`${NEON_GREEN}30`);
+  const [glowColor, setGlowColor] = useState(DEFAULT_GLOW);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-    setRingColor(getThemeColor());
-    setGlowColor(getThemeGlow());
+    setRingColor(readThemeColor("--shop-primary", NEON_GREEN));
+    setGlowColor(readThemeColor("--shop-primary-glow", DEFAULT_GLOW));
 
     const mql = window.matchMedia("(max-width: 767px)");
     setIsMobile(mql.matches);
-    const mobileHandler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener("change", mobileHandler);
+    const onMobileChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", onMobileChange);
 
-    const themeHandler = () => {
-      // small delay so ThemeOverlay has time to apply CSS vars
-      setTimeout(() => {
-        setRingColor(getThemeColor());
-        setGlowColor(getThemeGlow());
+    let pending: number | null = null;
+    const onThemeChanged = () => {
+      if (pending !== null) window.clearTimeout(pending);
+      pending = window.setTimeout(() => {
+        setRingColor(readThemeColor("--shop-primary", NEON_GREEN));
+        setGlowColor(readThemeColor("--shop-primary-glow", DEFAULT_GLOW));
+        pending = null;
       }, 80);
     };
-    window.addEventListener("theme-changed", themeHandler);
+    window.addEventListener("theme-changed", onThemeChanged);
     return () => {
-      window.removeEventListener("theme-changed", themeHandler);
-      mql.removeEventListener("change", mobileHandler);
+      window.removeEventListener("theme-changed", onThemeChanged);
+      mql.removeEventListener("change", onMobileChange);
+      if (pending !== null) window.clearTimeout(pending);
     };
   }, []);
+
+  const data = useMemo(
+    () => [{ name: "score", value: score, fill: ringColor }],
+    [score, ringColor]
+  );
+  const isHot = score >= 80;
 
   if (!isMounted) {
     return (
@@ -77,9 +72,6 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
     );
   }
 
-  const data = [{ name: "score", value: score, fill: ringColor }];
-  const isHot = score >= 80;
-
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.92 }}
@@ -88,13 +80,25 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
     >
       <Card
         className="relative border-zinc-800/50 bg-card/70 backdrop-blur-sm overflow-hidden transition-all duration-500 hover:border-zinc-700/70"
-        style={isHot ? {
-          boxShadow: `0 0 40px ${glowColor}, 0 0 0 1px ${ringColor}30`,
-          borderColor: `${ringColor}30`,
-        } : undefined}
+        style={
+          isHot
+            ? {
+                boxShadow: `0 0 40px ${glowColor}, 0 0 0 1px ${ringColor}30`,
+                borderColor: `${ringColor}30`,
+              }
+            : undefined
+        }
       >
         <CardContent className="relative py-4">
-          <div className="relative mx-auto min-w-0 overflow-hidden" style={{ width: "200px", height: "200px", minHeight: "200px", position: "relative" }}>
+          <div
+            className="relative mx-auto min-w-0 overflow-hidden"
+            style={{
+              width: "200px",
+              height: "200px",
+              minHeight: "200px",
+              position: "relative",
+            }}
+          >
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200} debounce={100}>
               <RadialBarChart
                 cx="50%"
@@ -108,11 +112,7 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
               >
                 <defs>
                   <filter id="neonGaugeGlow">
-                    <feGaussianBlur
-                      in="SourceGraphic"
-                      stdDeviation="3"
-                      result="blur"
-                    />
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
                     <feMerge>
                       <feMergeNode in="blur" />
                       <feMergeNode in="SourceGraphic" />
@@ -131,7 +131,6 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
               </RadialBarChart>
             </ResponsiveContainer>
 
-            {/* Center label */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span
                 className="text-4xl md:text-5xl font-black tabular-nums"
@@ -149,3 +148,5 @@ export function DailyDisciplineGauge({ score, completed, total }: Props) {
     </motion.div>
   );
 }
+
+export const DailyDisciplineGauge = memo(DailyDisciplineGaugeImpl);

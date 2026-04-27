@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -30,21 +30,25 @@ type Props = {
   chartAnalysis?: string | null;
 };
 
-// â”€â”€â”€ Status â†’ Neon Renk Mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+type DotPayload = { date?: string; status?: string };
 
-const STATUS_COLORS: Record<string, string> = {
-  fire: "#22d3ee",  // cyan-400
-  good: "#a78bfa",  // violet-400
-  low: "#fbbf24",   // amber-400
-  miss: "#f87171",  // red-400
+type DotProps = {
+  cx?: number;
+  cy?: number;
+  payload?: DotPayload;
+  onClick?: (p: DotPayload) => void;
 };
 
-// â”€â”€â”€ Custom Dot (Neon Glow) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const STATUS_COLORS: Record<string, string> = {
+  fire: "#22d3ee",
+  good: "#a78bfa",
+  low: "#fbbf24",
+  miss: "#f87171",
+};
 
-function NeonDot(props: any) {
-  const { cx, cy, payload, onClick } = props;
-  if (cx == null || cy == null) return null;
-  const color = STATUS_COLORS[payload.status] ?? "#a78bfa";
+function NeonDot({ cx, cy, payload, onClick }: DotProps) {
+  if (cx == null || cy == null || !payload) return null;
+  const color = STATUS_COLORS[payload.status ?? ""] ?? "#a78bfa";
   return (
     <g onClick={() => onClick?.(payload)} style={{ cursor: "pointer" }}>
       <circle cx={cx} cy={cy} r={10} fill={color} opacity={0.15} />
@@ -54,10 +58,9 @@ function NeonDot(props: any) {
   );
 }
 
-function NeonActiveDot(props: any) {
-  const { cx, cy, payload, onClick } = props;
-  if (cx == null || cy == null) return null;
-  const color = STATUS_COLORS[payload.status] ?? "#a78bfa";
+function NeonActiveDot({ cx, cy, payload, onClick }: DotProps) {
+  if (cx == null || cy == null || !payload) return null;
+  const color = STATUS_COLORS[payload.status ?? ""] ?? "#a78bfa";
   return (
     <g onClick={() => onClick?.(payload)} style={{ cursor: "pointer" }}>
       <circle cx={cx} cy={cy} r={14} fill={color} opacity={0.12} />
@@ -67,9 +70,7 @@ function NeonActiveDot(props: any) {
   );
 }
 
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
+function DisciplineTrendChartImpl({ data, chartAnalysis }: Props) {
   const t = useTranslations("disciplineTrend");
   const [isMounted, setIsMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -84,23 +85,28 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  const handleDotClick = useCallback((payload: any) => {
+  const handleDotClick = useCallback((payload: DotPayload) => {
     setSelectedDate(payload?.date ?? null);
   }, []);
 
-  if (!isMounted) return null;
+  const closeModal = useCallback(() => setSelectedDate(null), []);
 
   const { points, avgScore, trend, streakDays, biggestDrop, biggestSurge } = data;
 
   const TrendIcon =
     trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
 
-  const trendColor =
-    trend === "up"
-      ? "text-emerald-400"
-      : trend === "down"
-      ? "text-red-400"
-      : "text-muted-foreground";
+  const trendColor = useMemo(
+    () =>
+      trend === "up"
+        ? "text-emerald-400"
+        : trend === "down"
+        ? "text-red-400"
+        : "text-muted-foreground",
+    [trend]
+  );
+
+  if (!isMounted) return null;
 
   return (
     <>
@@ -108,12 +114,8 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">
-                {t("title")}
-              </CardTitle>
-              <CardDescription className="text-xs mt-0.5">
-                {t("subtitle")}
-              </CardDescription>
+              <CardTitle className="text-base font-semibold">{t("title")}</CardTitle>
+              <CardDescription className="text-xs mt-0.5">{t("subtitle")}</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className={cn("text-xs", trendColor)}>
@@ -121,10 +123,7 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                 {avgScore}%
               </Badge>
               {streakDays > 0 && (
-                <Badge
-                  variant="outline"
-                  className="text-xs text-cyan-400 border-cyan-500/30"
-                >
+                <Badge variant="outline" className="text-xs text-cyan-400 border-cyan-500/30">
                   {streakDays} {t("streak")}
                 </Badge>
               )}
@@ -146,18 +145,9 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
             }}
           >
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300} debounce={100}>
-              <AreaChart
-                data={points}
-                margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
-              >
+              <AreaChart data={points} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
                 <defs>
-                  <linearGradient
-                    id="neonTrendGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
+                  <linearGradient id="neonTrendGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.35} />
                     <stop offset="35%" stopColor="#a78bfa" stopOpacity={0.15} />
                     <stop offset="100%" stopColor="#7c3aed" stopOpacity={0} />
@@ -175,38 +165,26 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                   dataKey="day"
                   axisLine={false}
                   tickLine={false}
-                  tick={{
-                    fontSize: 12,
-                    fill: "hsl(var(--muted-foreground))",
-                  }}
-                  tickFormatter={(val: string) =>
-                    isMobile ? val.charAt(0) : val
-                  }
+                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                  tickFormatter={(val: string) => (isMobile ? val.charAt(0) : val)}
                 />
                 <YAxis
                   domain={[0, 100]}
                   axisLine={false}
                   tickLine={false}
-                  tick={{
-                    fontSize: 11,
-                    fill: "hsl(var(--muted-foreground))",
-                  }}
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                   tickFormatter={(v: number) => `${v}%`}
                   width={40}
                 />
 
                 <Tooltip
-                  cursor={{
-                    stroke: "rgba(34,211,238,0.25)",
-                    strokeWidth: 1,
-                  }}
+                  cursor={{ stroke: "rgba(34,211,238,0.25)", strokeWidth: 1 }}
                   contentStyle={{
                     background: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "8px",
                     fontSize: "13px",
-                    boxShadow:
-                      "0 0 20px rgba(34,211,238,0.1), 0 4px 16px rgba(0,0,0,.25)",
+                    boxShadow: "0 0 20px rgba(34,211,238,0.1), 0 4px 16px rgba(0,0,0,.25)",
                   }}
                   labelStyle={{ fontWeight: 600, marginBottom: 2 }}
                   formatter={(value) => [`${Number(value)}%`, t("score")]}
@@ -220,15 +198,12 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                   fill="url(#neonTrendGradient)"
                   dot={<NeonDot onClick={handleDotClick} />}
                   activeDot={<NeonActiveDot onClick={handleDotClick} />}
-                  style={{
-                    filter: "drop-shadow(0 0 4px rgba(34,211,238,0.4))",
-                  }}
+                  style={{ filter: "drop-shadow(0 0 4px rgba(34,211,238,0.4))" }}
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Highlight pills */}
           {(biggestDrop || biggestSurge) && (
             <div className="flex flex-wrap gap-2 mt-3">
               {biggestSurge && (
@@ -236,7 +211,7 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                   variant="outline"
                   className="border-emerald-500/30 text-emerald-400 bg-emerald-500/5 text-[11px]"
                 >
-                  ğŸš€ {biggestSurge.from} â†’ {biggestSurge.to} +{biggestSurge.delta}%
+                  🚀 {biggestSurge.from} → {biggestSurge.to} +{biggestSurge.delta}%
                 </Badge>
               )}
               {biggestDrop && (
@@ -244,13 +219,12 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
                   variant="outline"
                   className="border-red-500/30 text-red-400 bg-red-500/5 text-[11px]"
                 >
-                  âš ï¸ {biggestDrop.from} â†’ {biggestDrop.to} {biggestDrop.delta}%
+                  ⚠️ {biggestDrop.from} → {biggestDrop.to} {biggestDrop.delta}%
                 </Badge>
               )}
             </div>
           )}
 
-          {/* AI Chart Analysis */}
           <AnimatePresence>
             {chartAnalysis && (
               <motion.div
@@ -276,11 +250,9 @@ export function DisciplineTrendChart({ data, chartAnalysis }: Props) {
         </CardContent>
       </Card>
 
-      {/* Day Detail Modal */}
-      <DayDetailModal
-        date={selectedDate}
-        onClose={() => setSelectedDate(null)}
-      />
+      <DayDetailModal date={selectedDate} onClose={closeModal} />
     </>
   );
 }
+
+export const DisciplineTrendChart = memo(DisciplineTrendChartImpl);

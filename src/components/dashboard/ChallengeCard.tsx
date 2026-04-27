@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import React, { useState, useTransition } from "react";
+import { memo, useCallback, useMemo, useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ import {
   type ChallengeEntry,
 } from "@/actions/challenge.actions";
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const SPARKLE_COUNT = 4;
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -37,18 +37,14 @@ function getInitials(name: string | null): string {
     .toUpperCase();
 }
 
-// â”€â”€â”€ VS Badge Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function VsBadge() {
+const VsBadge = memo(function VsBadge() {
   return (
     <div className="relative shrink-0">
-      {/* Outer glow ring */}
       <motion.div
         className="absolute inset-0 rounded-full bg-[#D6FF00] blur-md"
         animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }}
         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       />
-      {/* Inner badge */}
       <motion.div
         className="relative h-12 w-12 rounded-full bg-[#D6FF00] flex items-center justify-center shadow-lg shadow-[#D6FF00]/40"
         initial={{ scale: 0, rotate: -180 }}
@@ -65,28 +61,22 @@ function VsBadge() {
       </motion.div>
     </div>
   );
-}
+});
 
-// â”€â”€â”€ Sparkle Effect for Winner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function WinnerSparkle({ children }: { children: React.ReactNode }) {
+const WinnerSparkle = memo(function WinnerSparkle({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="relative">
       {children}
-      {/* Sparkle particles */}
-      {[...Array(4)].map((_, i) => (
+      {Array.from({ length: SPARKLE_COUNT }).map((_, i) => (
         <motion.div
           key={i}
           className="absolute"
-          style={{
-            top: `${15 + i * 20}%`,
-            left: `${10 + i * 25}%`,
-          }}
-          animate={{
-            opacity: [0, 1, 0],
-            scale: [0.5, 1, 0.5],
-            y: [0, -6, 0],
-          }}
+          style={{ top: `${15 + i * 20}%`, left: `${10 + i * 25}%` }}
+          animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5], y: [0, -6, 0] }}
           transition={{
             duration: 1.8,
             repeat: Infinity,
@@ -99,11 +89,9 @@ function WinnerSparkle({ children }: { children: React.ReactNode }) {
       ))}
     </div>
   );
-}
+});
 
-// â”€â”€â”€ Player Side â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function PlayerSide({
+const PlayerSide = memo(function PlayerSide({
   name,
   image,
   score,
@@ -123,31 +111,48 @@ function PlayerSide({
   const t = useTranslations("challenges");
   const isRight = align === "right";
 
+  const avatarBlock = (
+    <div className="relative">
+      <Avatar
+        className={`size-11 ring-2 shadow-md ${
+          isWinner ? "ring-[#D6FF00]" : "ring-white/15"
+        }`}
+      >
+        <AvatarImage src={image ?? undefined} />
+        <AvatarFallback className="text-xs font-semibold">
+          {getInitials(name)}
+        </AvatarFallback>
+      </Avatar>
+      {isWinner && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", delay: 0.5 }}
+          className={`absolute -top-1.5 ${
+            isRight ? "-left-1.5" : "-right-1.5"
+          } rounded-full bg-[#D6FF00] p-0.5`}
+        >
+          <Crown className="size-2.5 text-black" />
+        </motion.div>
+      )}
+    </div>
+  );
+
   const content = (
     <motion.div
       initial={{ opacity: 0, x: isRight ? 30 : -30 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ type: "spring", stiffness: 200, damping: 25, delay: isRight ? 0.15 : 0 }}
-      className={`flex items-center gap-3 flex-1 min-w-0 ${isRight ? "justify-end text-right" : ""}`}
+      transition={{
+        type: "spring",
+        stiffness: 200,
+        damping: 25,
+        delay: isRight ? 0.15 : 0,
+      }}
+      className={`flex items-center gap-3 flex-1 min-w-0 ${
+        isRight ? "justify-end text-right" : ""
+      }`}
     >
-      {!isRight && (
-        <div className="relative">
-          <Avatar className={`size-11 ring-2 shadow-md ${isWinner ? "ring-[#D6FF00]" : "ring-white/15"}`}>
-            <AvatarImage src={image ?? undefined} />
-            <AvatarFallback className="text-xs font-semibold">{getInitials(name)}</AvatarFallback>
-          </Avatar>
-          {isWinner && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", delay: 0.5 }}
-              className="absolute -top-1.5 -right-1.5 rounded-full bg-[#D6FF00] p-0.5"
-            >
-              <Crown className="size-2.5 text-black" />
-            </motion.div>
-          )}
-        </div>
-      )}
+      {!isRight && avatarBlock}
       <div className="min-w-0">
         <p className="text-xs font-medium truncate text-zinc-400">
           {isYou ? t("you") : name}
@@ -162,32 +167,13 @@ function PlayerSide({
           {score}
         </motion.p>
       </div>
-      {isRight && (
-        <div className="relative">
-          <Avatar className={`size-11 ring-2 shadow-md ${isWinner ? "ring-[#D6FF00]" : "ring-white/15"}`}>
-            <AvatarImage src={image ?? undefined} />
-            <AvatarFallback className="text-xs font-semibold">{getInitials(name)}</AvatarFallback>
-          </Avatar>
-          {isWinner && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", delay: 0.5 }}
-              className="absolute -top-1.5 -left-1.5 rounded-full bg-[#D6FF00] p-0.5"
-            >
-              <Crown className="size-2.5 text-black" />
-            </motion.div>
-          )}
-        </div>
-      )}
+      {isRight && avatarBlock}
     </motion.div>
   );
 
   if (isWinner) return <WinnerSparkle>{content}</WinnerSparkle>;
   return content;
-}
-
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+});
 
 type Props = {
   challenge: ChallengeEntry;
@@ -198,31 +184,40 @@ export function ChallengeCard({ challenge }: Props) {
   const [isPending, startTransition] = useTransition();
   const [checkedIn, setCheckedIn] = useState(false);
   const [status, setStatus] = useState(challenge.status);
-  const [challengerCount, setChallengerCount] = useState(challenge.challengerCount);
+  const [challengerCount, setChallengerCount] = useState(
+    challenge.challengerCount
+  );
   const [opponentCount, setOpponentCount] = useState(challenge.opponentCount);
 
-  const isActive = status === "ACTIVE";
-  const isPendingStatus = status === "PENDING";
-  const isCompleted = status === "COMPLETED";
-  const totalDays = challenge.durationDays;
-  const progress = isActive ? ((totalDays - challenge.daysLeft) / totalDays) * 100 : 0;
+  const { isActive, isPendingStatus, isCompleted, totalDays, progress } =
+    useMemo(() => {
+      const total = challenge.durationDays;
+      const active = status === "ACTIVE";
+      return {
+        isActive: active,
+        isPendingStatus: status === "PENDING",
+        isCompleted: status === "COMPLETED",
+        totalDays: total,
+        progress: active ? ((total - challenge.daysLeft) / total) * 100 : 0,
+      };
+    }, [status, challenge.durationDays, challenge.daysLeft]);
 
   const challengerIsWinning = challengerCount > opponentCount;
   const opponentIsWinning = opponentCount > challengerCount;
 
-  const handleAccept = () => {
+  const handleAccept = useCallback(() => {
     startTransition(async () => {
       try {
         await acceptChallengeAction(challenge.id);
         setStatus("ACTIVE");
-        toast.success("âš”ï¸");
+        toast.success("⚔️");
       } catch {
         toast.error("Error");
       }
     });
-  };
+  }, [challenge.id]);
 
-  const handleDecline = () => {
+  const handleDecline = useCallback(() => {
     startTransition(async () => {
       try {
         await declineChallengeAction(challenge.id);
@@ -231,14 +226,13 @@ export function ChallengeCard({ challenge }: Props) {
         toast.error("Error");
       }
     });
-  };
+  }, [challenge.id]);
 
-  const handleCheckIn = () => {
+  const handleCheckIn = useCallback(() => {
     startTransition(async () => {
       try {
         const res = await challengeCheckInAction(challenge.id);
         if (!res.alreadyCheckedIn) {
-          // Update local score
           if (challenge.isChallenger) {
             setChallengerCount((c) => c + 1);
           } else {
@@ -246,14 +240,18 @@ export function ChallengeCard({ challenge }: Props) {
           }
         }
         setCheckedIn(true);
-        if (!res.alreadyCheckedIn) toast.success("âœ…");
+        if (!res.alreadyCheckedIn) toast.success("✅");
       } catch {
         toast.error("Error");
       }
     });
-  };
+  }, [challenge.id, challenge.isChallenger]);
 
   if (status === "DECLINED") return null;
+
+  const youWon =
+    (challenge.isChallenger && challengerIsWinning) ||
+    (!challenge.isChallenger && opponentIsWinning);
 
   return (
     <motion.div
@@ -262,14 +260,9 @@ export function ChallengeCard({ challenge }: Props) {
       transition={{ type: "spring", stiffness: 200, damping: 25 }}
     >
       <Card className="overflow-hidden border border-white/5 shadow-lg bg-gradient-to-b from-zinc-950 to-black">
-        {/* Animated top bar */}
         <motion.div
           className={`h-1 ${
-            isCompleted
-              ? "bg-[#D6FF00]"
-              : isActive
-                ? "bg-[#D6FF00]"
-                : "bg-zinc-700"
+            isCompleted || isActive ? "bg-[#D6FF00]" : "bg-zinc-700"
           }`}
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -278,10 +271,11 @@ export function ChallengeCard({ challenge }: Props) {
         />
 
         <CardContent className="pt-4 pb-5 space-y-4">
-          {/* Header: routine title + status badge */}
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="font-black text-sm text-white">{challenge.routineTitle}</p>
+              <p className="font-black text-sm text-white">
+                {challenge.routineTitle}
+              </p>
               <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1">
                 <Timer className="size-3" />
                 {isActive
@@ -296,19 +290,22 @@ export function ChallengeCard({ challenge }: Props) {
             <Badge
               variant={isActive ? "default" : "secondary"}
               className={
-                isCompleted
+                isCompleted || isActive
                   ? "bg-[#D6FF00]/10 text-[#D6FF00] border-[#D6FF00]/30 gap-1"
-                  : isActive
-                    ? "bg-[#D6FF00]/10 text-[#D6FF00] border-[#D6FF00]/30 gap-1"
-                    : "bg-zinc-900 text-zinc-300 border-white/10"
+                  : "bg-zinc-900 text-zinc-300 border-white/10"
               }
             >
               {isCompleted && <Trophy className="size-3" />}
-              {isActive ? t("active") : isPendingStatus ? t("pendingInvite") : isCompleted ? t("completed") : ""}
+              {isActive
+                ? t("active")
+                : isPendingStatus
+                  ? t("pendingInvite")
+                  : isCompleted
+                    ? t("completed")
+                    : ""}
             </Badge>
           </div>
 
-          {/* â”€â”€ VS Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="flex items-center justify-between gap-2 py-2">
             <PlayerSide
               name={challenge.challenger.name}
@@ -319,9 +316,7 @@ export function ChallengeCard({ challenge }: Props) {
               align="left"
               color="text-[#D6FF00]"
             />
-
             <VsBadge />
-
             <PlayerSide
               name={challenge.opponent.name}
               image={challenge.opponent.image}
@@ -333,14 +328,16 @@ export function ChallengeCard({ challenge }: Props) {
             />
           </div>
 
-          {/* Progress bar */}
           {isActive && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <Progress value={progress} className="h-1.5 bg-zinc-900 [&>div]:bg-[#D6FF00]" />
+              <Progress
+                value={progress}
+                className="h-1.5 bg-zinc-900 [&>div]:bg-[#D6FF00]"
+              />
               <div className="flex justify-between mt-1">
                 <span className="text-[10px] text-zinc-500">
                   {totalDays - challenge.daysLeft}/{totalDays}
@@ -352,34 +349,27 @@ export function ChallengeCard({ challenge }: Props) {
             </motion.div>
           )}
 
-          {/* Winner result message */}
           {isCompleted && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: "spring", delay: 0.2 }}
-              className={`
-                rounded-xl px-4 py-3 text-center text-sm font-semibold
-                ${
-                  challenge.winnerId === null
-                    ? "bg-zinc-500/10 text-zinc-300"
-                    : (challenge.isChallenger && challengerIsWinning) ||
-                        (!challenge.isChallenger && opponentIsWinning)
-                      ? "bg-[#D6FF00]/10 text-[#D6FF00] border border-[#D6FF00]/25"
-                      : "bg-zinc-500/10 text-zinc-400"
-                }
-              `}
+              className={`rounded-xl px-4 py-3 text-center text-sm font-semibold ${
+                challenge.winnerId === null
+                  ? "bg-zinc-500/10 text-zinc-300"
+                  : youWon
+                    ? "bg-[#D6FF00]/10 text-[#D6FF00] border border-[#D6FF00]/25"
+                    : "bg-zinc-500/10 text-zinc-400"
+              }`}
             >
               {challenge.winnerId === null
                 ? t("drawMessage")
-                : (challenge.isChallenger && challengerIsWinning) ||
-                    (!challenge.isChallenger && opponentIsWinning)
+                : youWon
                   ? t("winMessage")
                   : t("lossMessage")}
             </motion.div>
           )}
 
-          {/* Actions */}
           <div className="flex justify-end gap-2">
             {isPendingStatus && !challenge.isChallenger && (
               <>
@@ -392,7 +382,10 @@ export function ChallengeCard({ challenge }: Props) {
                 >
                   {t("decline")}
                 </Button>
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
                   <Button
                     size="sm"
                     onClick={handleAccept}
@@ -406,16 +399,17 @@ export function ChallengeCard({ challenge }: Props) {
               </>
             )}
             {isActive && (
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
                 <Button
                   size="sm"
                   onClick={handleCheckIn}
                   disabled={isPending || checkedIn}
                   variant={checkedIn ? "secondary" : "default"}
                   className={`h-8 text-xs gap-1 ${
-                    !checkedIn
-                      ? "bg-[#D6FF00] text-black hover:bg-[#c8f000]"
-                      : ""
+                    !checkedIn ? "bg-[#D6FF00] text-black hover:bg-[#c8f000]" : ""
                   }`}
                 >
                   {checkedIn ? (

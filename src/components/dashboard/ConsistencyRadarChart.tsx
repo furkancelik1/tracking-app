@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect } from "react";
+import { memo, useMemo } from "react";
 import {
   RadarChart,
   Radar,
@@ -17,7 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { WeekdayPerformance } from "@/lib/analytics";
 import { useTranslations } from "next-intl";
 
@@ -25,46 +24,33 @@ type Props = {
   data: WeekdayPerformance[];
 };
 
-export function ConsistencyRadarChart({ data }: Props) {
-  const [mounted, setMounted] = useState(false);
+function ConsistencyRadarChartImpl({ data }: Props) {
   const t = useTranslations("stats.radar");
 
-  useEffect(() => setMounted(true), []);
-
-  const safeData = data ?? [];
-  const hasData = safeData.some((d) => d.completions > 0);
-
-  // Translate day names
-  const localizedData = safeData.map((d) => ({
-    ...d,
-    day: t(`days.${d.dayIndex}`),
-  }));
+  const { hasData, localizedData } = useMemo(() => {
+    const safe = data ?? [];
+    return {
+      hasData: safe.some((d) => d.completions > 0),
+      localizedData: safe.map((d) => ({ ...d, day: t(`days.${d.dayIndex}`) })),
+    };
+  }, [data, t]);
 
   return (
     <Card className="border-zinc-800/50 bg-card/70 backdrop-blur-sm h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-base">{t("title")}</CardTitle>
-        <CardDescription className="mt-0.5">
-          {t("description")}
-        </CardDescription>
+        <CardDescription className="mt-0.5">{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         {!hasData ? (
           <div className="h-[300px] min-h-[300px] flex items-center justify-center text-sm text-muted-foreground">
             {t("noData")}
           </div>
-        ) : !mounted ? (
-          <div style={{ height: "300px", minHeight: "300px", width: "100%" }}>
-            <Skeleton className="h-full w-full rounded-md" />
-          </div>
         ) : (
           <div style={{ height: "300px", minHeight: "300px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <RadarChart data={localizedData} cx="50%" cy="50%" outerRadius="70%">
-                <PolarGrid
-                  stroke="hsl(var(--border))"
-                  strokeOpacity={0.5}
-                />
+                <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
                 <PolarAngleAxis
                   dataKey="day"
                   tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
@@ -99,3 +85,5 @@ export function ConsistencyRadarChart({ data }: Props) {
     </Card>
   );
 }
+
+export const ConsistencyRadarChart = memo(ConsistencyRadarChartImpl);

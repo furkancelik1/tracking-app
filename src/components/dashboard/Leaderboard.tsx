@@ -1,21 +1,34 @@
-﻿"use client";
+"use client";
 
-import React from "react";
-import { useState, useTransition } from "react";
+import { memo, useCallback, useMemo, useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { LeaderboardEntry, LeaderboardPayload } from "@/actions/leaderboard.actions";
-import { Trophy, Medal, Flame, Crown, Sparkles, Globe, Shield, Zap } from "lucide-react";
+import type {
+  LeaderboardEntry,
+  LeaderboardPayload,
+} from "@/actions/leaderboard.actions";
+import {
+  Trophy,
+  Medal,
+  Flame,
+  Crown,
+  Sparkles,
+  Globe,
+  Shield,
+  Zap,
+} from "lucide-react";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
-import { getAvatarFrame } from "@/lib/level";
-import { getUserLeague } from "@/lib/level";
+import { getAvatarFrame, getUserLeague } from "@/lib/level";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { getLeagueLeaderboard, getGlobalCommunityChallengeAction } from "@/actions/leaderboard.actions";
+import {
+  getLeagueLeaderboard,
+  getGlobalCommunityChallengeAction,
+} from "@/actions/leaderboard.actions";
 
-// â”€â”€â”€ Podium renkleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+type TabKey = "global" | "league" | "challenges";
 
 const PODIUM = [
   { ring: "ring-[#D6FF00]", bg: "bg-[#D6FF00]/15", text: "text-[#D6FF00]", icon: Crown },
@@ -23,7 +36,7 @@ const PODIUM = [
   { ring: "ring-zinc-600", bg: "bg-zinc-600/10", text: "text-zinc-500", icon: Medal },
 ] as const;
 
-const proBadgeClass =
+const PRO_BADGE_CLASS =
   "border border-[#D6FF00]/35 bg-[#D6FF00]/12 text-[#D6FF00] shadow-[inset_0_0_0_1px_rgba(214,255,0,0.08)]";
 
 function getInitials(name: string | null): string {
@@ -41,9 +54,7 @@ function formatXp(xp: number): string {
   return String(xp);
 }
 
-// â”€â”€â”€ Seviye BazlÄ± Avatar Ã‡erÃ§evesi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function FramedAvatar({
+const FramedAvatar = memo(function FramedAvatar({
   xp,
   src,
   fallback,
@@ -56,21 +67,13 @@ function FramedAvatar({
   fallback: string;
   className?: string;
   fallbackClassName?: string;
-  /** Podium gibi Ã¶zel ring sÄ±nÄ±fÄ± kullanmak iÃ§in */
   ringOverride?: string;
 }) {
   const frame = getAvatarFrame(xp);
   const ringClass = ringOverride ?? frame.ring;
 
   const avatar = (
-    <Avatar
-      className={cn(
-        ringClass,
-        frame.glow,
-        "transition-all",
-        className
-      )}
-    >
+    <Avatar className={cn(ringClass, frame.glow, "transition-all", className)}>
       <AvatarImage src={src} alt={fallback} />
       <AvatarFallback className={cn("font-semibold", fallbackClassName)}>
         {fallback}
@@ -89,11 +92,7 @@ function FramedAvatar({
             "0 0 6px 2px rgba(239,68,68,0.15)",
           ],
         }}
-        transition={{
-          duration: 2.5,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
       >
         {avatar}
       </motion.div>
@@ -101,14 +100,17 @@ function FramedAvatar({
   }
 
   return avatar;
-}
+});
 
-// â”€â”€â”€ Podium BileÅŸeni (Top 3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function Podium({ entries }: { entries: LeaderboardEntry[] }) {
+const Podium = memo(function Podium({ entries }: { entries: LeaderboardEntry[] }) {
   const t = useTranslations("common");
-  // SÄ±ralama: 2. | 1. | 3. (gÃ¶rsel podyum dÃ¼zeni)
-  const order = [entries[1], entries[0], entries[2]].filter(Boolean) as LeaderboardEntry[];
+  const order = useMemo(
+    () =>
+      [entries[1], entries[0], entries[2]].filter(
+        (e): e is LeaderboardEntry => Boolean(e)
+      ),
+    [entries]
+  );
   const heights = ["h-28", "h-36", "h-24"];
 
   if (entries.length === 0) return null;
@@ -116,10 +118,11 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
   return (
     <div className="flex items-end justify-center gap-3 sm:gap-6 mb-8">
       {order.map((entry, i) => {
-        const actualRank = entry.rank - 1; // 0-indexed
+        const actualRank = entry.rank - 1;
         const style = PODIUM[actualRank];
         if (!style) return null;
         const Icon = style.icon;
+        const league = getUserLeague(entry.xp);
 
         return (
           <div
@@ -131,7 +134,9 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
                 xp={entry.xp}
                 src={entry.image ?? undefined}
                 fallback={getInitials(entry.name)}
-                className={actualRank === 0 ? "size-16 sm:size-20" : "size-12 sm:size-16"}
+                className={
+                  actualRank === 0 ? "size-16 sm:size-20" : "size-12 sm:size-16"
+                }
                 fallbackClassName="text-sm"
                 ringOverride={cn("ring-2", style.ring)}
               />
@@ -151,7 +156,9 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
               )}
             </p>
             {entry.subscriptionTier === "PRO" && (
-              <Badge className={`${proBadgeClass} gap-0.5 px-1.5 py-0 text-[10px]`}>
+              <Badge
+                className={`${PRO_BADGE_CLASS} gap-0.5 px-1.5 py-0 text-[10px]`}
+              >
                 <Sparkles className="size-2.5" aria-hidden /> PRO
               </Badge>
             )}
@@ -163,9 +170,9 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
             </Badge>
             <Badge
               variant="outline"
-              className={cn("text-[10px]", getUserLeague(entry.xp).badgeClassName)}
+              className={cn("text-[10px]", league.badgeClassName)}
             >
-              {getUserLeague(entry.xp).icon} {getUserLeague(entry.xp).label}
+              {league.icon} {league.label}
             </Badge>
             <LevelBadge xp={entry.xp} compact />
             {entry.currentStreak > 0 && (
@@ -178,82 +185,95 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
       })}
     </div>
   );
-}
+});
 
-// â”€â”€â”€ SÄ±ralama Tablosu (4â€“10) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function RankTable({ entries }: { entries: LeaderboardEntry[] }) {
+const RankTable = memo(function RankTable({
+  entries,
+}: {
+  entries: LeaderboardEntry[];
+}) {
   const t = useTranslations("common");
   if (entries.length === 0) return null;
 
   return (
     <div className="space-y-1.5">
-      {entries.map((entry) => (
-        <div
-          key={entry.id}
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors",
-            entry.isCurrentUser
-              ? "border border-[#D6FF00]/25 bg-[#D6FF00]/5"
-              : entry.subscriptionTier === "PRO"
-                ? "border border-[#D6FF00]/15 bg-black/20 hover:bg-white/[0.03]"
-                : "border border-transparent bg-black/20 hover:bg-white/[0.03]"
-          )}
-        >
-          <span className="w-6 text-center text-sm font-bold tabular-nums text-muted-foreground">
-            {entry.rank}
-          </span>
-          <FramedAvatar
-            xp={entry.xp}
-            src={entry.image ?? undefined}
-            fallback={getInitials(entry.name)}
-            className="size-8"
-            fallbackClassName="text-xs"
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
-              {entry.name ?? t("anonymous")}
-              {entry.isCurrentUser && (
-                <span className="ml-1 text-xs text-[#D6FF00]">{t("you")}</span>
-              )}
-            </p>
-          </div>
-          {entry.subscriptionTier === "PRO" && (
-            <Badge className={`${proBadgeClass} shrink-0 gap-0.5 px-1.5 py-0 text-[10px]`}>
-              <Sparkles className="size-2.5" aria-hidden /> PRO
-            </Badge>
-          )}
-          <Badge
-            variant="outline"
-            className={cn("text-[10px] shrink-0", getUserLeague(entry.xp).badgeClassName)}
+      {entries.map((entry) => {
+        const league = getUserLeague(entry.xp);
+        return (
+          <div
+            key={entry.id}
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors",
+              entry.isCurrentUser
+                ? "border border-[#D6FF00]/25 bg-[#D6FF00]/5"
+                : entry.subscriptionTier === "PRO"
+                  ? "border border-[#D6FF00]/15 bg-black/20 hover:bg-white/[0.03]"
+                  : "border border-transparent bg-black/20 hover:bg-white/[0.03]"
+            )}
           >
-            {getUserLeague(entry.xp).icon} {getUserLeague(entry.xp).label}
-          </Badge>
-          <LevelBadge xp={entry.xp} compact />
-          {entry.currentStreak > 0 && (
-            <span className="flex shrink-0 items-center gap-0.5 text-xs text-[#D6FF00]">
-              <Flame className="size-3" aria-hidden /> {entry.currentStreak}
+            <span className="w-6 text-center text-sm font-bold tabular-nums text-muted-foreground">
+              {entry.rank}
             </span>
-          )}
-          <span className="shrink-0 text-sm font-semibold tabular-nums text-[#D6FF00]">
-            {formatXp(entry.xp)} XP
-          </span>
-        </div>
-      ))}
+            <FramedAvatar
+              xp={entry.xp}
+              src={entry.image ?? undefined}
+              fallback={getInitials(entry.name)}
+              className="size-8"
+              fallbackClassName="text-xs"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                {entry.name ?? t("anonymous")}
+                {entry.isCurrentUser && (
+                  <span className="ml-1 text-xs text-[#D6FF00]">{t("you")}</span>
+                )}
+              </p>
+            </div>
+            {entry.subscriptionTier === "PRO" && (
+              <Badge
+                className={`${PRO_BADGE_CLASS} shrink-0 gap-0.5 px-1.5 py-0 text-[10px]`}
+              >
+                <Sparkles className="size-2.5" aria-hidden /> PRO
+              </Badge>
+            )}
+            <Badge
+              variant="outline"
+              className={cn("text-[10px] shrink-0", league.badgeClassName)}
+            >
+              {league.icon} {league.label}
+            </Badge>
+            <LevelBadge xp={entry.xp} compact />
+            {entry.currentStreak > 0 && (
+              <span className="flex shrink-0 items-center gap-0.5 text-xs text-[#D6FF00]">
+                <Flame className="size-3" aria-hidden /> {entry.currentStreak}
+              </span>
+            )}
+            <span className="shrink-0 text-sm font-semibold tabular-nums text-[#D6FF00]">
+              {formatXp(entry.xp)} XP
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
-}
+});
 
-// â”€â”€â”€ KiÅŸisel Panel (altta sabit) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUsers: number }) {
+const PersonalPanel = memo(function PersonalPanel({
+  entry,
+  totalUsers,
+}: {
+  entry: LeaderboardEntry;
+  totalUsers: number;
+}) {
   const t = useTranslations("common");
   const tLb = useTranslations("leaderboard");
   const league = getUserLeague(entry.xp);
   return (
     <Card className="mt-6 border border-[#D6FF00]/25 bg-zinc-950/90 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
       <CardContent className="flex items-center gap-4 py-4">
-        <span className="text-lg font-black tabular-nums text-[#D6FF00]">#{entry.rank}</span>
+        <span className="text-lg font-black tabular-nums text-[#D6FF00]">
+          #{entry.rank}
+        </span>
         <FramedAvatar
           xp={entry.xp}
           src={entry.image ?? undefined}
@@ -261,28 +281,34 @@ function PersonalPanel({ entry, totalUsers }: { entry: LeaderboardEntry; totalUs
           className="size-10"
         />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate">{entry.name ?? t("anonymous")}</p>
+          <p className="text-sm font-semibold truncate">
+            {entry.name ?? t("anonymous")}
+          </p>
           <p className="text-xs text-muted-foreground">
             {tLb("usersAmong", { rank: entry.rank, total: totalUsers })}
           </p>
-          <Badge variant="outline" className={cn("mt-1 text-[10px]", league.badgeClassName)}>
+          <Badge
+            variant="outline"
+            className={cn("mt-1 text-[10px]", league.badgeClassName)}
+          >
             {league.icon} {league.label} Lig
           </Badge>
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-lg font-bold tabular-nums text-[#D6FF00]">{formatXp(entry.xp)} XP</p>
+          <p className="text-lg font-bold tabular-nums text-[#D6FF00]">
+            {formatXp(entry.xp)} XP
+          </p>
           {entry.currentStreak > 0 && (
             <span className="flex items-center justify-end gap-0.5 text-xs text-[#D6FF00]">
-              <Flame className="size-3" aria-hidden /> {t("dayStreak", { count: entry.currentStreak })}
+              <Flame className="size-3" aria-hidden />{" "}
+              {t("dayStreak", { count: entry.currentStreak })}
             </span>
           )}
         </div>
       </CardContent>
     </Card>
   );
-}
-
-// â”€â”€â”€ Empty State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+});
 
 function LeaderboardEmpty() {
   const t = useTranslations("leaderboard");
@@ -299,7 +325,42 @@ function LeaderboardEmpty() {
   );
 }
 
-// â”€â”€â”€ Ana BileÅŸen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const TAB_ICONS: Record<TabKey, typeof Globe> = {
+  global: Globe,
+  league: Shield,
+  challenges: Zap,
+};
+
+function TabButton({
+  tabKey,
+  label,
+  active,
+  onClick,
+}: {
+  tabKey: TabKey;
+  label: string;
+  active: boolean;
+  onClick: (tab: TabKey) => void;
+}) {
+  const Icon = TAB_ICONS[tabKey];
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(tabKey)}
+      className={cn(
+        "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
+        active
+          ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
+          : "text-zinc-500 hover:text-white"
+      )}
+    >
+      <Icon className="size-4 shrink-0" aria-hidden />
+      {label}
+    </button>
+  );
+}
+
+type ChallengeData = Awaited<ReturnType<typeof getGlobalCommunityChallengeAction>>;
 
 type Props = {
   data: LeaderboardPayload;
@@ -308,13 +369,12 @@ type Props = {
 
 export function Leaderboard({ data, isLoggedIn = false }: Props) {
   const t = useTranslations("leaderboard");
-  const [tab, setTab] = useState<"global" | "league" | "challenges">("global");
+  const [tab, setTab] = useState<TabKey>("global");
   const [leagueData, setLeagueData] = useState<LeaderboardPayload | null>(null);
-  const [challengeData, setChallengeData] = useState<Awaited<
-    ReturnType<typeof getGlobalCommunityChallengeAction>
-  > | null>(null);
+  const [challengeData, setChallengeData] = useState<ChallengeData | null>(null);
   const [isPending, startTransition] = useTransition();
-  const tabLabels = React.useMemo(
+
+  const tabLabels = useMemo(
     () => ({
       global: t("tabs.global"),
       league: t("tabs.league"),
@@ -323,89 +383,71 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
     [t]
   );
 
-  const handleTabChange = (newTab: "global" | "league" | "challenges") => {
-    setTab(newTab);
-    if (newTab === "league" && !leagueData) {
-      startTransition(async () => {
-        try {
-          const result = await getLeagueLeaderboard();
-          setLeagueData(result);
-        } catch {
-          setLeagueData({ topTen: [], currentUser: null, totalUsers: 0 });
-        }
-      });
-    }
-    if (newTab === "challenges" && !challengeData) {
-      startTransition(async () => {
-        try {
-          const c = await getGlobalCommunityChallengeAction();
-          setChallengeData(c);
-        } catch {
-          setChallengeData({
-            target: 10_000,
-            weekCompletions: 0,
-            weekStart: new Date().toISOString(),
-            weekEnd: new Date().toISOString(),
-          });
-        }
-      });
-    }
-  };
+  const handleTabChange = useCallback(
+    (newTab: TabKey) => {
+      setTab(newTab);
+      if (newTab === "league" && !leagueData) {
+        startTransition(async () => {
+          try {
+            setLeagueData(await getLeagueLeaderboard());
+          } catch {
+            setLeagueData({ topTen: [], currentUser: null, totalUsers: 0 });
+          }
+        });
+      }
+      if (newTab === "challenges" && !challengeData) {
+        startTransition(async () => {
+          try {
+            setChallengeData(await getGlobalCommunityChallengeAction());
+          } catch {
+            setChallengeData({
+              target: 10_000,
+              weekCompletions: 0,
+              weekStart: new Date().toISOString(),
+              weekEnd: new Date().toISOString(),
+            });
+          }
+        });
+      }
+    },
+    [leagueData, challengeData]
+  );
 
-  const activeData = tab === "global" ? data : tab === "league" ? leagueData ?? data : data;
+  const activeData =
+    tab === "global" ? data : tab === "league" ? leagueData ?? data : data;
   const { topTen, currentUser, totalUsers } = activeData;
   const challengeProgress = challengeData
-    ? Math.max(0, Math.min(100, (challengeData.weekCompletions / challengeData.target) * 100))
+    ? Math.max(
+        0,
+        Math.min(100, (challengeData.weekCompletions / challengeData.target) * 100)
+      )
     : 0;
 
   return (
     <div>
-      {/* Tab Switcher */}
       {isLoggedIn && (
         <div className="mb-6 flex gap-1 rounded-xl border border-white/5 bg-black/40 p-1">
-          <button
-            type="button"
-            onClick={() => handleTabChange("global")}
-            className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
-              tab === "global"
-                ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
-                : "text-zinc-500 hover:text-white"
-            )}
-          >
-            <Globe className="size-4 shrink-0" aria-hidden />
-            {tabLabels.global}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange("league")}
-            className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
-              tab === "league"
-                ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
-                : "text-zinc-500 hover:text-white"
-            )}
-          >
-            <Shield className="size-4 shrink-0" aria-hidden />
-            {tabLabels.league}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange("challenges")}
-            className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
-              tab === "challenges"
-                ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
-                : "text-zinc-500 hover:text-white"
-            )}
-          >
-            <Zap className="size-4 shrink-0" aria-hidden />
-            {tabLabels.challenges}
-          </button>
+          <TabButton
+            tabKey="global"
+            label={tabLabels.global}
+            active={tab === "global"}
+            onClick={handleTabChange}
+          />
+          <TabButton
+            tabKey="league"
+            label={tabLabels.league}
+            active={tab === "league"}
+            onClick={handleTabChange}
+          />
+          <TabButton
+            tabKey="challenges"
+            label={tabLabels.challenges}
+            active={tab === "challenges"}
+            onClick={handleTabChange}
+          />
         </div>
       )}
 
-      {/* Loading */}
       {isPending && tab !== "challenges" && (
         <div className="flex justify-center py-12">
           <div className="size-6 animate-spin rounded-full border-2 border-[#D6FF00]/30 border-t-[#D6FF00]" />
@@ -417,7 +459,6 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
         </div>
       )}
 
-      {/* Global community challenge */}
       {!isPending && tab === "challenges" && challengeData && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -434,7 +475,9 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
               {t("globalChallengeTitle")}
             </h3>
           </div>
-          <p className="relative z-10 text-sm text-zinc-300">{t("globalChallengeSubtitle")}</p>
+          <p className="relative z-10 text-sm text-zinc-300">
+            {t("globalChallengeSubtitle")}
+          </p>
 
           <motion.p
             key={challengeData.weekCompletions}
@@ -443,7 +486,8 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
             transition={{ duration: 0.55, ease: "easeOut" }}
             className="relative z-10 text-right text-2xl sm:text-3xl font-black tracking-tight text-[#D6FF00] tabular-nums"
           >
-            {challengeData.weekCompletions.toLocaleString()} / {challengeData.target.toLocaleString()}
+            {challengeData.weekCompletions.toLocaleString()} /{" "}
+            {challengeData.target.toLocaleString()}
           </motion.p>
 
           <div className="relative z-10 h-5 w-full rounded-full bg-zinc-900 border border-white/10 overflow-hidden">
@@ -452,7 +496,8 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
               animate={{ width: `${challengeProgress}%` }}
               transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
               style={{
-                boxShadow: "0 0 16px rgba(214,255,0,0.8), 0 0 34px rgba(214,255,0,0.45)",
+                boxShadow:
+                  "0 0 16px rgba(214,255,0,0.8), 0 0 34px rgba(214,255,0,0.45)",
               }}
             />
           </div>
@@ -466,7 +511,6 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
         </motion.div>
       )}
 
-      {/* Rankings */}
       {!isPending && tab !== "challenges" && topTen.length === 0 ? (
         tab === "league" ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -480,7 +524,9 @@ export function Leaderboard({ data, isLoggedIn = false }: Props) {
         <>
           <Podium entries={topTen.slice(0, 3)} />
           <RankTable entries={topTen.slice(3)} />
-          {currentUser && <PersonalPanel entry={currentUser} totalUsers={totalUsers} />}
+          {currentUser && (
+            <PersonalPanel entry={currentUser} totalUsers={totalUsers} />
+          )}
         </>
       ) : null}
     </div>

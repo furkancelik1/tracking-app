@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useCallback, useMemo } from "react";
+import { useSession, signOut as nextAuthSignOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { SubscriptionTier } from "@/lib/stripe";
 
@@ -27,29 +28,30 @@ export function useAuth(): UseAuthReturn {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  if (status === "loading") {
-    return { status: "loading", user: null, isAdmin: false, isPro: false };
-  }
+  const signOut = useCallback(async () => {
+    await nextAuthSignOut({ redirect: false });
+    router.push("/login");
+  }, [router]);
 
-  if (status === "unauthenticated" || !session?.user) {
+  return useMemo<UseAuthReturn>(() => {
+    if (status === "loading") {
+      return { status: "loading", user: null, isAdmin: false, isPro: false };
+    }
+    if (status === "unauthenticated" || !session?.user) {
+      return {
+        status: "unauthenticated",
+        user: null,
+        isAdmin: false,
+        isPro: false,
+      };
+    }
+    const user = session.user as AuthUser;
     return {
-      status: "unauthenticated",
-      user: null,
+      status: "authenticated",
+      user,
       isAdmin: false,
-      isPro: false,
+      isPro: user.subscriptionTier === "PRO",
+      signOut,
     };
-  }
-
-  const user = session.user as AuthUser;
-
-  return {
-    status: "authenticated",
-    user,
-    isAdmin: false,
-    isPro: user.subscriptionTier === "PRO",
-    signOut: async () => {
-      await signOut({ redirect: false });
-      router.push("/login");
-    },
-  };
+  }, [session, status, signOut]);
 }

@@ -23,8 +23,6 @@ export type SessionUser = {
   subscriptionTier: SubscriptionTier;
 };
 
-import { CoachTip } from './coach';
-
 export interface ICoach {
   id: string;
   name: string;

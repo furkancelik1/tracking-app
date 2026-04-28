@@ -107,7 +107,7 @@ export default async function SocialPage({
 
       {/* Connection List — Takip Edilenler */}
       <section>
-        <ConnectionList following={following} />
+        <ConnectionList following={following} friends={friends} />
       </section>
 
       {/* Disiplin Düellosu */}

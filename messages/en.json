@@ -506,7 +506,18 @@
     "rewardLoss": "Better luck next time! You earned {xp} XP as consolation.",
     "rewardWinShort": "Win: +{xp} XP, +{coins} Coins",
     "rewardDrawShort": "Draw: +{xp} XP, +{coins} Coins",
-    "rewardLossShort": "Consolation: +{xp} XP"
+    "rewardLossShort": "Consolation: +{xp} XP",
+    "sentSuccess": "Challenge sent! ⚔️",
+    "daysUnit": "days",
+    "sendError": "Could not send the challenge.",
+    "limitError": "You already have 3 active challenges. Finish one first.",
+    "friendError": "You can only challenge mutual friends.",
+    "acceptedToast": "Challenge accepted! ⚔️",
+    "duelStartedDesc": "duel has started.",
+    "declinedToast": "Challenge declined.",
+    "checkInSuccess": "Checked in! ✅",
+    "alreadyCheckedIn": "Already checked in for today.",
+    "errorToast": "Something went wrong."
   },
   "duel": {
     "title": "Discipline Duel",

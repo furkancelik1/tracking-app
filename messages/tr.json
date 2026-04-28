@@ -506,7 +506,18 @@
     "rewardLoss": "Bir dahaki sefere! Teselli ödülü olarak {xp} XP kazandın.",
     "rewardWinShort": "Galibiyet: +{xp} XP, +{coins} Coin",
     "rewardDrawShort": "Berabere: +{xp} XP, +{coins} Coin",
-    "rewardLossShort": "Teselli: +{xp} XP"
+    "rewardLossShort": "Teselli: +{xp} XP",
+    "sentSuccess": "Düello gönderildi! ⚔️",
+    "daysUnit": "gün",
+    "sendError": "Düello gönderilemedi.",
+    "limitError": "Zaten 3 aktif düellonuz var. Önce birini tamamlayın.",
+    "friendError": "Yalnızca karşılıklı arkadaşlara düello gönderebilirsin.",
+    "acceptedToast": "Düello kabul edildi! ⚔️",
+    "duelStartedDesc": "düellosu başladı.",
+    "declinedToast": "Düello reddedildi.",
+    "checkInSuccess": "Check-in yapıldı! ✅",
+    "alreadyCheckedIn": "Bugün için zaten check-in yaptın.",
+    "errorToast": "Bir hata oluştu."
   },
   "duel": {
     "title": "Disiplin Düellosu",

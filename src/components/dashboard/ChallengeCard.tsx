@@ -210,23 +210,26 @@ export function ChallengeCard({ challenge }: Props) {
       try {
         await acceptChallengeAction(challenge.id);
         setStatus("ACTIVE");
-        toast.success("⚔️");
-      } catch {
-        toast.error("Error");
+        toast.success(t("acceptedToast"), {
+          description: `"${challenge.routineTitle}" ${t("duelStartedDesc")}`,
+        });
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t("errorToast"));
       }
     });
-  }, [challenge.id]);
+  }, [challenge.id, challenge.routineTitle, t]);
 
   const handleDecline = useCallback(() => {
     startTransition(async () => {
       try {
         await declineChallengeAction(challenge.id);
         setStatus("DECLINED");
-      } catch {
-        toast.error("Error");
+        toast(t("declinedToast"));
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t("errorToast"));
       }
     });
-  }, [challenge.id]);
+  }, [challenge.id, t]);
 
   const handleCheckIn = useCallback(() => {
     startTransition(async () => {
@@ -238,14 +241,18 @@ export function ChallengeCard({ challenge }: Props) {
           } else {
             setOpponentCount((c) => c + 1);
           }
+          toast.success(t("checkInSuccess"), {
+            description: `"${challenge.routineTitle}"`,
+          });
+        } else {
+          toast(t("alreadyCheckedIn"));
         }
         setCheckedIn(true);
-        if (!res.alreadyCheckedIn) toast.success("✅");
-      } catch {
-        toast.error("Error");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t("errorToast"));
       }
     });
-  }, [challenge.id, challenge.isChallenger]);
+  }, [challenge.id, challenge.isChallenger, challenge.routineTitle, t]);
 
   if (status === "DECLINED") return null;
 

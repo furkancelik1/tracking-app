@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -71,11 +71,21 @@ export function ChallengeInviteDialog({
           routineTitle: routineTitle.trim(),
           durationDays: Math.min(30, Math.max(1, duration)),
         });
-        toast.success(t("send"));
+        toast.success(t("sentSuccess"), {
+          description: `"${routineTitle.trim()}" — ${duration} ${t("daysUnit")}`,
+        });
         setOpen(false);
         resetForm();
-      } catch {
-        toast.error("Error");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : t("sendError");
+        // Map common server errors to user-friendly messages
+        if (msg.includes("Maximum 3")) {
+          toast.error(t("limitError"));
+        } else if (msg.includes("only challenge friends")) {
+          toast.error(t("friendError"));
+        } else {
+          toast.error(msg);
+        }
       }
     });
   };

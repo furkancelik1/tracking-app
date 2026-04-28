@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,10 +13,12 @@ import {
   Sparkles,
   Users,
   TrendingUp,
+  Swords,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { unfollowAction, type FriendEntry } from "@/actions/social.actions";
+import { ChallengeInviteDialog } from "@/components/dashboard/ChallengeInviteDialog";
 
 function getInitials(name: string | null): string {
   if (!name) return "?";
@@ -52,13 +54,18 @@ const proBadgeClass =
 
 type Props = {
   following: FriendEntry[];
+  /** Mutual friends eligible for challenges (from getFriendsAction) */
+  friends?: FriendEntry[];
 };
 
-export function ConnectionList({ following: initialFollowing }: Props) {
+export function ConnectionList({ following: initialFollowing, friends = [] }: Props) {
   const t = useTranslations("social");
   const tc = useTranslations("common");
   const [isPending, startTransition] = useTransition();
   const [following, setFollowing] = useState(initialFollowing);
+
+  /** Set of friend IDs eligible for challenges (mutual follow or accepted friendship) */
+  const friendIds = new Set(friends.map((f) => f.id));
 
   const handleUnfollow = (targetId: string) => {
     startTransition(async () => {
@@ -154,12 +161,33 @@ export function ConnectionList({ following: initialFollowing }: Props) {
                   </div>
 
                   <LevelBadge xp={user.xp} compact />
+
+                  {/* Challenge button — only shown for mutual friends */}
+                  {friendIds.has(user.id) && (
+                    <ChallengeInviteDialog
+                      friends={friends}
+                      preselectedFriendId={user.id}
+                      preselectedFriendName={user.name}
+                      trigger={
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 gap-1 border-white/15 px-2 text-xs text-zinc-300 touch-manipulation hover:border-[#D6FF00]/40 hover:bg-[#D6FF00]/10 hover:text-[#D6FF00]"
+                          title={t("challenge")}
+                        >
+                          <Swords className="size-3.5" aria-hidden />
+                          <span className="hidden sm:inline">{t("challenge")}</span>
+                        </Button>
+                      }
+                    />
+                  )}
+
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleUnfollow(user.id)}
                     disabled={isPending}
-                    className="h-8 gap-1 px-2 text-xs text-zinc-500 opacity-0 transition-all hover:text-white group-hover:opacity-100"
+                    className="h-8 gap-1 px-2 text-xs text-zinc-500 opacity-60 transition-all hover:text-white group-hover:opacity-100 touch-manipulation"
                   >
                     <UserMinus className="size-3.5" aria-hidden />
                     <span className="hidden sm:inline">{t("unfollow")}</span>

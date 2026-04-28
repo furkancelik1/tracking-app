@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -324,16 +324,17 @@ export function FriendList({
                     </Badge>
                   )}
                   <LevelBadge xp={friend.xp} compact />
-                  <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <div className="flex shrink-0 gap-1">
                     {onChallengeClick && (
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => onChallengeClick(friend.id, friend.name)}
-                        className="h-7 gap-1 border-white/15 text-xs text-zinc-300 hover:border-[#D6FF00]/40 hover:bg-[#D6FF00]/10 hover:text-[#D6FF00]"
+                        className="h-8 gap-1 border-white/15 px-2 text-xs text-zinc-300 touch-manipulation hover:border-[#D6FF00]/40 hover:bg-[#D6FF00]/10 hover:text-[#D6FF00]"
+                        title={t("challenge")}
                       >
-                        <Swords className="size-3" aria-hidden />
-                        {t("challenge")}
+                        <Swords className="size-3.5" aria-hidden />
+                        <span className="hidden sm:inline">{t("challenge")}</span>
                       </Button>
                     )}
                     <Button
@@ -341,9 +342,9 @@ export function FriendList({
                       variant="ghost"
                       onClick={() => handleUnfollow(friend.id)}
                       disabled={isPending}
-                      className="h-7 text-xs text-zinc-500 hover:text-red-400"
+                      className="h-8 px-2 text-xs text-zinc-500 opacity-60 hover:text-red-400 touch-manipulation group-hover:opacity-100"
                     >
-                      <X className="size-3" aria-hidden />
+                      <X className="size-3.5" aria-hidden />
                     </Button>
                   </div>
                 </div>

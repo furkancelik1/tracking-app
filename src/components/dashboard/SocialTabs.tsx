@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -160,7 +160,7 @@ export function SocialTabs({
               type="button"
               onClick={() => setTab(key)}
               className={cn(
-                "flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md px-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wide transition-colors sm:gap-1.5 sm:rounded-lg sm:px-2 sm:text-sm",
+                "flex min-h-[44px] min-w-0 flex-1 items-center justify-center gap-1 rounded-md px-1.5 py-2.5 text-[11px] font-bold uppercase tracking-wide transition-colors touch-manipulation sm:gap-1.5 sm:rounded-lg sm:px-2 sm:text-sm",
                 tab === key
                   ? "bg-[#D6FF00] text-black shadow-[0_0_24px_rgba(214,255,0,0.2)]"
                   : "text-zinc-500 hover:text-white"
@@ -202,9 +202,9 @@ export function SocialTabs({
                         variant="ghost"
                         onClick={() => handleUnfollow(user.id)}
                         disabled={isPending}
-                        className="h-7 text-xs text-zinc-500 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                        className="h-8 w-8 p-0 text-zinc-500 hover:text-red-400 touch-manipulation"
                       >
-                        <X className="size-3" aria-hidden />
+                        <X className="size-3.5" aria-hidden />
                       </Button>
                     }
                   />
@@ -230,7 +230,7 @@ export function SocialTabs({
                         variant="ghost"
                         onClick={() => handleUnfollow(user.id)}
                         disabled={isPending}
-                        className="h-7 text-xs text-zinc-500 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                        className="h-8 px-2 text-xs text-zinc-500 hover:text-red-400 touch-manipulation"
                       >
                         {t("unfollow")}
                       </Button>

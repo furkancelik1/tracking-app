@@ -116,7 +116,7 @@ const Podium = memo(function Podium({ entries }: { entries: LeaderboardEntry[] }
   if (entries.length === 0) return null;
 
   return (
-    <div className="flex items-end justify-center gap-3 sm:gap-6 mb-8">
+    <div className="flex items-end justify-center gap-2 sm:gap-6 mb-8 px-1">
       {order.map((entry, i) => {
         const actualRank = entry.rank - 1;
         const style = PODIUM[actualRank];
@@ -135,7 +135,7 @@ const Podium = memo(function Podium({ entries }: { entries: LeaderboardEntry[] }
                 src={entry.image ?? undefined}
                 fallback={getInitials(entry.name)}
                 className={
-                  actualRank === 0 ? "size-16 sm:size-20" : "size-12 sm:size-16"
+                  actualRank === 0 ? "size-14 sm:size-20" : "size-10 sm:size-16"
                 }
                 fallbackClassName="text-sm"
                 ringOverride={cn("ring-2", style.ring)}
@@ -149,7 +149,7 @@ const Podium = memo(function Podium({ entries }: { entries: LeaderboardEntry[] }
                 <Icon className={cn("size-3.5", style.text)} />
               </span>
             </div>
-            <p className="text-sm font-semibold truncate max-w-[80px] sm:max-w-[120px] text-center">
+            <p className="text-xs sm:text-sm font-semibold truncate max-w-[64px] sm:max-w-[120px] text-center">
               {entry.name ?? t("anonymous")}
               {entry.isCurrentUser && (
                 <span className="ml-1 text-xs text-[#D6FF00]">{t("you")}</span>
@@ -203,7 +203,7 @@ const RankTable = memo(function RankTable({
           <div
             key={entry.id}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors",
+              "flex items-center gap-2 sm:gap-3 rounded-lg px-2 sm:px-4 py-2.5 transition-colors",
               entry.isCurrentUser
                 ? "border border-[#D6FF00]/25 bg-[#D6FF00]/5"
                 : entry.subscriptionTier === "PRO"
@@ -348,7 +348,7 @@ function TabButton({
       type="button"
       onClick={() => onClick(tabKey)}
       className={cn(
-        "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors sm:text-sm",
+        "flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors touch-manipulation sm:text-sm",
         active
           ? "bg-[#D6FF00] text-black shadow-[0_0_20px_rgba(214,255,0,0.2)]"
           : "text-zinc-500 hover:text-white"

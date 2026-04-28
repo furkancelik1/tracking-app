@@ -162,7 +162,7 @@ export default async function LandingPage({
             className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/8 blur-[120px]"
           />
 
-          <div className="relative mx-auto max-w-4xl px-6 py-28 sm:py-36 text-center flex flex-col items-center gap-6">
+          <div className="relative mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-28 md:py-36 text-center flex flex-col items-center gap-6">
             <span className="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-xs font-medium text-muted-foreground shadow-sm">
               {t("hero.badge")}
             </span>
@@ -178,14 +178,14 @@ export default async function LandingPage({
               {t("hero.description")}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 mt-4">
-              <Button asChild size="lg" className="px-8 text-base h-12 shadow-lg shadow-primary/25">
+            <div className="flex flex-col w-full sm:flex-row sm:w-auto gap-3 mt-4">
+              <Button asChild size="lg" className="w-full sm:w-auto px-8 text-base h-12 shadow-lg shadow-primary/25">
                 <LandingDashboardLink>
                   {t("hero.ctaPrimary")}
                   <ArrowRight className="ml-2 size-4" />
                 </LandingDashboardLink>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-12">
+              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12">
                 <a href="#features">{t("hero.ctaSecondary")}</a>
               </Button>
             </div>
@@ -201,7 +201,7 @@ export default async function LandingPage({
           <div className="mx-auto max-w-5xl px-6">
             <div className="relative rounded-xl border bg-card/50 backdrop-blur-sm p-6 sm:p-8 shadow-2xl shadow-primary/5">
               {/* Simulated dashboard mockup */}
-              <div className="grid gap-4 sm:grid-cols-4 mb-6">
+              <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 mb-6">
                 {[
                   { label: locale === "tr" ? "Bugün" : "Today", value: "3/5", color: "text-emerald-500" },
                   { label: locale === "tr" ? "Aktif Seri" : "Streak", value: "14 🔥", color: "text-orange-500" },
@@ -241,7 +241,7 @@ export default async function LandingPage({
                         return (
                           <div
                             key={d}
-                            className={`size-[10px] sm:size-[12px] rounded-[2px] ${cls}`}
+                            className={`size-[7px] sm:size-[10px] md:size-[12px] rounded-[2px] ${cls}`}
                           />
                         );
                       })}

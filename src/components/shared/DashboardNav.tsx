@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
@@ -155,7 +155,7 @@ export function DashboardNav() {
           >
             <Coins className="h-4 w-4 shrink-0" aria-hidden />
             <span
-              className="hidden text-sm font-semibold tabular-nums sm:inline"
+              className="inline text-xs font-semibold tabular-nums sm:text-sm"
               suppressHydrationWarning
             >
               {coins !== null
@@ -172,10 +172,12 @@ export function DashboardNav() {
           >
             <Trophy className="h-4 w-4" aria-hidden />
           </Button>
-          <LanguageSwitcher />
+          <div className="hidden md:block">
+            <LanguageSwitcher />
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative size-8 rounded-full p-0">
+              <Button variant="ghost" className="relative size-10 rounded-full p-0 touch-manipulation">
                 <Avatar className="size-8">
                   <AvatarImage src={auth.user.image ?? undefined} alt={auth.user.name ?? ""} />
                   <AvatarFallback>{initials}</AvatarFallback>

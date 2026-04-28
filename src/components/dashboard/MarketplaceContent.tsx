@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React from 'react';
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -220,7 +220,7 @@ export function MarketplaceContent({ initialData }: { initialData: MarketplaceDa
           <button
             key={value}
             onClick={() => setActiveTab(value)}
-            className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 ${
+            className={`min-h-[44px] text-xs px-3 py-2 rounded-full transition-all duration-200 touch-manipulation ${
               activeTab === value
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -286,7 +286,7 @@ function ItemRow({
 
   return (
     <div
-      className={`flex items-center justify-between py-6 px-2 transition-all duration-300 ${
+      className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between py-5 px-2 transition-all duration-300 ${
         item.equipped ? "neon-item-active theme-surface" : "theme-surface"
       } ${isLocked ? "opacity-60" : ""}`}
     >
@@ -339,13 +339,13 @@ function ItemRow({
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5 max-w-xs">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {item.description}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 flex-shrink-0">
+      <div className="flex items-center gap-4 pl-14 sm:pl-0 sm:flex-shrink-0">
         {!item.owned && !isLocked && (
           <div className="flex items-center gap-1 text-xs">
             <Coins className="h-3.5 w-3.5 text-yellow-500" />
@@ -354,7 +354,7 @@ function ItemRow({
         )}
 
         {!item.owned && isLocked ? (
-          <div className="flex items-center gap-1.5 h-8 px-3 rounded-md bg-muted/50 border border-border/40">
+          <div className="flex items-center gap-1.5 h-9 px-3 rounded-md bg-muted/50 border border-border/40">
             <Lock className="h-3 w-3 text-muted-foreground/60" />
             <span className="text-[11px] text-muted-foreground/70 font-medium whitespace-nowrap">
               Lv. {item.minLevel}+
@@ -366,7 +366,7 @@ function ItemRow({
             variant={coins >= item.price ? "default" : "outline"}
             disabled={coins < item.price || isActioning}
             onClick={onBuy}
-            className="h-8 text-xs px-4 min-w-[72px]"
+            className="h-9 text-xs px-4 min-w-[80px] touch-manipulation"
           >
             {isActioning ? <Loader2 className="h-3 w-3 animate-spin" /> : tShop("buy")}
           </Button>
@@ -378,7 +378,7 @@ function ItemRow({
             variant="ghost"
             disabled={isActioning}
             onClick={onUnequip}
-            className="h-8 text-xs px-4 text-muted-foreground min-w-[72px]"
+            className="h-9 text-xs px-4 text-muted-foreground min-w-[80px] touch-manipulation"
           >
             {isActioning ? <Loader2 className="h-3 w-3 animate-spin" /> : t("unequip")}
           </Button>
@@ -388,7 +388,7 @@ function ItemRow({
             variant="outline"
             disabled={isActioning}
             onClick={onEquip}
-            className="h-8 text-xs px-4 min-w-[72px]"
+            className="h-9 text-xs px-4 min-w-[80px] touch-manipulation"
           >
             {isActioning ? <Loader2 className="h-3 w-3 animate-spin" /> : t("equip")}
           </Button>

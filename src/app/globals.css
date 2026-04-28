@@ -51,7 +51,8 @@
     --secondary: 240 4% 13%;
     --secondary-foreground: 210 20% 96%;
     --muted: 240 4% 13%;
-    --muted-foreground: 240 5% 65%; /* #a1a1aa */
+    --muted-foreground: 240 5% 65%;
+    /* #a1a1aa */
     --accent: 240 4% 13%;
     --accent-foreground: 210 20% 96%;
 
@@ -59,7 +60,8 @@
     --destructive-foreground: 210 40% 98%;
 
     /* Subtle light-break borders/inputs */
-    --border: 240 5% 16%; /* #27272a */
+    --border: 240 5% 16%;
+    /* #27272a */
     --input: 240 5% 16%;
     --ring: 212 92% 65%;
 
@@ -78,25 +80,44 @@
 @layer base {
   html {
     overflow-x: clip;
+    scroll-behavior: smooth;
+    /* Prevent font size inflation on orientation change */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
+
+  /* Prevent horizontal overflow globally */
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(
-      circle at top,
-      hsl(var(--accent-blue) / 0.06),
-      transparent 42%
-    );
+    background-image: radial-gradient(circle at top,
+        hsl(var(--accent-blue) / 0.06),
+        transparent 42%);
   }
 
   .dark body {
-    background-image: radial-gradient(
-      circle at 50% -10%,
-      hsl(var(--volt) / 0.12),
-      transparent 45%
-    );
+    background-image: radial-gradient(circle at 50% -10%,
+        hsl(var(--volt) / 0.12),
+        transparent 45%);
+  }
+
+  /* Touch target optimizations — applied to all interactive elements */
+  button,
+  a,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   .font-display {
@@ -107,6 +128,36 @@
 }
 
 @layer components {
+  /* ─── Mobile Scroll Container ──────────────────────────────────────────── */
+  /* Wrap tables or wide content in this for mobile swipe-to-scroll */
+  .scroll-x-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .scroll-x-container::-webkit-scrollbar {
+    display: none;
+    /* Chrome / Safari */
+  }
+
+  /* ─── Safe Bottom Padding ───────────────────────────────────────────────── */
+  /* Use on pages with BottomNav — adds inset-bottom padding */
+  .pb-safe {
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+
+  /* ─── Minimum Touch Target ─────────────────────────────────────────────── */
+  /* Ensures WCAG 2.5.5 minimum 44×44px touch area */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .glass-card {
     background: hsl(var(--card) / 0.62);
     backdrop-filter: blur(var(--glass-blur));
@@ -201,11 +252,9 @@
 
 /* Body radial tint follows theme when active */
 [data-shop-theme="true"] body {
-  background-image: radial-gradient(
-    circle at top,
-    var(--shop-primary-glow, transparent),
-    transparent 42%
-  );
+  background-image: radial-gradient(circle at top,
+      var(--shop-primary-glow, transparent),
+      transparent 42%);
 }
 
 /* ─── Background Patterns ────────────────────────────────────────────────────
@@ -214,11 +263,9 @@
 ────────────────────────────────────────────────────────────────────────────── */
 
 [data-bg-pattern="dots"] main {
-  background-image: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.045) 1px,
-    transparent 1px
-  );
+  background-image: radial-gradient(circle,
+      rgba(255, 255, 255, 0.045) 1px,
+      transparent 1px);
   background-size: 22px 22px;
 }
 
@@ -230,11 +277,9 @@
 }
 
 [data-bg-pattern="lines"] main {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 9px,
-    rgba(255, 255, 255, 0.025) 9px,
-    rgba(255, 255, 255, 0.025) 10px
-  );
+  background-image: repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 9px,
+      rgba(255, 255, 255, 0.025) 9px,
+      rgba(255, 255, 255, 0.025) 10px);
 }

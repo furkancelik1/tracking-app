@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -145,7 +145,7 @@ export function RoutineCard({
           aria-expanded={hasTip ? expanded : undefined}
         >
           {routine.imageUrl ? (
-            <div className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl ring-2 ring-white/10">
+            <div className="relative size-14 sm:size-[4.5rem] shrink-0 overflow-hidden rounded-xl ring-2 ring-white/10">
               <Image
                 src={routine.imageUrl}
                 alt={routine.title}
@@ -157,14 +157,14 @@ export function RoutineCard({
             </div>
           ) : (
             <div
-              className="flex size-[4.5rem] shrink-0 items-center justify-center rounded-xl ring-2 ring-white/10"
+              className="flex size-14 sm:size-[4.5rem] shrink-0 items-center justify-center rounded-xl ring-2 ring-white/10"
               style={{
                 backgroundColor: `${iconColor}18`,
                 color: iconColor,
                 boxShadow: `0 0 32px ${iconColor}22`,
               }}
             >
-              {Icon ? <Icon className="size-9 scale-110" strokeWidth={2.25} /> : <Check className="size-9" />}
+              {Icon ? <Icon className="size-8 sm:size-9 scale-110" strokeWidth={2.25} /> : <Check className="size-8 sm:size-9" />}
             </div>
           )}
 
@@ -209,7 +209,7 @@ export function RoutineCard({
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400"
+              className="size-10 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity text-zinc-400 touch-manipulation"
             >
               <MoreVertical className="size-4" />
             </Button>

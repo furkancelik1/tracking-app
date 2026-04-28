@@ -16,10 +16,10 @@ export function PageTransition({ children }: Props) {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={pathname}
-        initial={{ opacity: 0, y: 28 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 16 }}
-        transition={{ type: "spring", stiffness: 200, damping: 26, mass: 0.75 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.28, ease: "easeInOut" }}
         className="min-h-[50vh]"
       >
         {children}

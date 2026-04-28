@@ -32,7 +32,8 @@ export async function flushPendingRoutineLogs(options?: {
 
   for (const item of pending) {
     try {
-      await completeRoutineAction(item.routineId, item.note ?? undefined);
+      const tz = typeof window !== "undefined" ? new Date().getTimezoneOffset() : undefined;
+      await completeRoutineAction(item.routineId, item.note ?? undefined, tz);
       await removePendingRoutineLog(item.id);
       synced++;
       options?.onProgress?.(item, "ok");

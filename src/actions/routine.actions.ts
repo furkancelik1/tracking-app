@@ -6,6 +6,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { useStreakFreeze } from "@/actions/shop.actions";
 import { checkBadges } from "@/actions/badge.actions";
 import { updateChallengeScoresFromLog } from "@/actions/challenge.actions";
+import { sendPushToUserAction } from "@/actions/push.actions";
 import { updateAIChallengeProgress } from "@/actions/ai.actions";
 import { updateDuelScore } from "@/actions/duel.actions";
 import { calculateLevel } from "@/lib/level";
@@ -128,7 +129,8 @@ export async function createRoutineAction(input: {
  */
 export async function completeRoutineAction(
   routineId: string,
-  note?: string
+  note?: string,
+  timezoneOffsetMinutes?: number
 ): Promise<{ xpGain: number; totalXp: number; coinGain: number; totalCoins: number; newBadges: string[]; duelScoreUpdated: boolean; duelOpponentName: string | null }> {
   const userId = await requireUser();
 
@@ -223,7 +225,7 @@ export async function completeRoutineAction(
     const newBadges = await checkBadges(userId);
 
     // Aktif dÃ¼ellolarda skor gÃ¼ncelle
-    await updateChallengeScoresFromLog(userId, routine.title).catch(() => {});
+    await updateChallengeScoresFromLog(userId, routine.title, timezoneOffsetMinutes).catch(() => {});
 
     // Disiplin dÃ¼ellosu skor gÃ¼ncelle
     const duelResult = await updateDuelScore(userId).catch(() => ({
@@ -335,7 +337,7 @@ export async function deleteRoutineAction(routineId: string): Promise<void> {
   try {
     const routine = await prisma.routine.findFirst({
       where: { id: routineId, userId, isActive: true },
-      select: { id: true },
+      select: { id: true, title: true },
     });
     if (!routine) throw new Error("Rutin bulunamadÄ±.");
 
@@ -343,6 +345,34 @@ export async function deleteRoutineAction(routineId: string): Promise<void> {
       where: { id: routineId },
       data: { isActive: false },
     });
+
+    // If this routine was participating in any ACTIVE challenges, cancel them.
+    // We choose to cancel (mark as CANCELLED) rather than auto-award to avoid
+    // surprising payouts. Product can change to forfeit-on-delete if desired.
+    try {
+      const affected = await prisma.challenge.findMany({
+        where: {
+          status: "ACTIVE",
+          routineTitle: { equals: routine!.title, mode: "insensitive" },
+          OR: [{ challengerId: userId }, { opponentId: userId }],
+        },
+        select: { id: true, challengerId: true, opponentId: true },
+      });
+
+      for (const ch of affected) {
+        await prisma.challenge.update({ where: { id: ch.id }, data: { status: "CANCELLED" } });
+        const otherId = ch.challengerId === userId ? ch.opponentId : ch.challengerId;
+        // notify opponent about cancellation
+        await sendPushToUserAction(otherId, {
+          title: "Düello İptal Edildi",
+          body: "Rakibin rutini sildi; düello iptal edildi.",
+          url: "/social",
+          tag: `challenge-cancel-${ch.id}`,
+        }).catch(() => {});
+      }
+    } catch (e) {
+      // non-fatal
+    }
 
     revalidatePath("/dashboard");
   } catch (error) {

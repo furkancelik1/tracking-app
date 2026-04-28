@@ -234,7 +234,8 @@ export function ChallengeCard({ challenge }: Props) {
   const handleCheckIn = useCallback(() => {
     startTransition(async () => {
       try {
-        const res = await challengeCheckInAction(challenge.id);
+        const tz = typeof window !== "undefined" ? new Date().getTimezoneOffset() : undefined;
+        const res = await challengeCheckInAction(challenge.id, tz);
         if (!res.alreadyCheckedIn) {
           if (challenge.isChallenger) {
             setChallengerCount((c) => c + 1);

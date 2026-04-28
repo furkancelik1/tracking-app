@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -19,7 +19,8 @@ import Image from "next/image";
 
 function getTodayISO(): string {
   const d = new Date();
-  d.setUTCHours(0, 0, 0, 0);
+  // use local midnight so optimistic UI aligns with user's local "today"
+  d.setHours(0, 0, 0, 0);
   return d.toISOString();
 }
 

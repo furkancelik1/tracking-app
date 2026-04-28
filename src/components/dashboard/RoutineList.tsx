@@ -62,7 +62,8 @@ type OptimisticAction =
 
 function todayISO(): string {
   const d = new Date();
-  d.setUTCHours(0, 0, 0, 0);
+  // use local midnight for client-side checks so UI matches user's local day
+  d.setHours(0, 0, 0, 0);
   return d.toISOString();
 }
 
@@ -267,7 +268,8 @@ export function RoutineList({ initialRoutines }: Props) {
             return;
           }
 
-          const result = await completeRoutineAction(id, note);
+          const tz = typeof window !== "undefined" ? new Date().getTimezoneOffset() : undefined;
+          const result = await completeRoutineAction(id, note, tz);
           playComplete();
           const leveled =
             !!result && didLevelUp(result.totalXp - result.xpGain, result.totalXp);

@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/auth";
 import { getSession } from "@/lib/auth";
 import { sendPushToUserAction } from "@/actions/push.actions";
 import { getISOWeek, getISOWeekYear } from "date-fns";
-import { unstable_cache } from "next/cache";
+import { unstable_cache, revalidateTag } from "next/cache";
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -136,7 +136,7 @@ export async function declineChallengeAction(challengeId: string) {
 
 // â”€â”€â”€ GÃ¼nlÃ¼k Check-in â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-export async function challengeCheckInAction(challengeId: string) {
+export async function challengeCheckInAction(challengeId: string, timezoneOffsetMinutes?: number) {
   const session = await requireAuth();
   const userId = (session.user as any).id as string;
 
@@ -155,13 +155,34 @@ export async function challengeCheckInAction(challengeId: string) {
   // UTC gün sınırı — timezone-safe ve race-condition-safe.
   // completedAt = todayStart kullanarak mevcut @@unique([challengeId, userId, completedAt])
   // kısıtlamasına güveniriz. İki eş zamanlı istek olursa DB P2002 fırlatır.
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
+  // Compute day boundary. If client provides timezone offset (minutes, as from
+  // `new Date().getTimezoneOffset()`), interpret day based on that local timezone.
+  // Otherwise fall back to UTC-midnight (server-local canonical day).
+  let todayStart: Date;
+  if (typeof timezoneOffsetMinutes === "number") {
+    const now = new Date();
+    const offset = timezoneOffsetMinutes; // as returned by getTimezoneOffset()
+    // localNow's UTC fields represent the user's local date/time
+    const localNow = new Date(now.getTime() - offset * 60000);
+    const y = localNow.getUTCFullYear();
+    const m = localNow.getUTCMonth();
+    const d = localNow.getUTCDate();
+    // local midnight in UTC = Date.UTC(localY,localM,localD) + offset_minutes
+    const localMidnightUtcMs = Date.UTC(y, m, d, 0, 0, 0, 0) + offset * 60000;
+    todayStart = new Date(localMidnightUtcMs);
+  } else {
+    todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+  }
 
   try {
     await prisma.challengeLog.create({
       data: { challengeId, userId, completedAt: todayStart },
     });
+    // Invalidate leaderboard cache so UIs reflect the new check-in immediately
+    try {
+      revalidateTag("challenge-leaderboard");
+    } catch (e) {}
     return { alreadyCheckedIn: false };
   } catch (err: unknown) {
     // P2002 = unique constraint violation → zaten check-in yapılmış
@@ -295,32 +316,39 @@ export async function distributeChallengeRewards(
   });
 
   for (const c of expired) {
-    const challengerCount = c.logs.filter((l) => l.userId === c.challengerId).length;
-    const opponentCount = c.logs.filter((l) => l.userId === c.opponentId).length;
-
     let winnerId: string | null = null;
     let loserId: string | null = null;
-    const isDraw = challengerCount === opponentCount;
-
-    if (!isDraw) {
-      winnerId = challengerCount > opponentCount ? c.challengerId : c.opponentId;
-      loserId = winnerId === c.challengerId ? c.opponentId : c.challengerId;
-    }
+    let isDraw = false;
 
     try {
-      // Atomik transaction: durum + ödüller aynı anda
-      // updateMany ile atomik "check-and-claim" — Read Committed altında güvenli.
-      // İki eş zamanlı transaction'dan yalnızca biri count=1 alır; diğeri count=0 → erken çıkar.
+      // Atomik transaction: check-and-claim + recount logs inside the same tx
       await prisma.$transaction(async (tx) => {
         const claim = await tx.challenge.updateMany({
           where: { id: c.id, rewardDistributed: false, status: "ACTIVE" },
-          data: { status: "COMPLETED", winnerId, rewardDistributed: true },
+          data: { status: "COMPLETED", rewardDistributed: true },
         });
         // count=0 → başka bir transaction önce işledi, çift ödül engellendi
         if (claim.count === 0) return;
 
-        if (isDraw) {
-          // Berabere: her iki taraf 40 XP + 20 Coin
+        // Re-count logs inside transaction to avoid TOCTOU issues
+        const challengerCount = await tx.challengeLog.count({ where: { challengeId: c.id, userId: c.challengerId } });
+        const opponentCount = await tx.challengeLog.count({ where: { challengeId: c.id, userId: c.opponentId } });
+
+        isDraw = challengerCount === opponentCount;
+        if (!isDraw) {
+          winnerId = challengerCount > opponentCount ? c.challengerId : c.opponentId;
+          loserId = winnerId === c.challengerId ? c.opponentId : c.challengerId;
+          // Update winner + loser
+          await tx.user.update({
+            where: { id: winnerId! },
+            data: { xp: { increment: REWARD_WIN.xp }, coins: { increment: REWARD_WIN.coins } },
+          });
+          await tx.user.update({
+            where: { id: loserId! },
+            data: { xp: { increment: REWARD_LOSS.xp } },
+          });
+        } else {
+          // Draw: both get draw rewards
           await tx.user.update({
             where: { id: c.challengerId },
             data: { xp: { increment: REWARD_DRAW.xp }, coins: { increment: REWARD_DRAW.coins } },
@@ -329,19 +357,12 @@ export async function distributeChallengeRewards(
             where: { id: c.opponentId },
             data: { xp: { increment: REWARD_DRAW.xp }, coins: { increment: REWARD_DRAW.coins } },
           });
-        } else {
-          // Kazanan: 100 XP + 50 Coin
-          await tx.user.update({
-            where: { id: winnerId! },
-            data: { xp: { increment: REWARD_WIN.xp }, coins: { increment: REWARD_WIN.coins } },
-          });
-          // Kaybeden: 10 XP teselli ödülü
-          await tx.user.update({
-            where: { id: loserId! },
-            data: { xp: { increment: REWARD_LOSS.xp } },
-          });
         }
       });
+      // Invalidate leaderboard cache so UIs reflect completed challenges
+      try {
+        revalidateTag("challenge-leaderboard");
+      } catch (e) {}
 
       // KullanÄ±cÄ± iÃ§in sonuÃ§ belirle
       const isUserChallenger = c.challengerId === userId;
@@ -431,7 +452,8 @@ export async function finalizeExpiredChallengesAction() {
  */
 export async function updateChallengeScoresFromLog(
   userId: string,
-  routineTitle: string
+  routineTitle: string,
+  timezoneOffsetMinutes?: number
 ) {
   const activeChallenges = await prisma.challenge.findMany({
     where: {
@@ -449,14 +471,30 @@ export async function updateChallengeScoresFromLog(
   // completedAt = todayStart → DB unique kısıtı race condition'ı engeller.
   // Rutin silinirse veya yeniden adlandırılırsa challenge graceful olarak sürer;
   // kullanıcı otomatik check-in alamaz ama manuel check-in yine çalışır.
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
+  // Compute day boundary consistent with challengeCheckInAction
+  let todayStart = new Date();
+  if (typeof timezoneOffsetMinutes === "number") {
+    const now = new Date();
+    const offset = timezoneOffsetMinutes;
+    const localNow = new Date(now.getTime() - offset * 60000);
+    const y = localNow.getUTCFullYear();
+    const m = localNow.getUTCMonth();
+    const d = localNow.getUTCDate();
+    const localMidnightUtcMs = Date.UTC(y, m, d, 0, 0, 0, 0) + offset * 60000;
+    todayStart = new Date(localMidnightUtcMs);
+  } else {
+    todayStart.setUTCHours(0, 0, 0, 0);
+  }
 
   for (const challenge of activeChallenges) {
     try {
       await prisma.challengeLog.create({
         data: { challengeId: challenge.id, userId, completedAt: todayStart },
       });
+      // update leaderboard cache
+      try {
+        revalidateTag("challenge-leaderboard");
+      } catch (e) {}
     } catch (err: unknown) {
       // P2002 = bugün zaten check-in yapılmış (manual veya başka rutin completion)
       if ((err as any)?.code === "P2002") continue;

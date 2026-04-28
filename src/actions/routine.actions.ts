@@ -1,8 +1,8 @@
-﻿"use server";
+"use server";
 
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { useStreakFreeze } from "@/actions/shop.actions";
 import { checkBadges } from "@/actions/badge.actions";
 import { updateChallengeScoresFromLog } from "@/actions/challenge.actions";
@@ -231,8 +231,11 @@ export async function completeRoutineAction(
       opponentName: null,
     }));
 
-    // AI haftalÄ±k gÃ¶rev ilerlemesini gÃ¼ncelle
+    // AI haftalık görev ilerlemesini güncelle
     await updateAIChallengeProgress(userId, routine.category).catch(() => {});
+
+    // Challenge leaderboard cache'ini invalidate et (on-demand revalidation)
+    revalidateTag("challenge-leaderboard");
 
     revalidatePath("/dashboard");
     return {

@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
@@ -152,26 +152,22 @@ export async function challengeCheckInAction(challengeId: string) {
     throw new Error("Challenge has ended");
   }
 
-  // BugÃ¼n zaten check-in yaptÄ± mÄ±?
+  // UTC gün sınırı — timezone-safe ve race-condition-safe.
+  // completedAt = todayStart kullanarak mevcut @@unique([challengeId, userId, completedAt])
+  // kısıtlamasına güveniriz. İki eş zamanlı istek olursa DB P2002 fırlatır.
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
-  const todayEnd = new Date(todayStart);
-  todayEnd.setUTCDate(todayEnd.getUTCDate() + 1);
 
-  const existing = await prisma.challengeLog.findFirst({
-    where: {
-      challengeId,
-      userId,
-      completedAt: { gte: todayStart, lt: todayEnd },
-    },
-  });
-  if (existing) return { alreadyCheckedIn: true };
-
-  await prisma.challengeLog.create({
-    data: { challengeId, userId },
-  });
-
-  return { alreadyCheckedIn: false };
+  try {
+    await prisma.challengeLog.create({
+      data: { challengeId, userId, completedAt: todayStart },
+    });
+    return { alreadyCheckedIn: false };
+  } catch (err: unknown) {
+    // P2002 = unique constraint violation → zaten check-in yapılmış
+    if ((err as any)?.code === "P2002") return { alreadyCheckedIn: true };
+    throw err;
+  }
 }
 
 // â”€â”€â”€ Aktif/Bekleyen DÃ¼ellolarÄ± Getir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -312,26 +308,16 @@ export async function distributeChallengeRewards(
     }
 
     try {
-      // Atomik transaction: durum + Ã¶dÃ¼ller aynÄ± anda
+      // Atomik transaction: durum + ödüller aynı anda
+      // updateMany ile atomik "check-and-claim" — Read Committed altında güvenli.
+      // İki eş zamanlı transaction'dan yalnızca biri count=1 alır; diğeri count=0 → erken çıkar.
       await prisma.$transaction(async (tx) => {
-        // Double-spending korumasÄ±: tekrar kontrol
-        const fresh = await tx.challenge.findUnique({
-          where: { id: c.id },
-          select: { rewardDistributed: true, status: true },
+        const claim = await tx.challenge.updateMany({
+          where: { id: c.id, rewardDistributed: false, status: "ACTIVE" },
+          data: { status: "COMPLETED", winnerId, rewardDistributed: true },
         });
-        if (!fresh || fresh.rewardDistributed || fresh.status === "COMPLETED") {
-          return; // Zaten Ã¶dÃ¼l daÄŸÄ±tÄ±lmÄ±ÅŸ
-        }
-
-        // Challenge'Ä± gÃ¼ncelle
-        await tx.challenge.update({
-          where: { id: c.id },
-          data: {
-            status: "COMPLETED",
-            winnerId,
-            rewardDistributed: true,
-          },
-        });
+        // count=0 → başka bir transaction önce işledi, çift ödül engellendi
+        if (claim.count === 0) return;
 
         if (isDraw) {
           // Berabere: her iki taraf 40 XP + 20 Coin
@@ -349,7 +335,7 @@ export async function distributeChallengeRewards(
             where: { id: winnerId! },
             data: { xp: { increment: REWARD_WIN.xp }, coins: { increment: REWARD_WIN.coins } },
           });
-          // Kaybeden: 10 XP teselli Ã¶dÃ¼lÃ¼
+          // Kaybeden: 10 XP teselli ödülü
           await tx.user.update({
             where: { id: loserId! },
             data: { xp: { increment: REWARD_LOSS.xp } },
@@ -459,25 +445,23 @@ export async function updateChallengeScoresFromLog(
 
   if (activeChallenges.length === 0) return;
 
+  // UTC gün sınırı — challengeCheckInAction ile aynı strateji:
+  // completedAt = todayStart → DB unique kısıtı race condition'ı engeller.
+  // Rutin silinirse veya yeniden adlandırılırsa challenge graceful olarak sürer;
+  // kullanıcı otomatik check-in alamaz ama manuel check-in yine çalışır.
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
-  const todayEnd = new Date(todayStart);
-  todayEnd.setUTCDate(todayEnd.getUTCDate() + 1);
 
   for (const challenge of activeChallenges) {
-    // BugÃ¼n zaten check-in yaptÄ± mÄ±?
-    const existing = await prisma.challengeLog.findFirst({
-      where: {
-        challengeId: challenge.id,
-        userId,
-        completedAt: { gte: todayStart, lt: todayEnd },
-      },
-    });
-    if (existing) continue;
-
-    await prisma.challengeLog.create({
-      data: { challengeId: challenge.id, userId },
-    });
+    try {
+      await prisma.challengeLog.create({
+        data: { challengeId: challenge.id, userId, completedAt: todayStart },
+      });
+    } catch (err: unknown) {
+      // P2002 = bugün zaten check-in yapılmış (manual veya başka rutin completion)
+      if ((err as any)?.code === "P2002") continue;
+      throw err;
+    }
 
     // Rakibe bildirim gÃ¶nder
     const opponentId =
@@ -588,7 +572,9 @@ const getCachedLeaderboardData = unstable_cache(
     }));
   },
   ["challenge-leaderboard"],
-  { revalidate: 3600 } // 1 saat
+  // TTL: 1 saat (pasif kullanıcılar için yeterli)
+  // tags: rutin tamamlandığında revalidateTag("challenge-leaderboard") ile anında invalidate
+  { revalidate: 3600, tags: ["challenge-leaderboard"] }
 );
 
 export async function getChallengeLeaderboard(): Promise<ChallengeLeaderboardPayload> {

@@ -237,8 +237,7 @@ export async function completeRoutineAction(
     await updateAIChallengeProgress(userId, routine.category).catch(() => {});
 
     // Challenge leaderboard cache'ini invalidate et (on-demand revalidation)
-    revalidateTag("challenge-leaderboard");
-
+    (revalidateTag as any)("challenge-leaderboard");
     revalidatePath("/dashboard");
     return {
       xpGain,
@@ -360,7 +359,7 @@ export async function deleteRoutineAction(routineId: string): Promise<void> {
       });
 
       for (const ch of affected) {
-        await prisma.challenge.update({ where: { id: ch.id }, data: { status: "CANCELLED" } });
+        await prisma.challenge.update({ where: { id: ch.id }, data: { status: "EXPIRED" } });
         const otherId = ch.challengerId === userId ? ch.opponentId : ch.challengerId;
         // notify opponent about cancellation
         await sendPushToUserAction(otherId, {

@@ -1,30 +1,7 @@
-// src/components/dashboard/DailyCoachTip.tsx
-import React, { useState } from 'react';
+"use client";
 
-const useLocalStorage = <T,>(key: string, initialValue: T) => {
-  const [value, setValue] = useState<T>(() => {
-    try {
-      const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      return initialValue;
-    }
-  });
-
-  const setStoredValue = (value: T | ((prevValue: T) => T)) => {
-    try {
-      setValue((prevValue) => {
-        const valueToStore = value instanceof Function ? value(prevValue) : value;
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
-        return valueToStore;
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  return [value, setStoredValue] as const;
-};
+// src/app/[locale]/dashboard/DailyCoachTip.tsx
+import React, { useEffect, useState } from "react";
 // Prisma schema: DailyCoachMessage
 // match the Prisma model exactly here
 interface CoachTip {
@@ -39,17 +16,44 @@ interface Props {
 }
 
 const DailyCoachTip = ({ tip }: Props) => {
-  const [coachTips, setCoachTips] = useLocalStorage<LocalCoachTip[]>('coachTips', []);
+  const [isMounted, setIsMounted] = useState(false);
+  const [coachTips, setCoachTips] = useState<LocalCoachTip[]>([]);
+
+  useEffect(() => {
+    setIsMounted(true);
+    try {
+      const raw = window.localStorage.getItem("coachTips");
+      if (raw) setCoachTips(JSON.parse(raw));
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  const setStoredCoachTips = (next: LocalCoachTip[] | ((prev: LocalCoachTip[]) => LocalCoachTip[])) => {
+    setCoachTips((prev) => {
+      const value = next instanceof Function ? next(prev) : next;
+      try {
+        window.localStorage.setItem("coachTips", JSON.stringify(value));
+      } catch (_) {}
+      return value;
+    });
+  };
 
   // İşlemi için bir günlük ipucu seç
   const selectDailyTip = () => {
-    const dailyTip = coachTips.find((tip) => !tip.seen);
+    const dailyTip = coachTips.find((t) => !t.seen);
     if (dailyTip) {
-      setCoachTips((prevTips) =>
-        prevTips.map((tip) => (tip === dailyTip ? { ...dailyTip, seen: true } : tip))
+      setStoredCoachTips((prevTips) =>
+        prevTips.map((t) => (t === dailyTip ? { ...dailyTip, seen: true } : t))
       );
     }
   };
+
+  if (!isMounted) {
+    return (
+      <div className="h-24 w-full animate-pulse rounded-md bg-zinc-900/10" aria-hidden />
+    );
+  }
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-md">

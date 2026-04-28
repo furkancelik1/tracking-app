@@ -63,17 +63,17 @@ function LiveCountdown({ endTimeMs }: { endTimeMs: number }) {
       <div className="flex items-center justify-center gap-2">
         <Timer className="size-4 text-[#D6FF00]" aria-hidden />
         <div className="flex gap-1 tabular-nums text-sm font-bold">
-          <span className="rounded bg-[#D6FF00]/15 px-2 py-1 text-[#D6FF00]">
+          <span className="rounded bg-[#D6FF00]/15 px-2 py-1 text-[#D6FF00]" suppressHydrationWarning>
             {String(h).padStart(2, "0")}
             {t("hours")}
           </span>
-          <span className="self-center text-zinc-600">:</span>
-          <span className="rounded bg-[#D6FF00]/15 px-2 py-1 text-[#D6FF00]">
+          <span className="self-center text-zinc-600" suppressHydrationWarning>:</span>
+          <span className="rounded bg-[#D6FF00]/15 px-2 py-1 text-[#D6FF00]" suppressHydrationWarning>
             {String(m).padStart(2, "0")}
             {t("minutes")}
           </span>
-          <span className="self-center text-zinc-600">:</span>
-          <span className="rounded bg-[#D6FF00]/15 px-2 py-1 text-[#D6FF00]">
+          <span className="self-center text-zinc-600" suppressHydrationWarning>:</span>
+          <span className="rounded bg-[#D6FF00]/15 px-2 py-1 text-[#D6FF00]" suppressHydrationWarning>
             {String(s).padStart(2, "0")}
             {t("seconds")}
           </span>

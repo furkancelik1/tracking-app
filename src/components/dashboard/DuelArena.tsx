@@ -198,15 +198,15 @@ function Countdown({ endTimeMs }: { endTimeMs: number }) {
       <Timer className="size-4 text-muted-foreground" />
       <span className="text-xs text-muted-foreground">{t("timeLeft")}:</span>
       <div className="flex gap-1 tabular-nums text-sm font-bold">
-        <span className="bg-accent rounded px-1.5 py-0.5">
+        <span className="bg-accent rounded px-1.5 py-0.5" suppressHydrationWarning>
           {String(h).padStart(2, "0")}{t("hours")}
         </span>
-        <span className="text-muted-foreground">:</span>
-        <span className="bg-accent rounded px-1.5 py-0.5">
+        <span className="text-muted-foreground" suppressHydrationWarning>:</span>
+        <span className="bg-accent rounded px-1.5 py-0.5" suppressHydrationWarning>
           {String(m).padStart(2, "0")}{t("minutes")}
         </span>
-        <span className="text-muted-foreground">:</span>
-        <span className="bg-accent rounded px-1.5 py-0.5">
+        <span className="text-muted-foreground" suppressHydrationWarning>:</span>
+        <span className="bg-accent rounded px-1.5 py-0.5" suppressHydrationWarning>
           {String(s).padStart(2, "0")}{t("seconds")}
         </span>
       </div>

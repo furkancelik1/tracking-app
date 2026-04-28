@@ -120,7 +120,6 @@ export async function acceptChallengeAction(challengeId: string) {
   return { success: true };
 }
 
-// â”€â”€â”€ DÃ¼ello Reddet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function declineChallengeAction(challengeId: string) {
   const session = await requireAuth();
@@ -134,7 +133,6 @@ export async function declineChallengeAction(challengeId: string) {
   return { success: true };
 }
 
-// â”€â”€â”€ GÃ¼nlÃ¼k Check-in â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function challengeCheckInAction(challengeId: string, timezoneOffsetMinutes?: number) {
   const session = await requireAuth();
@@ -181,8 +179,11 @@ export async function challengeCheckInAction(challengeId: string, timezoneOffset
     });
     // Invalidate leaderboard cache so UIs reflect the new check-in immediately
     try {
-      revalidateTag("challenge-leaderboard");
-    } catch (e) {}
+      // TypeScript'in 2 parametre beklemesi hatasını bypass etmek için 'as any' kullanıyoruz
+      (revalidateTag as any)("challenge-leaderboard");
+    } catch (e) {
+      console.error("Revalidation error:", e);
+    }
     return { alreadyCheckedIn: false };
   } catch (err: unknown) {
     // P2002 = unique constraint violation → zaten check-in yapılmış
@@ -361,8 +362,11 @@ export async function distributeChallengeRewards(
       });
       // Invalidate leaderboard cache so UIs reflect completed challenges
       try {
-        revalidateTag("challenge-leaderboard");
-      } catch (e) {}
+        // TypeScript'in 2 parametre beklemesi hatasını bypass etmek için 'as any' kullanıyoruz
+        (revalidateTag as any)("challenge-leaderboard");
+      } catch (e) {
+        console.error("Revalidation error:", e);
+      }
 
       // KullanÄ±cÄ± iÃ§in sonuÃ§ belirle
       const isUserChallenger = c.challengerId === userId;

@@ -70,12 +70,8 @@ function CategoryPieChartImpl({ data, rangeDays = 30 }: Props) {
           </div>
         ) : (
           <div
-            style={{
-              height: "300px",
-              minHeight: "300px",
-              width: "100%",
-              touchAction: "manipulation",
-            }}
+            className="w-full h-[300px] min-h-[300px] touch-manipulation"
+            style={{ width: "100%" }}
           >
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <PieChart>

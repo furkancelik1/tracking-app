@@ -133,13 +133,9 @@ function DisciplineTrendChartImpl({ data, chartAnalysis }: Props) {
 
         <CardContent className="pb-4 relative">
           <div
-            className="w-full min-w-0 overflow-hidden"
+            className="w-full h-[300px] min-h-[300px] overflow-hidden relative touch-manipulation"
             style={{
-              width: "100%",
-              height: "300px",
-              minHeight: "300px",
               position: "relative",
-              touchAction: "manipulation",
               filter:
                 "drop-shadow(0 0 8px rgba(34,211,238,0.15)) drop-shadow(0 0 16px rgba(167,139,250,0.1))",
             }}
@@ -219,34 +215,11 @@ function DisciplineTrendChartImpl({ data, chartAnalysis }: Props) {
                   variant="outline"
                   className="border-red-500/30 text-red-400 bg-red-500/5 text-[11px]"
                 >
-                  ⚠️ {biggestDrop.from} → {biggestDrop.to} {biggestDrop.delta}%
+                  📉 {biggestDrop.from} → {biggestDrop.to} {biggestDrop.delta}%
                 </Badge>
               )}
             </div>
           )}
-
-          <AnimatePresence>
-            {chartAnalysis && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-4 rounded-lg border border-cyan-500/20 bg-cyan-500/5 px-3 py-2.5"
-              >
-                <div className="flex items-start gap-2">
-                  <BarChart3 className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-[11px] font-medium text-cyan-400 mb-1">
-                      {t("chartAnalysisTitle")}
-                    </p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {chartAnalysis}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </CardContent>
       </Card>
 

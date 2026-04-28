@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -122,6 +123,7 @@ export function ChallengeInviteDialog({
             </div>
             {t("inviteTitle")}
           </DialogTitle>
+          <DialogDescription className="sr-only">Bu modalın içeriği...</DialogDescription>
         </DialogHeader>
 
         <AnimatePresence mode="wait">
@@ -219,70 +221,49 @@ export function ChallengeInviteDialog({
                 </div>
               )}
 
-              {/* Routine Title */}
-              <div className="space-y-2">
-                <Label>{t("routineLabel")}</Label>
-                <Input
-                  value={routineTitle}
-                  onChange={(e) => setRoutineTitle(e.target.value)}
-                  placeholder="e.g. 30 Push-ups, Read 20 pages"
-                  maxLength={100}
-                  autoFocus
-                />
-              </div>
-
-              {/* Duration Selector */}
-              <div className="space-y-2">
-                <Label>{t("durationLabel")}</Label>
-                <div className="flex gap-2">
-                  {DURATIONS.map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => setDuration(d)}
-                      className={`flex-1 rounded-lg border px-2 py-2 text-sm font-medium transition-all ${
-                        duration === d
-                          ? "bg-indigo-500/10 border-indigo-500/50 text-indigo-400 shadow-sm"
-                          : "border-border text-muted-foreground hover:border-foreground/20"
-                      }`}
-                    >
-                      {d}
-                    </button>
-                  ))}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="routine-title" className="flex items-center gap-1.5 text-sm">
+                    <Sparkles className="size-3.5" />
+                    {t("routineTitle")}
+                  </Label>
+                  <Input
+                    id="routine-title"
+                    value={routineTitle}
+                    onChange={(event) => setRoutineTitle(event.target.value)}
+                    placeholder={t("routinePlaceholder")}
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {t("daysLeft", { count: duration })}
-                </p>
-              </div>
 
-              {/* Reward info */}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 px-4 py-3 text-sm"
-              >
-                <Trophy className="size-5 text-amber-500 shrink-0" />
-                <div>
-                  <p className="font-medium text-amber-400">{t("reward")}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t("subtitle")}
-                  </p>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1.5 text-sm">
+                    <Trophy className="size-3.5" />
+                    {t("duration")}
+                  </Label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {DURATIONS.map((days) => (
+                      <Button
+                        key={days}
+                        size="sm"
+                        variant={duration === days ? "default" : "outline"}
+                        onClick={() => setDuration(days)}
+                      >
+                        {days}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </motion.div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-2 pt-1">
-                <Button variant="outline" onClick={() => handleOpenChange(false)}>
-                  {t("cancelDialog")}
-                </Button>
-                <Button
-                  onClick={handleSend}
-                  disabled={isPending || !selectedFriend || !routineTitle.trim()}
-                  className="gap-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
-                >
-                  <Zap className="size-4" />
-                  {t("sendChallenge")}
-                </Button>
+                <div className="flex justify-end gap-2">
+                  {!preselectedFriendId && (
+                    <Button variant="ghost" onClick={() => setStep(1)}>
+                      {t("back")}
+                    </Button>
+                  )}
+                  <Button onClick={handleSend} disabled={isPending}>
+                    {t("send")}
+                  </Button>
+                </div>
               </div>
             </motion.div>
           )}

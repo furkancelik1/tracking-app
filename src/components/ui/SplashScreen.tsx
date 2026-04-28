@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
+// SVG inline replaces raster Image for crisp vector rendering
 
 const BRAND_GREEN = "#00FF80";
 
@@ -34,7 +34,7 @@ export function SplashScreen() {
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black"
         >
           <div className="flex flex-col items-center justify-center">
-            <div className="relative w-[220px] h-[220px] flex items-center justify-center">
+            <div className="relative w-[224px] h-[224px] flex items-center justify-center">
               <motion.div
                 className="absolute inset-0 rounded-full pointer-events-none"
                 style={{ border: `1px solid ${BRAND_GREEN}18` }}
@@ -52,16 +52,32 @@ export function SplashScreen() {
                 initial={{ opacity: 0, scale: 0.72 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-                className="relative w-52 h-52 overflow-hidden flex items-center justify-center"
+                className="relative w-56 h-56 overflow-hidden flex items-center justify-center aspect-square"
               >
-                <Image
-                  src="/images/logo.png"
-                  alt="Zenith"
-                  width={208}
-                  height={208}
-                  className="object-contain"
-                  priority
-                />
+                {/* Inline SVG (vector) — prevents pixelation and scales crisply */}
+                <svg
+                  viewBox="0 0 200 200"
+                  className="w-56 h-56"
+                  style={{ color: BRAND_GREEN }}
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden
+                >
+                  <path
+                    d="M60 140V60L100 100M100 100L140 140V60M100 100V80"
+                    stroke="currentColor"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M100 60L85 80M100 60L115 80"
+                    stroke="currentColor"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
 
                 {/* Glow scan — sweeps top-to-bottom and is clipped by overflow-hidden */}
                 <motion.div

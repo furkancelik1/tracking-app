@@ -121,6 +121,7 @@ export async function acceptChallengeAction(challengeId: string) {
 }
 
 
+
 export async function declineChallengeAction(challengeId: string) {
   const session = await requireAuth();
   const userId = (session.user as any).id as string;
@@ -497,7 +498,7 @@ export async function updateChallengeScoresFromLog(
       });
       // update leaderboard cache
       try {
-        revalidateTag("challenge-leaderboard");
+        (revalidateTag as any)("challenge-leaderboard");
       } catch (e) {}
     } catch (err: unknown) {
       // P2002 = bugün zaten check-in yapılmış (manual veya başka rutin completion)

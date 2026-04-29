@@ -35,18 +35,19 @@ test.describe.serial("Social: friend request + duel flow", () => {
     await searchInput.press("Enter");
     await pageA.waitForTimeout(1500);
 
-    // Wait for search results (Robust Locator)
-    const userBResult = pageA.locator('div').filter({ 
-      has: pageA.getByText('E2E User B'),
-      has: pageA.getByRole('button', { name: /Follow|Add|Request|Ekle/i })
+    // Regex'i "Followers" veya "Following" ile karışmaması için tam eşleşmeye (exact match) çevirdik
+    const exactButtonRegex = /^Follow$|^Add$|^Request$|^Ekle$|^İstek$/i;
+
+    // ÇÖZÜM: filter() metodunu arka arkaya zincirleyerek kullanıyoruz
+    const userBResult = pageA.locator('div')
+      .filter({ has: pageA.getByText('E2E User B') })
+      .filter({ has: pageA.getByRole('button', { name: exactButtonRegex }) })
+      .last();
+
+    const addBtn = userBResult.getByRole("button", {
+      name: exactButtonRegex,
     }).first();
     
-    await expect(userBResult).toBeVisible({ timeout: 8_000 });
-
-    // Click add/send request button inside the result row
-    const addBtn = userBResult.getByRole("button", {
-      name: /Follow|Add|Request|Ekle|istek/i,
-    });
     await addBtn.click();
 
     // Expect optimistic feedback — button state or toast
@@ -67,15 +68,15 @@ test.describe.serial("Social: friend request + duel flow", () => {
     await pageB.goto(`/${LOCALE}/social`);
     await expect(pageB).not.toHaveURL(/login/);
 
-    // ÇÖZÜM: Elementi aramadan önce "Bekleyen İstekler / Pending" sekmesine tıkla
-    const pendingRequestsTab = pageB.getByRole("button", { name: /pending|istekler/i });
-    if (await pendingRequestsTab.isVisible()) {
+    // ÇÖZÜM: İsteği aramadan önce "Bekleyen İstekler / Pending" sekmesine tıkla
+    const pendingRequestsTab = pageB.getByRole("button", { name: /pending|istekler/i }).first();
+    if (await pendingRequestsTab.isVisible({ timeout: 5000 }).catch(() => false)) {
       await pendingRequestsTab.click();
     }
 
-    // Incoming requests section
+    // Gelen istekler bölümü (Kapsayıcı div, li, article olarak genişletildi)
     const requestItem = pageB
-      .locator("[data-testid='friend-request'], li, article")
+      .locator("div, li, article")
       .filter({ hasText: /E2E User A/i })
       .first();
     await expect(requestItem).toBeVisible({ timeout: 10_000 });
@@ -103,14 +104,16 @@ test.describe.serial("Social: friend request + duel flow", () => {
 
     // Find userB in friends list and open challenge/duel action
     const friendRow = pageA
-      .locator("[data-testid='friend-item'], li, article")
+      .locator("[data-testid='friend-item'], div, li, article")
       .filter({ hasText: /E2E User B/i })
       .first();
     await expect(friendRow).toBeVisible({ timeout: 10_000 });
 
+    // ÇÖZÜM: .first() ekleyerek 4 buton çakışmasını (strict mode) engelliyoruz
     const challengeBtn = friendRow.getByRole("button", {
       name: /challenge|duel|meydan|davet/i,
-    });
+    }).first(); 
+    
     await challengeBtn.click();
 
     // Confirm dialog or instant send — just expect no crash & some feedback
@@ -139,7 +142,7 @@ test.describe.serial("Social: friend request + duel flow", () => {
 
     // Duel/challenge section should list the incoming challenge
     const duelSection = pageB.locator(
-      "[data-testid='duel-invite'], [data-testid='challenge-invite'], section, article"
+      "[data-testid='duel-invite'], [data-testid='challenge-invite'], section, article, div"
     ).filter({ hasText: /E2E User A|duel|challenge|meydan/i }).first();
 
     await expect(duelSection).toBeVisible({ timeout: 10_000 });

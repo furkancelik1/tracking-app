@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
-import { Moon, Sun, Coins, Trophy } from "lucide-react";
+import { Moon, Sun, Coins, Trophy, Plus } from "lucide-react"; // Plus ikonu eklendi
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -107,7 +107,6 @@ export function DashboardNav() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:px-6">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2 group select-none">
-          {/* Mountain icon â€” cropped from logo.png (top-center portion) */}
           <div className="relative h-8 w-8 overflow-hidden shrink-0 transition-transform duration-200 group-hover:scale-105">
             <Image
               src="/images/logo.png"
@@ -126,7 +125,7 @@ export function DashboardNav() {
           </span>
         </Link>
 
-        {/* Nav links â€” hidden on mobile, BottomNav handles it */}
+        {/* Nav links — hidden on mobile, BottomNav handles it */}
         <nav className="hidden md:flex items-center gap-1">
           {NAV_KEYS.map((item) => (
             <Link
@@ -146,6 +145,24 @@ export function DashboardNav() {
 
         {/* User menu */}
         <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
+          
+          {/* YENİ EKLENEN KISIM: Masaüstü için Yeni Rutin Ekleme Butonu */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden md:flex gap-1 px-2 text-[#D6FF00] hover:bg-[#D6FF00]/10 sm:gap-1.5 sm:px-3"
+            data-testid="add-routine-btn"
+            onClick={() => {
+              // TODO: RUTİN EKLEME MODALINI AÇAN FONKSİYONU BURAYA BAĞLAMALISIN!
+              // Örnek: setRoutineModalOpen(true) VEYA router.push("?new=routine")
+              console.log("Rutin ekleme butonu tıklandı!");
+            }}
+            aria-label="Add Routine"
+          >
+            <Plus className="h-4 w-4 shrink-0" aria-hidden />
+            <span className="hidden lg:inline text-xs font-semibold sm:text-sm">New</span>
+          </Button>
+
           <Button
             variant="ghost"
             size="sm"

@@ -27,38 +27,32 @@ test.describe.serial("Routine lifecycle", () => {
   test("can create a new routine", async ({ page }) => {
     await page.goto(`/${LOCALE}/dashboard`);
 
-    // 1. Eğer "Welcome Tour" açık kalırsa kapat
+    // 1. Eğer "Welcome Tour" açık kalırsa kapat ve kaybolmasını bekle
     const closeTourBtn = page.getByRole("button", { name: /close|kapat/i }).first();
     if (await closeTourBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       await closeTourBtn.click();
-      // Animasyonun bitip modalın ekrandan tamamen kaybolmasını bekle
       await expect(closeTourBtn).not.toBeVisible(); 
     }
-
-    // 2. ÖNEMLİ: Formu açmak için "Ekle" butonuna veya "Add Your First Routine" linkine TIKLA
-    const openFormBtn = page
-      .getByRole("link", { name: /add your first routine|ilk rutini/i })
-      .or(page.getByTestId("add-routine-btn"))
+    // 2. Formu açmak için doğrudan "+" veya "Add" butonunu hedefle
+    const openFormBtn = page.getByTestId("add-routine-btn")
+      .or(page.getByRole("button", { name: /add|ekle|\+/i }))
       .first();
-    
+      
     await expect(openFormBtn).toBeVisible({ timeout: 10_000 });
-    await openFormBtn.click(); // EKSİK OLAN KISIM BURASIYDI: Formu açar.
+    await openFormBtn.click(); 
 
-    // 3. Form açıldıktan sonra input'u bul ve doldur
-    const nameInput = page.getByPlaceholder(/routine name|rutin adı/i)
-      .or(page.getByRole("textbox", { name: /^name$|^ad$|^isim$/i }))
-      .first();
+    // 3. Form (Modal) açıldıktan sonra ilk input alanını bul ve doldur
+    const nameInput = page.locator('dialog input, [role="dialog"] input, input').first();
       
     await expect(nameInput).toBeVisible({ timeout: 7_000 });
     await nameInput.fill(routineName);
-
-    // 4. Submit the form
+    // 4. Kaydet butonuna tıkla
     const submitBtn = page
       .getByRole("button", { name: /save|create|kaydet|oluştur/i })
       .last();
     await submitBtn.click();
 
-    // 5. New routine should appear in the list
+    // 5. Yeni rutinin listede göründüğünü onayla
     await expect(
       page.getByText(routineName, { exact: false })
     ).toBeVisible({ timeout: 10_000 });

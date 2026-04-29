@@ -14,14 +14,14 @@
 ```
 Error: expect(locator).toBeVisible() failed
 
-Locator: getByPlaceholder(/routine name|rutin adı/i).or(getByRole('textbox', { name: /^name$|^ad$|^isim$/i })).first()
+Locator: locator('dialog input, [role="dialog"] input, input').first()
 Expected: visible
 Timeout: 7000ms
 Error: element(s) not found
 
 Call log:
   - Expect "toBeVisible" with timeout 7000ms
-  - waiting for getByPlaceholder(/routine name|rutin adı/i).or(getByRole('textbox', { name: /^name$|^ad$|^isim$/i })).first()
+  - waiting for locator('dialog input, [role="dialog"] input, input').first()
 
 ```
 
@@ -54,6 +54,9 @@ Call log:
             - /url: /en/settings
             - text: Settings
         - generic:
+          - button:
+            - img
+            - generic: New
           - button:
             - img
             - generic: "0"
@@ -148,91 +151,85 @@ Call log:
   27  |   test("can create a new routine", async ({ page }) => {
   28  |     await page.goto(`/${LOCALE}/dashboard`);
   29  | 
-  30  |     // 1. Eğer "Welcome Tour" açık kalırsa kapat
+  30  |     // 1. Eğer "Welcome Tour" açık kalırsa kapat ve kaybolmasını bekle
   31  |     const closeTourBtn = page.getByRole("button", { name: /close|kapat/i }).first();
   32  |     if (await closeTourBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
   33  |       await closeTourBtn.click();
-  34  |       // Animasyonun bitip modalın ekrandan tamamen kaybolmasını bekle
-  35  |       await expect(closeTourBtn).not.toBeVisible(); 
-  36  |     }
-  37  | 
-  38  |     // 2. ÖNEMLİ: Formu açmak için "Ekle" butonuna veya "Add Your First Routine" linkine TIKLA
-  39  |     const openFormBtn = page
-  40  |       .getByRole("link", { name: /add your first routine|ilk rutini/i })
-  41  |       .or(page.getByTestId("add-routine-btn"))
-  42  |       .first();
-  43  |     
-  44  |     await expect(openFormBtn).toBeVisible({ timeout: 10_000 });
-  45  |     await openFormBtn.click(); // EKSİK OLAN KISIM BURASIYDI: Formu açar.
-  46  | 
-  47  |     // 3. Form açıldıktan sonra input'u bul ve doldur
-  48  |     const nameInput = page.getByPlaceholder(/routine name|rutin adı/i)
-  49  |       .or(page.getByRole("textbox", { name: /^name$|^ad$|^isim$/i }))
-  50  |       .first();
-  51  |       
-> 52  |     await expect(nameInput).toBeVisible({ timeout: 7_000 });
+  34  |       await expect(closeTourBtn).not.toBeVisible(); 
+  35  |     }
+  36  |     // 2. Formu açmak için doğrudan "+" veya "Add" butonunu hedefle
+  37  |     const openFormBtn = page.getByTestId("add-routine-btn")
+  38  |       .or(page.getByRole("button", { name: /add|ekle|\+/i }))
+  39  |       .first();
+  40  |       
+  41  |     await expect(openFormBtn).toBeVisible({ timeout: 10_000 });
+  42  |     await openFormBtn.click(); 
+  43  | 
+  44  |     // 3. Form (Modal) açıldıktan sonra ilk input alanını bul ve doldur
+  45  |     const nameInput = page.locator('dialog input, [role="dialog"] input, input').first();
+  46  |       
+> 47  |     await expect(nameInput).toBeVisible({ timeout: 7_000 });
       |                             ^ Error: expect(locator).toBeVisible() failed
-  53  |     await nameInput.fill(routineName);
+  48  |     await nameInput.fill(routineName);
+  49  |     // 4. Kaydet butonuna tıkla
+  50  |     const submitBtn = page
+  51  |       .getByRole("button", { name: /save|create|kaydet|oluştur/i })
+  52  |       .last();
+  53  |     await submitBtn.click();
   54  | 
-  55  |     // 4. Submit the form
-  56  |     const submitBtn = page
-  57  |       .getByRole("button", { name: /save|create|kaydet|oluştur/i })
-  58  |       .last();
-  59  |     await submitBtn.click();
+  55  |     // 5. Yeni rutinin listede göründüğünü onayla
+  56  |     await expect(
+  57  |       page.getByText(routineName, { exact: false })
+  58  |     ).toBeVisible({ timeout: 10_000 });
+  59  |   });
   60  | 
-  61  |     // 5. New routine should appear in the list
-  62  |     await expect(
-  63  |       page.getByText(routineName, { exact: false })
-  64  |     ).toBeVisible({ timeout: 10_000 });
-  65  |   });
-  66  | 
-  67  |   test("can check-in on the created routine", async ({ page }) => {
-  68  |     await page.goto(`/${LOCALE}/dashboard`);
-  69  | 
-  70  |     // Find the routine card by name
-  71  |     const routineCard = page
-  72  |       .locator("[data-testid='routine-card'], article, li")
-  73  |       .filter({ hasText: routineName })
-  74  |       .first();
-  75  |     await expect(routineCard).toBeVisible({ timeout: 10_000 });
+  61  |   test("can check-in on the created routine", async ({ page }) => {
+  62  |     await page.goto(`/${LOCALE}/dashboard`);
+  63  | 
+  64  |     // Find the routine card by name
+  65  |     const routineCard = page
+  66  |       .locator("[data-testid='routine-card'], article, li")
+  67  |       .filter({ hasText: routineName })
+  68  |       .first();
+  69  |     await expect(routineCard).toBeVisible({ timeout: 10_000 });
+  70  | 
+  71  |     // Click the check-in / complete button inside the card
+  72  |     const checkBtn = routineCard.getByRole("button", {
+  73  |       name: /check.?in|complete|done|tamamla/i,
+  74  |     });
+  75  |     await checkBtn.click();
   76  | 
-  77  |     // Click the check-in / complete button inside the card
-  78  |     const checkBtn = routineCard.getByRole("button", {
-  79  |       name: /check.?in|complete|done|tamamla/i,
-  80  |     });
-  81  |     await checkBtn.click();
-  82  | 
-  83  |     // Expect a success indicator: completed state, toast, or XP gain
-  84  |     await expect(
-  85  |       page.locator("[data-state='completed'], [aria-label*='completed'], .text-green, [class*='complete']")
-  86  |         .or(page.locator(".toaster, [data-sonner-toast]"))
-  87  |     ).toBeVisible({ timeout: 8_000 });
-  88  |   });
-  89  | 
-  90  |   test("duplicate check-in in same period is rejected", async ({ page }) => {
-  91  |     await page.goto(`/${LOCALE}/dashboard`);
+  77  |     // Expect a success indicator: completed state, toast, or XP gain
+  78  |     await expect(
+  79  |       page.locator("[data-state='completed'], [aria-label*='completed'], .text-green, [class*='complete']")
+  80  |         .or(page.locator(".toaster, [data-sonner-toast]"))
+  81  |     ).toBeVisible({ timeout: 8_000 });
+  82  |   });
+  83  | 
+  84  |   test("duplicate check-in in same period is rejected", async ({ page }) => {
+  85  |     await page.goto(`/${LOCALE}/dashboard`);
+  86  | 
+  87  |     const routineCard = page
+  88  |       .locator("[data-testid='routine-card'], article, li")
+  89  |       .filter({ hasText: routineName })
+  90  |       .first();
+  91  |     await expect(routineCard).toBeVisible({ timeout: 10_000 });
   92  | 
-  93  |     const routineCard = page
-  94  |       .locator("[data-testid='routine-card'], article, li")
-  95  |       .filter({ hasText: routineName })
-  96  |       .first();
-  97  |     await expect(routineCard).toBeVisible({ timeout: 10_000 });
-  98  | 
-  99  |     const checkBtn = routineCard.getByRole("button", {
-  100 |       name: /check.?in|complete|done|tamamla/i,
-  101 |     });
-  102 | 
-  103 |     // Button should be disabled or show "already done" state
-  104 |     const isDisabled = await checkBtn.isDisabled().catch(() => true);
-  105 |     if (!isDisabled) {
-  106 |       // If still clickable, a second click should produce an error toast
-  107 |       await checkBtn.click();
-  108 |       await expect(
-  109 |         page.locator("[data-sonner-toast][data-type='error'], [role='alert']")
-  110 |       ).toBeVisible({ timeout: 6_000 });
-  111 |     } else {
-  112 |       expect(isDisabled).toBe(true);
-  113 |     }
-  114 |   });
-  115 | });
+  93  |     const checkBtn = routineCard.getByRole("button", {
+  94  |       name: /check.?in|complete|done|tamamla/i,
+  95  |     });
+  96  | 
+  97  |     // Button should be disabled or show "already done" state
+  98  |     const isDisabled = await checkBtn.isDisabled().catch(() => true);
+  99  |     if (!isDisabled) {
+  100 |       // If still clickable, a second click should produce an error toast
+  101 |       await checkBtn.click();
+  102 |       await expect(
+  103 |         page.locator("[data-sonner-toast][data-type='error'], [role='alert']")
+  104 |       ).toBeVisible({ timeout: 6_000 });
+  105 |     } else {
+  106 |       expect(isDisabled).toBe(true);
+  107 |     }
+  108 |   });
+  109 | });
 ```

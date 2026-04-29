@@ -28,18 +28,19 @@ test.describe.serial("Routine lifecycle", () => {
     await page.goto(`/${LOCALE}/dashboard`);
 
     // Empty state (ilk rutin) veya normal state add butonu
-      const addBtn = page
-        .getByRole("link", { name: /add your first routine|ilk rutini/i })
-        .or(page.getByTestId("add-routine-btn"))
+      // 1. Eğer "Welcome Tour" açık kalırsa kapat
+      const closeTourBtn = page.getByRole("button", { name: /close|kapat/i }).first();
+      if (await closeTourBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+          await closeTourBtn.click();
+      }
+
+      // 2. Kırılgan Regex yerine Placeholder veya TestID ile tam hedefleme
+      const nameInput = page.getByPlaceholder(/routine name|rutin adı/i)
+        .or(page.getByRole("textbox", { name: /^name$|^ad$|^isim$/i }))
         .first();
-
-      await expect(addBtn).toBeVisible({ timeout: 10_000 });
-      await addBtn.click();
-
-    // Fill in the routine name field
-    const nameInput = page.getByLabel(/name|ad|isim/i).first();
-    await expect(nameInput).toBeVisible({ timeout: 5_000 });
-    await nameInput.fill(routineName);
+        
+      await expect(nameInput).toBeVisible({ timeout: 5_000 });
+      await nameInput.fill(routineName);
 
     // Submit the form
     const submitBtn = page

@@ -29,23 +29,23 @@ test.describe.serial("Social: friend request + duel flow", () => {
     // Open user search
     const searchInput = pageA.getByPlaceholder(/search|ara|kullanıcı/i).first();
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
+    
+    // Arama kutusuna yaz ve debounce/API için bekle
     await searchInput.fill("E2E User B");
-    // Debounce geçmesi ve API yanıtı için bekle
     await searchInput.press("Enter");
     await pageA.waitForTimeout(1500);
 
     // Wait for search results (Robust Locator)
-      const userBResult = pageA.locator('div').filter({ 
-        has: pageA.getByText('E2E User B')
-      }).filter({
-        has: pageA.getByRole('button', { name: /Follow|Add|Request|Ekle/i })
-      }).first();
-      
-      await expect(userBResult).toBeVisible({ timeout: 8_000 });
+    const userBResult = pageA.locator('div').filter({ 
+      has: pageA.getByText('E2E User B'),
+      has: pageA.getByRole('button', { name: /Follow|Add|Request|Ekle/i })
+    }).first();
+    
+    await expect(userBResult).toBeVisible({ timeout: 8_000 });
 
     // Click add/send request button inside the result row
     const addBtn = userBResult.getByRole("button", {
-      name: /add|request|ekle|istek/i,
+      name: /Follow|Add|Request|Ekle|istek/i,
     });
     await addBtn.click();
 
@@ -66,6 +66,12 @@ test.describe.serial("Social: friend request + duel flow", () => {
 
     await pageB.goto(`/${LOCALE}/social`);
     await expect(pageB).not.toHaveURL(/login/);
+
+    // ÇÖZÜM: Elementi aramadan önce "Bekleyen İstekler / Pending" sekmesine tıkla
+    const pendingRequestsTab = pageB.getByRole("button", { name: /pending|istekler/i });
+    if (await pendingRequestsTab.isVisible()) {
+      await pendingRequestsTab.click();
+    }
 
     // Incoming requests section
     const requestItem = pageB

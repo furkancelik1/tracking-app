@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Route } from "next";
-import { Moon, Sun, Coins, Trophy, Plus } from "lucide-react"; // Plus ikonu eklendi
+import { Moon, Sun, Coins, Trophy, Plus } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,7 @@ export function DashboardNav() {
   const auth = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const t = useTranslations("nav");
+  
   const [isMounted, setIsMounted] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [badgesOpen, setBadgesOpen] = useState(false);
@@ -57,10 +58,9 @@ export function DashboardNav() {
     if (auth.status === "authenticated") refreshCoins();
   }, [auth.status, refreshCoins]);
 
-  // Coin değişikliklerini dinle (onboarding, shop, rutin tamamlama vb.)
+  // Coin değişikliklerini dinle
   useEffect(() => {
     const handler = () => {
-      // Server confirmed: refresh authoritative coins and clear optimistic delta
       refreshCoins();
       setOptimisticDelta(0);
     };
@@ -73,7 +73,6 @@ export function DashboardNav() {
       }
     };
     const rollbackHandler = (_e: Event) => {
-      // Rollback optimistic change, inform user
       setOptimisticDelta(0);
       toast.error("Ödül alınamadı, işlem geri alındı.");
     };
@@ -125,7 +124,7 @@ export function DashboardNav() {
           </span>
         </Link>
 
-        {/* Nav links — hidden on mobile, BottomNav handles it */}
+        {/* Nav links */}
         <nav className="hidden md:flex items-center gap-1">
           {NAV_KEYS.map((item) => (
             <Link
@@ -143,19 +142,17 @@ export function DashboardNav() {
           ))}
         </nav>
 
-        {/* User menu */}
+        {/* User menu & Actions */}
         <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
           
-          {/* YENİ EKLENEN KISIM: Masaüstü için Yeni Rutin Ekleme Butonu */}
+          {/* Yeni Rutin Ekleme Butonu (Desktop) */}
           <Button
             variant="ghost"
             size="sm"
             className="hidden md:flex gap-1 px-2 text-[#D6FF00] hover:bg-[#D6FF00]/10 sm:gap-1.5 sm:px-3"
             data-testid="add-routine-btn"
             onClick={() => {
-              // TODO: RUTİN EKLEME MODALINI AÇAN FONKSİYONU BURAYA BAĞLAMALISIN!
-              // Örnek: setRoutineModalOpen(true) VEYA router.push("?new=routine")
-              console.log("Rutin ekleme butonu tıklandı!");
+              window.dispatchEvent(new CustomEvent("open-routine-modal"));
             }}
             aria-label="Add Routine"
           >
@@ -163,6 +160,7 @@ export function DashboardNav() {
             <span className="hidden lg:inline text-xs font-semibold sm:text-sm">New</span>
           </Button>
 
+          {/* Shop */}
           <Button
             variant="ghost"
             size="sm"
@@ -180,6 +178,8 @@ export function DashboardNav() {
                 : "—"}
             </span>
           </Button>
+
+          {/* Badges */}
           <Button
             variant="ghost"
             size="sm"
@@ -189,9 +189,13 @@ export function DashboardNav() {
           >
             <Trophy className="h-4 w-4" aria-hidden />
           </Button>
+
+          {/* Language Switcher */}
           <div className="hidden md:block">
             <LanguageSwitcher />
           </div>
+
+          {/* User Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative size-10 rounded-full p-0 touch-manipulation" data-testid="user-menu-btn">
@@ -214,9 +218,7 @@ export function DashboardNav() {
                 <p className="text-muted-foreground text-xs truncate">{auth.user.email}</p>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-              >
+              <DropdownMenuItem onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
                 {isMounted && resolvedTheme === "dark" ? (
                   <>
                     <Sun className="mr-2 h-4 w-4" />
@@ -237,6 +239,8 @@ export function DashboardNav() {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Dialogs */}
       <ShopDialog open={shopOpen} onOpenChange={setShopOpen} />
       <BadgeGallery open={badgesOpen} onOpenChange={setBadgesOpen} />
       <OnboardingDialog />

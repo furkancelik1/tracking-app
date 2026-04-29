@@ -143,8 +143,16 @@ export function RoutineList({ initialRoutines }: Props) {
   const [, startTransition] = useTransition();
 
   const [isMounted, setIsMounted] = useState(false);
+  
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  // YENİ EKLENEN EVENT LİSTENER: DashboardNav'daki '+' butonunu dinler ve modalı açar
+  useEffect(() => {
+    const handleOpenModal = () => setDialogOpen(true);
+    window.addEventListener("open-routine-modal", handleOpenModal);
+    return () => window.removeEventListener("open-routine-modal", handleOpenModal);
   }, []);
 
   const categories = useMemo(() => {
@@ -198,7 +206,6 @@ export function RoutineList({ initialRoutines }: Props) {
   }, [flashLabel]);
 
   // Reset all-done celebration flag when server data no longer reflects it
-  // (e.g. cross-device undo, day rollover). Writes to ref only — no re-render.
   useEffect(() => {
     const isoToday = todayISO();
     const allDone =
@@ -403,7 +410,7 @@ export function RoutineList({ initialRoutines }: Props) {
           className="w-full shrink-0 sm:w-auto"
           onClick={openAddDialog}
           disabled={atLimit}
-          data-testid="add-routine-btn"
+          data-testid="add-routine-btn-mobile"
           title={
             atLimit
               ? t("limitWarning", {

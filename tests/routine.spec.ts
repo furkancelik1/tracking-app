@@ -27,40 +27,37 @@ test.describe.serial("Routine lifecycle", () => {
   test("can create a new routine", async ({ page }) => {
     await page.goto(`/${LOCALE}/dashboard`);
 
-    // 1. Eğer "Welcome Tour" açık kalırsa kapat ve kaybolmasını bekle
+   // 1. Welcome Tour modalını kapat (Düzgün asenkron bekleme ile)
     const closeTourBtn = page.getByRole("button", { name: /close|kapat/i }).first();
-    if (await closeTourBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    try {
+      // isVisible anında false döner, waitFor ise elementin gelmesini 5 saniye boyunca bekler.
+      await closeTourBtn.waitFor({ state: "visible", timeout: 5000 });
       await closeTourBtn.click();
       await expect(closeTourBtn).not.toBeVisible(); 
+    } catch (error) {
+      // Modal 5 saniye içinde hiç gelmezse (örneğin daha önce kapatılmışsa) sessizce devam et
     }
-    // 2. Formu açmak için butona tıkla
-    const openFormBtn = page.getByTestId("add-routine-btn")
-      .or(page.getByRole("button", { name: /add|ekle|\+/i }))
-      .first();
-    
+    // 2. DashboardNav.tsx'e eklediğimiz YENİ butonun Test ID'sini kullanıyoruz
+    // (Böylece uygulamanın ana "ekleme" mantığını test etmiş oluyoruz)
+    const openFormBtn = page.getByTestId("add-routine-btn");
+    await expect(openFormBtn).toBeVisible({ timeout: 10_000 });
     await openFormBtn.click();
 
-    // 3. ÇÖZÜM: Formun içindeki input'u daha spesifik ve modalı bekleyerek bul
-    // 'getByRole' kullanmak, elementin etkileşime hazır (visible & enabled) olmasını bekler.
-    const nameInput = page.getByRole("dialog").getByRole("textbox").first()
-      .or(page.getByPlaceholder(/routine name|rutin adı/i))
-      .or(page.locator('input[name="title"], input[name="name"]'));
-      
-    // Elementin sadece var olmasını değil, yazılabilir olmasını bekle
+    // 3. Formun açıldığını doğrula ve input'u doldur
+    // Gizli (hidden) olmayan ilk input'u bulur. Bu en garantili yöntemdir.
+    const nameInput = page.locator('input:not([type="hidden"])').first();
+    
     await expect(nameInput).toBeVisible({ timeout: 10_000 });
-    await nameInput.click(); // Bazı kütüphanelerde odağı (focus) garantilemek için
     await nameInput.fill(routineName);
 
-    // 4. Kaydet butonu
+    // 4. Kaydet butonuna tıkla
     const submitBtn = page
       .getByRole("button", { name: /save|create|kaydet|oluştur/i })
       .last();
     await submitBtn.click();
 
-    // 5. Yeni rutinin listede göründüğünü onayla
-    await expect(
-      page.getByText(routineName, { exact: false })
-    ).toBeVisible({ timeout: 10_000 });
+    // 5. Doğrulama: Yeni rutin listede görünmeli
+    await expect(page.getByText(routineName)).toBeVisible({ timeout: 10_000 });
   });
 
   test("can check-in on the created routine", async ({ page }) => {

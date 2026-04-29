@@ -27,28 +27,38 @@ test.describe.serial("Routine lifecycle", () => {
   test("can create a new routine", async ({ page }) => {
     await page.goto(`/${LOCALE}/dashboard`);
 
-    // Empty state (ilk rutin) veya normal state add butonu
-      // 1. Eğer "Welcome Tour" açık kalırsa kapat
-      const closeTourBtn = page.getByRole("button", { name: /close|kapat/i }).first();
-      if (await closeTourBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-          await closeTourBtn.click();
-      }
+    // 1. Eğer "Welcome Tour" açık kalırsa kapat
+    const closeTourBtn = page.getByRole("button", { name: /close|kapat/i }).first();
+    if (await closeTourBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await closeTourBtn.click();
+      // Animasyonun bitip modalın ekrandan tamamen kaybolmasını bekle
+      await expect(closeTourBtn).not.toBeVisible(); 
+    }
 
-      // 2. Kırılgan Regex yerine Placeholder veya TestID ile tam hedefleme
-      const nameInput = page.getByPlaceholder(/routine name|rutin adı/i)
-        .or(page.getByRole("textbox", { name: /^name$|^ad$|^isim$/i }))
-        .first();
-        
-      await expect(nameInput).toBeVisible({ timeout: 5_000 });
-      await nameInput.fill(routineName);
+    // 2. ÖNEMLİ: Formu açmak için "Ekle" butonuna veya "Add Your First Routine" linkine TIKLA
+    const openFormBtn = page
+      .getByRole("link", { name: /add your first routine|ilk rutini/i })
+      .or(page.getByTestId("add-routine-btn"))
+      .first();
+    
+    await expect(openFormBtn).toBeVisible({ timeout: 10_000 });
+    await openFormBtn.click(); // EKSİK OLAN KISIM BURASIYDI: Formu açar.
 
-    // Submit the form
+    // 3. Form açıldıktan sonra input'u bul ve doldur
+    const nameInput = page.getByPlaceholder(/routine name|rutin adı/i)
+      .or(page.getByRole("textbox", { name: /^name$|^ad$|^isim$/i }))
+      .first();
+      
+    await expect(nameInput).toBeVisible({ timeout: 7_000 });
+    await nameInput.fill(routineName);
+
+    // 4. Submit the form
     const submitBtn = page
       .getByRole("button", { name: /save|create|kaydet|oluştur/i })
       .last();
     await submitBtn.click();
 
-    // New routine should appear in the list
+    // 5. New routine should appear in the list
     await expect(
       page.getByText(routineName, { exact: false })
     ).toBeVisible({ timeout: 10_000 });

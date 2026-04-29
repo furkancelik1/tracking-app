@@ -1,9 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,32 +11,40 @@ import {
 } from "@/components/ui/tooltip";
 import { Sparkles } from "lucide-react";
 
-type HeatPoint = {
+// Types mirror stats.actions.ts — plain objects, safely serializable across the
+// Server→Client boundary. buildHeatmapGrid runs server-side in stats/page.tsx.
+type GridCell = {
   date: string;
   count: number;
+  dayOfWeek: number;
+  weekIndex: number;
+  month: number;
+};
+
+export type HeatmapGridData = {
+  cells: GridCell[];
+  weeks: number;
+  monthLabels: { label: string; weekIndex: number }[];
+  totalCompletions: number;
+  activeDays: number;
+  totalDays: number;
 };
 
 type Props = {
-  data: HeatPoint[];
+  grid: HeatmapGridData;
   title?: string;
 };
 
-const TR_MONTHS = [
-  "Oca", "Åub", "Mar", "Nis", "May", "Haz",
-  "Tem", "AÄŸu", "Eyl", "Eki", "Kas", "Ara",
-];
-const TR_DAYS_SHORT = ["Pzt", "Ã‡ar", "Cum"];
+const TR_DAYS_SHORT = ["Pzt", "Çar", "Cum"] as const;
 
-// â”€â”€ TÃ¼rkÃ§e gÃ¼n adlarÄ± (0=Pazar â€¦ 6=Cumartesi) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const TR_DAY_NAMES = [
-  "Pazar", "Pazartesi", "SalÄ±", "Ã‡arÅŸamba", "PerÅŸembe", "Cuma", "Cumartesi",
+  "Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi",
 ];
 const TR_MONTH_NAMES = [
-  "Ocak", "Åubat", "Mart", "Nisan", "MayÄ±s", "Haziran",
-  "Temmuz", "AÄŸustos", "EylÃ¼l", "Ekim", "KasÄ±m", "AralÄ±k",
+  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
 ];
 
-/** Tarih string'ini zengin TÃ¼rkÃ§e formata Ã§evir: "12 Nisan 2026, Pazar" */
 function formatTurkishDate(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00Z");
   const day = d.getUTCDate();
@@ -49,108 +54,32 @@ function formatTurkishDate(dateStr: string): string {
   return `${day} ${month} ${year}, ${dayName}`;
 }
 
-// â”€â”€ GeliÅŸtirilmiÅŸ renk skalasÄ±: daha belirgin emerald tonlarÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function intensityClass(count: number) {
   if (count <= 0) return "bg-muted/40 dark:bg-zinc-800/60";
   if (count === 1) return "bg-emerald-300/40 dark:bg-emerald-600/30";
   if (count === 2) return "bg-emerald-400/60 dark:bg-emerald-500/50";
   if (count === 3) return "bg-emerald-500/80 dark:bg-emerald-400/70";
   if (count <= 5) return "bg-emerald-600 dark:bg-emerald-400";
-  return "bg-emerald-700 dark:bg-emerald-300"; // 6+ â€” en yoÄŸun
-}
-
-type GridCell = {
-  date: string;
-  count: number;
-  dayOfWeek: number; // 0=Pazar, 6=Cumartesi
-  weekIndex: number;
-  month: number;
-};
-
-function buildGrid(data: HeatPoint[]): {
-  cells: GridCell[];
-  weeks: number;
-  monthLabels: { label: string; weekIndex: number }[];
-} {
-  const countMap = new Map<string, number>();
-  for (const p of data) {
-    countMap.set(p.date, p.count);
-  }
-
-  const sorted = [...data].sort((a, b) => a.date.localeCompare(b.date));
-  if (sorted.length === 0) return { cells: [], weeks: 0, monthLabels: [] };
-
-  const first = sorted[0]!;
-  const last = sorted[sorted.length - 1]!;
-  const startDate = new Date(first.date + "T00:00:00Z");
-  const endDate = new Date(last.date + "T00:00:00Z");
-
-  const gridStart = new Date(startDate);
-  gridStart.setUTCDate(gridStart.getUTCDate() - gridStart.getUTCDay());
-
-  const cells: GridCell[] = [];
-
-  let weekIndex = 0;
-  const d = new Date(gridStart);
-
-  while (d <= endDate || d.getUTCDay() !== 0) {
-    const dateStr = d.toISOString().slice(0, 10);
-    const dayOfWeek = d.getUTCDay();
-    const month = d.getUTCMonth();
-
-    cells.push({
-      date: dateStr,
-      count: countMap.get(dateStr) ?? 0,
-      dayOfWeek,
-      weekIndex,
-      month,
-    });
-
-    d.setUTCDate(d.getUTCDate() + 1);
-    if (d.getUTCDay() === 0) weekIndex++;
-
-    if (cells.length > 400) break;
-  }
-
-  const monthLabels: { label: string; weekIndex: number }[] = [];
-  let prevMonth = -1;
-  for (const cell of cells) {
-    if (cell.dayOfWeek === 0 && cell.month !== prevMonth) {
-      monthLabels.push({
-        label: TR_MONTHS[cell.month] ?? "",
-        weekIndex: cell.weekIndex,
-      });
-      prevMonth = cell.month;
-    }
-  }
-
-  return { cells, weeks: weekIndex, monthLabels };
+  return "bg-emerald-700 dark:bg-emerald-300";
 }
 
 function handleCellClick(cell: GridCell) {
   const label = formatTurkishDate(cell.date);
   if (cell.count > 0) {
     toast.success(`${label}: ${cell.count} tamamlama`, {
-      description: "Bu gÃ¼ne ait detaylar yakÄ±nda eklenecek!",
+      description: "Bu güne ait detaylar yakında eklenecek!",
     });
   } else {
-    toast(`${label}`, {
-      description: "Bu gÃ¼n henÃ¼z tamamlama yok.",
-    });
+    toast(label, { description: "Bu gün henüz tamamlama yok." });
   }
 }
 
-export function YearlyActivityHeatmap({
-  data,
-  title = "YÄ±llÄ±k Aktivite",
-}: Props) {
-  const { cells, weeks, monthLabels } = useMemo(() => buildGrid(data), [data]);
-  const totalDays = data.length;
-  const activeDays = data.filter((d) => d.count > 0).length;
-  const totalCompletions = data.reduce((s, d) => s + d.count, 0);
+const CELL_SIZE = 12;
+const GAP = 3;
 
-  // â”€â”€ BoÅŸ / yeni kullanÄ±cÄ± state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function YearlyActivityHeatmap({ grid, title = "Yıllık Aktivite" }: Props) {
+  const { cells, weeks, monthLabels, totalCompletions, activeDays, totalDays } = grid;
+
   if (cells.length === 0 || totalCompletions === 0) {
     return (
       <motion.div
@@ -168,10 +97,10 @@ export function YearlyActivityHeatmap({
                 <Sparkles className="h-6 w-6 text-emerald-500" />
               </div>
               <p className="text-sm font-medium">
-                HenÃ¼z Ã§ok baÅŸÄ±ndasÄ±n, ilk kareyi boyamaya ne dersin?
+                Henüz çok başındasın, ilk kareyi boyamaya ne dersin?
               </p>
               <p className="text-xs text-muted-foreground max-w-md">
-                Rutinlerini tamamladÄ±kÃ§a bu harita yeÅŸillenecek. Her gÃ¼n bir kare, her kare bir adÄ±m!
+                Rutinlerini tamamladıkça bu harita yeşillenecek. Her gün bir kare, her kare bir adım!
               </p>
             </div>
           </CardContent>
@@ -179,9 +108,6 @@ export function YearlyActivityHeatmap({
       </motion.div>
     );
   }
-
-  const CELL_SIZE = 12;
-  const GAP = 3;
 
   return (
     <motion.div
@@ -195,16 +121,12 @@ export function YearlyActivityHeatmap({
             <CardTitle className="text-base">{title}</CardTitle>
             <div className="flex gap-4 text-xs text-muted-foreground">
               <span>
-                <strong className="text-foreground tabular-nums">
-                  {totalCompletions}
-                </strong>{" "}
+                <strong className="text-foreground tabular-nums">{totalCompletions}</strong>{" "}
                 tamamlama
               </span>
               <span>
-                <strong className="text-foreground tabular-nums">
-                  {activeDays}
-                </strong>
-                /{totalDays} gÃ¼n aktif
+                <strong className="text-foreground tabular-nums">{activeDays}</strong>
+                /{totalDays} gün aktif
               </span>
             </div>
           </div>
@@ -215,11 +137,7 @@ export function YearlyActivityHeatmap({
             <div className="flex pl-[28px]" style={{ gap: 0 }}>
               {monthLabels.map((m, i) => {
                 const next = monthLabels[i + 1];
-                const nextStart =
-                  next !== undefined
-                    ? next.weekIndex
-                    : weeks;
-                const span = nextStart - m.weekIndex;
+                const span = (next?.weekIndex ?? weeks) - m.weekIndex;
                 return (
                   <div
                     key={`${m.label}-${m.weekIndex}`}
@@ -237,7 +155,7 @@ export function YearlyActivityHeatmap({
 
             {/* Heatmap grid */}
             <div className="flex gap-0 mt-1">
-              {/* GÃ¼n etiketleri */}
+              {/* Gün etiketleri (Pzt / Çar / Cum) */}
               <div
                 className="flex flex-col justify-between pr-1.5 shrink-0"
                 style={{ height: 7 * (CELL_SIZE + GAP) - GAP }}
@@ -259,7 +177,7 @@ export function YearlyActivityHeatmap({
                 ))}
               </div>
 
-              {/* HÃ¼cre grid */}
+              {/* Hücre grid */}
               <TooltipProvider delayDuration={100}>
                 <div
                   className="grid"
@@ -280,15 +198,10 @@ export function YearlyActivityHeatmap({
                           onClick={() => handleCellClick(cell)}
                         />
                       </TooltipTrigger>
-                      <TooltipContent
-                        side="top"
-                        className="text-xs py-1.5 px-2.5"
-                      >
+                      <TooltipContent side="top" className="text-xs py-1.5 px-2.5">
                         <p className="font-medium">{formatTurkishDate(cell.date)}</p>
                         <p className="text-muted-foreground mt-0.5">
-                          {cell.count > 0
-                            ? `${cell.count} tamamlama`
-                            : "Tamamlama yok"}
+                          {cell.count > 0 ? `${cell.count} tamamlama` : "Tamamlama yok"}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -297,7 +210,7 @@ export function YearlyActivityHeatmap({
               </TooltipProvider>
             </div>
 
-            {/* Renk lejandÄ± */}
+            {/* Renk lejandı */}
             <div className="flex items-center gap-1.5 mt-3 justify-end">
               <span className="text-[10px] text-muted-foreground">Az</span>
               {[0, 1, 2, 3, 4, 6].map((level) => (
@@ -307,7 +220,7 @@ export function YearlyActivityHeatmap({
                   style={{ width: CELL_SIZE, height: CELL_SIZE }}
                 />
               ))}
-              <span className="text-[10px] text-muted-foreground">Ã‡ok</span>
+              <span className="text-[10px] text-muted-foreground">Çok</span>
             </div>
           </div>
         </CardContent>

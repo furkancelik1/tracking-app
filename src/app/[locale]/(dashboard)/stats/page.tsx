@@ -1,5 +1,6 @@
 import { requireAuth } from "@/lib/auth";
 import { getUserAnalytics, getAdvancedAnalytics } from "@/lib/analytics";
+import { getUserHeatmapData, buildHeatmapGrid } from "@/actions/stats.actions";
 import { StatsRangeTabs } from "@/components/dashboard/StatsRangeTabs";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { YearlyActivityHeatmap } from "@/components/dashboard/YearlyActivityHeatmap";
@@ -60,14 +61,9 @@ export default async function StatsPage({
     select: { xp: true, name: true, image: true },
   });
 
-  // Yıllık heatmap verisi (her zaman 365 gün)
-  const yearlyAnalytics =
-    days === 365 ? analytics : await getUserAnalytics(userId, 365);
-
-  const yearlyData = yearlyAnalytics.dailyCompletions.map((d) => ({
-    date: d.date,
-    count: d.count,
-  }));
+  // Cached yıllık heatmap verisi — grid hesabı da server'da yapılır
+  const heatPoints = await getUserHeatmapData(userId);
+  const heatmapGrid = buildHeatmapGrid(heatPoints);
 
   return (
     <div className="space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8">
@@ -199,7 +195,7 @@ export default async function StatsPage({
       </div>
 
       {/* ── Heatmap (tam genişlik) ────────────────────────────────────────── */}
-      <YearlyActivityHeatmap data={yearlyData} />
+      <YearlyActivityHeatmap grid={heatmapGrid} />
 
       {/* ── Advanced Analytics ────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

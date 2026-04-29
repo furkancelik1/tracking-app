@@ -44,6 +44,10 @@ type Props = {
   preselectedFriendId?: string;
   preselectedFriendName?: string | null;
   trigger?: React.ReactNode;
+  /** Controlled open state (optional) */
+  open?: boolean;
+  /** Controlled open change callback (optional) */
+  onOpenChange?: (v: boolean) => void;
 };
 
 export function ChallengeInviteDialog({
@@ -51,10 +55,14 @@ export function ChallengeInviteDialog({
   preselectedFriendId,
   preselectedFriendName,
   trigger,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
 }: Props) {
   const t = useTranslations("challenges");
   const [isPending, startTransition] = useTransition();
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const isControlled = typeof openProp === "boolean";
+  const open = isControlled ? (openProp as boolean) : openState;
   const [selectedFriend, setSelectedFriend] = useState(preselectedFriendId ?? "");
   const [routineTitle, setRoutineTitle] = useState("");
   const [duration, setDuration] = useState(7);
@@ -75,7 +83,7 @@ export function ChallengeInviteDialog({
         toast.success(t("sentSuccess"), {
           description: `"${routineTitle.trim()}" — ${duration} ${t("daysUnit")}`,
         });
-        setOpen(false);
+        handleOpenChange(false);
         resetForm();
       } catch (err) {
         const msg = err instanceof Error ? err.message : t("sendError");
@@ -101,7 +109,11 @@ export function ChallengeInviteDialog({
   };
 
   const handleOpenChange = (v: boolean) => {
-    setOpen(v);
+    if (isControlled) {
+      onOpenChangeProp?.(v);
+    } else {
+      setOpenState(v);
+    }
     if (!v) resetForm();
   };
 

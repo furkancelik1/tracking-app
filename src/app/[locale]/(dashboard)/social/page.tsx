@@ -68,6 +68,9 @@ export default async function SocialPage({
     getPendingPrivateDuel().catch(() => null),
   ]);
 
+  // Set of mutual friend IDs (used to show challenge eligible users)
+  const mutualFriendIds = new Set((friends || []).map((f) => f.id));
+
   return (
     <div className="space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8">
       {/* Header — Nike Elite */}
@@ -107,7 +110,7 @@ export default async function SocialPage({
 
       {/* Connection List — Takip Edilenler */}
       <section>
-        <ConnectionList following={following} friends={friends} />
+        <ConnectionList following={following} friends={friends} mutualFriendIds={mutualFriendIds} />
       </section>
 
       {/* Disiplin Düellosu */}

@@ -18,6 +18,7 @@ import {
   Swords,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import {
   searchUsersAction,
@@ -64,6 +65,7 @@ export function FriendList({
   const t = useTranslations("social");
   const tc = useTranslations("common");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
@@ -97,6 +99,9 @@ export function FriendList({
       setSearchResults((prev) =>
         prev.map((u) => (u.id === targetId ? { ...u, friendshipStatus: "PENDING" as const } : u))
       );
+      try {
+        router.refresh();
+      } catch (_) {}
     });
   };
 
@@ -104,6 +109,9 @@ export function FriendList({
     startTransition(async () => {
       await acceptFollowAction(friendshipId);
       setRequests((prev) => prev.filter((r) => r.id !== friendshipId));
+      try {
+        router.refresh();
+      } catch (_) {}
     });
   };
 

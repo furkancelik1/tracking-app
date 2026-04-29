@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -56,21 +57,27 @@ type Props = {
   following: FriendEntry[];
   /** Mutual friends eligible for challenges (from getFriendsAction) */
   friends?: FriendEntry[];
+  mutualFriendIds?: Set<string>;
 };
 
-export function ConnectionList({ following: initialFollowing, friends = [] }: Props) {
+export function ConnectionList({ following: initialFollowing, friends = [], mutualFriendIds }: Props) {
   const t = useTranslations("social");
   const tc = useTranslations("common");
   const [isPending, startTransition] = useTransition();
   const [following, setFollowing] = useState(initialFollowing);
 
+  const router = useRouter();
+
   /** Set of friend IDs eligible for challenges (mutual follow or accepted friendship) */
-  const friendIds = new Set(friends.map((f) => f.id));
+  const friendIds = mutualFriendIds ?? new Set(friends.map((f) => f.id));
 
   const handleUnfollow = (targetId: string) => {
     startTransition(async () => {
       await unfollowAction(targetId);
       setFollowing((prev) => prev.filter((f) => f.id !== targetId));
+      try {
+        router.refresh();
+      } catch (_) {}
     });
   };
 

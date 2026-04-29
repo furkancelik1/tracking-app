@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import {
   searchUsersAction,
@@ -43,6 +44,7 @@ export function UserSearch() {
   const t = useTranslations("social");
   const tc = useTranslations("common");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -95,6 +97,9 @@ export function UserSearch() {
           u.id === targetId ? { ...u, friendshipStatus: "PENDING" as const } : u
         )
       );
+      try {
+        router.refresh();
+      } catch (_) {}
     });
   };
 

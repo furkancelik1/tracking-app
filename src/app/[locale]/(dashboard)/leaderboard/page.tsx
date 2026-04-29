@@ -3,7 +3,7 @@ import { getLeaderboard } from "@/actions/leaderboard.actions";
 import { getFriendsAction, getPendingRequestsAction } from "@/actions/social.actions";
 import { getChallengesAction } from "@/actions/challenge.actions";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
-import { FriendList } from "@/components/dashboard/FriendList";
+import FriendListWithInvite from "@/components/dashboard/FriendListWithInvite";
 import { ActiveChallenges } from "@/components/dashboard/ActiveChallenges";
 import { Trophy } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -53,7 +53,7 @@ async function LeaderboardSocialSection() {
         <ActiveChallenges challenges={challenges} friends={friends} />
       </section>
       <section>
-        <FriendList friends={friends} pendingRequests={pendingRequests} />
+        <FriendListWithInvite friends={friends} pendingRequests={pendingRequests} />
       </section>
     </>
   );

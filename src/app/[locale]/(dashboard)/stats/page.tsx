@@ -10,6 +10,7 @@ import {
   ConsistencyRadarChart,
 } from "@/components/dashboard/StatsChartsLazy";
 import { StatsShareButton } from "@/components/dashboard/StatsShareButton";
+import { ProGate } from "@/components/shared/ProGate";
 import { RoutineSuccessList } from "@/components/dashboard/RoutineSuccessList";
 import { InsightCards } from "@/components/dashboard/InsightCards";
 import { prisma } from "@/lib/prisma";
@@ -197,24 +198,28 @@ export default async function StatsPage({
       {/* ── Heatmap (tam genişlik) ────────────────────────────────────────── */}
       <YearlyActivityHeatmap grid={heatmapGrid} />
 
-      {/* ── Advanced Analytics ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Radar chart — weekday consistency */}
-        <div className="lg:col-span-2">
-          <ConsistencyRadarChart data={advanced.weekdayPerformance} />
-        </div>
+      {/* ── Advanced Analytics (PRO only) ─────────────────────────────────── */}
+      <ProGate>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Radar chart — weekday consistency */}
+            <div className="lg:col-span-2">
+              <ConsistencyRadarChart data={advanced.weekdayPerformance} />
+            </div>
 
-        {/* Routine success list */}
-        <div className="lg:col-span-3">
-          <RoutineSuccessList data={advanced.routineSuccessRates} />
-        </div>
-      </div>
+            {/* Routine success list */}
+            <div className="lg:col-span-3">
+              <RoutineSuccessList data={advanced.routineSuccessRates} />
+            </div>
+          </div>
 
-      {/* ── AI Insights ───────────────────────────────────────────────────── */}
-      <InsightCards
-        insights={advanced.insights}
-        monthlyComparison={advanced.monthlyComparison}
-      />
+          {/* ── AI Insights ─────────────────────────────────────────────── */}
+          <InsightCards
+            insights={advanced.insights}
+            monthlyComparison={advanced.monthlyComparison}
+          />
+        </div>
+      </ProGate>
     </div>
   );
 }

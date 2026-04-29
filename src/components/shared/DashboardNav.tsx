@@ -186,7 +186,14 @@ export function DashboardNav() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <div className="px-2 py-1.5 text-sm">
-                <p className="font-medium truncate">{auth.user.name}</p>
+                <p className="font-medium truncate flex items-center gap-1.5">
+                  <span className="truncate">{auth.user.name}</span>
+                  {auth.isPro && (
+                    <span className="inline-flex shrink-0 items-center rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-white leading-none">
+                      PRO
+                    </span>
+                  )}
+                </p>
                 <p className="text-muted-foreground text-xs truncate">{auth.user.email}</p>
               </div>
               <DropdownMenuSeparator />

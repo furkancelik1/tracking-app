@@ -840,7 +840,8 @@
     "maybeLater": "Belki sonra",
     "upgradeNow": "Şimdi Yükselt",
     "redirecting": "Yönlendiriliyor…",
-    "checkoutError": "Ödeme başlatılamadı."
+    "checkoutError": "Ödeme başlatılamadı.",
+    "proOnly": "Bu özellik Zenith Pro üyelerine özeldir."
   },
   "shop": {
     "title": "Dükkan",

@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AICoachBriefing } from "@/components/dashboard/AICoachBriefing";
+import { ProGate } from "@/components/shared/ProGate";
 import { useTranslations } from "next-intl";
 import type { WeeklyInsightPayload } from "@/actions/ai.actions";
 
@@ -41,12 +42,14 @@ export function AICoachButton({ xp, initialInsight, isPro }: Props) {
             <DialogTitle>{t("title")}</DialogTitle>
           </DialogHeader>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1 sm:p-2">
-            <AICoachBriefing
-              xp={xp}
-              initialInsight={initialInsight}
-              isPro={isPro}
-              shouldLoadInsight={open}
-            />
+            <ProGate>
+              <AICoachBriefing
+                xp={xp}
+                initialInsight={initialInsight}
+                isPro={isPro}
+                shouldLoadInsight={open}
+              />
+            </ProGate>
           </div>
         </DialogContent>
       </Dialog>

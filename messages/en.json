@@ -840,7 +840,8 @@
     "maybeLater": "Maybe later",
     "upgradeNow": "Upgrade Now",
     "redirecting": "Redirecting…",
-    "checkoutError": "Could not start checkout."
+    "checkoutError": "Could not start checkout.",
+    "proOnly": "This feature is exclusive to Zenith Pro members."
   },
   "shop": {
     "title": "Shop",

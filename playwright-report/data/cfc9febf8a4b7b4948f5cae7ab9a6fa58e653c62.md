@@ -136,19 +136,19 @@ Call log:
         - generic [ref=e167]: Completion distribution by day of week
       - generic [ref=e169]: No weekday data yet
   - region "Notifications alt+T"
-  - generic [ref=e174] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e175]:
-      - img [ref=e176]
-    - generic [ref=e179]:
-      - button "Open issues overlay" [ref=e180]:
-        - generic [ref=e181]:
-          - generic [ref=e182]: "0"
-          - generic [ref=e183]: "1"
-        - generic [ref=e184]: Issue
-      - button "Collapse issues badge" [ref=e185]:
-        - img [ref=e186]
-  - alert [ref=e188]
-  - generic [ref=e189]: "0"
+  - generic [ref=e175] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e176]:
+      - img [ref=e177]
+    - generic [ref=e180]:
+      - button "Open issues overlay" [ref=e181]:
+        - generic [ref=e182]:
+          - generic [ref=e183]: "0"
+          - generic [ref=e184]: "1"
+        - generic [ref=e185]: Issue
+      - button "Collapse issues badge" [ref=e186]:
+        - img [ref=e187]
+  - alert [ref=e189]
+  - generic [ref=e190]: "0"
 ```
 
 # Test source
@@ -220,7 +220,7 @@ Call log:
   88  | test.describe("Stats page — PRO user (ProGate bypassed)", () => {
   89  |   test.use({
   90  |     storageState: path.join(FIXTURES, "storage-state-proUser.json"),
-  91  |     viewport: { width: 390, height: 844 },
+  91  |     viewport: { width: 1280, height: 720 },
   92  |   });
   93  | 
   94  |   test("advanced analytics section renders without overlay", async ({ page }) => {

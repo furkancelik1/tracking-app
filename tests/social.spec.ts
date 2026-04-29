@@ -30,13 +30,18 @@ test.describe.serial("Social: friend request + duel flow", () => {
     const searchInput = pageA.getByPlaceholder(/search|ara|kullanıcı/i).first();
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
     await searchInput.fill("E2E User B");
+    // Debounce geçmesi ve API yanıtı için bekle
+    await searchInput.press("Enter");
+    await pageA.waitForTimeout(1500);
 
-    // Wait for search results
-    const userBResult = pageA
-      .locator("[data-testid='user-search-result'], li, [role='option']")
-      .filter({ hasText: /E2E User B/i })
-      .first();
-    await expect(userBResult).toBeVisible({ timeout: 8_000 });
+    // Wait for search results (Robust Locator)
+      const userBResult = pageA.locator('div').filter({ 
+        has: pageA.getByText('E2E User B')
+      }).filter({
+        has: pageA.getByRole('button', { name: /Follow|Add|Request|Ekle/i })
+      }).first();
+      
+      await expect(userBResult).toBeVisible({ timeout: 8_000 });
 
     // Click add/send request button inside the result row
     const addBtn = userBResult.getByRole("button", {

@@ -403,6 +403,7 @@ export function RoutineList({ initialRoutines }: Props) {
           className="w-full shrink-0 sm:w-auto"
           onClick={openAddDialog}
           disabled={atLimit}
+          data-testid="add-routine-btn"
           title={
             atLimit
               ? t("limitWarning", {

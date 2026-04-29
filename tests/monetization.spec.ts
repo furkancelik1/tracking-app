@@ -118,9 +118,9 @@ test.describe("Stats page — PRO user (ProGate bypassed)", () => {
   });
 
   test("PRO badge is visible in nav dropdown", async ({ page }) => {
-    await page.goto(`/${LOCALE}/stats`);
+    // Dashboard'da nav her zaman render edilir
+    await page.goto(`/${LOCALE}/dashboard`);
 
-    // Open user dropdown in nav
     const avatarBtn = page.getByTestId("user-menu-btn");
     await avatarBtn.click();
 

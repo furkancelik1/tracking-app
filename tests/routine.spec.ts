@@ -27,12 +27,14 @@ test.describe.serial("Routine lifecycle", () => {
   test("can create a new routine", async ({ page }) => {
     await page.goto(`/${LOCALE}/dashboard`);
 
-    // Open create-routine dialog/form — look for common trigger patterns
-    const addBtn = page
-      .getByRole("button", { name: /add|create|new|rutin ekle/i })
-      .first();
-    await expect(addBtn).toBeVisible({ timeout: 10_000 });
-    await addBtn.click();
+    // Empty state (ilk rutin) veya normal state add butonu
+      const addBtn = page
+        .getByRole("link", { name: /add your first routine|ilk rutini/i })
+        .or(page.getByTestId("add-routine-btn"))
+        .first();
+
+      await expect(addBtn).toBeVisible({ timeout: 10_000 });
+      await addBtn.click();
 
     // Fill in the routine name field
     const nameInput = page.getByLabel(/name|ad|isim/i).first();

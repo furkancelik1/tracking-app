@@ -88,7 +88,7 @@ test.describe("Stats page — FREE user (ProGate active)", () => {
 test.describe("Stats page — PRO user (ProGate bypassed)", () => {
   test.use({
     storageState: path.join(FIXTURES, "storage-state-proUser.json"),
-    viewport: { width: 390, height: 844 },
+    viewport: { width: 1280, height: 720 },
   });
 
   test("advanced analytics section renders without overlay", async ({ page }) => {

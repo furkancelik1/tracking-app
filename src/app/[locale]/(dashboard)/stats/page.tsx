@@ -64,7 +64,7 @@ export default async function StatsPage({
 
   // Cached yıllık heatmap verisi — grid hesabı da server'da yapılır
   const heatPoints = await getUserHeatmapData(userId);
-  const heatmapGrid = buildHeatmapGrid(heatPoints);
+  const heatmapGrid = await buildHeatmapGrid(heatPoints);
 
   return (
     <div className="space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8">

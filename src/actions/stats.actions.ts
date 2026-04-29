@@ -282,7 +282,7 @@ const HEATMAP_MONTHS = [
   "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara",
 ] as const;
 
-export function buildHeatmapGrid(data: HeatPoint[]): HeatmapGridData {
+export async function buildHeatmapGrid(data: HeatPoint[]): Promise<HeatmapGridData> {
   const totalCompletions = data.reduce((s, d) => s + d.count, 0);
   const activeDays = data.filter((d) => d.count > 0).length;
   const totalDays = data.length;

@@ -7,7 +7,7 @@
 # Test info
 
 - Name: monetization.spec.ts >> Stats page — PRO user (ProGate bypassed) >> PRO badge is visible in nav dropdown
-- Location: tests\monetization.spec.ts:117:7
+- Location: tests\monetization.spec.ts:120:7
 
 # Error details
 
@@ -18,7 +18,7 @@ Test timeout of 35000ms exceeded.
 ```
 Error: locator.click: Test timeout of 35000ms exceeded.
 Call log:
-  - waiting for locator('header button .rounded-full, header button [class*=\'Avatar\']').first()
+  - waiting for getByTestId('user-menu-btn')
 
 ```
 
@@ -154,9 +154,6 @@ Call log:
 # Test source
 
 ```ts
-  22  | test.describe("Stats page — FREE user (ProGate active)", () => {
-  23  |   test.use({ storageState: path.join(FIXTURES, "storage-state-freeUser.json") });
-  24  | 
   25  |   test("advanced analytics section is gated with blur overlay", async ({ page }) => {
   26  |     await page.goto(`/${LOCALE}/stats`);
   27  |     await expect(page).not.toHaveURL(/login/);
@@ -221,46 +218,49 @@ Call log:
   86  | // ── PRO user tests ───────────────────────────────────────────────────────────
   87  | 
   88  | test.describe("Stats page — PRO user (ProGate bypassed)", () => {
-  89  |   test.use({ storageState: path.join(FIXTURES, "storage-state-proUser.json") });
-  90  | 
-  91  |   test("advanced analytics section renders without overlay", async ({ page }) => {
-  92  |     await page.goto(`/${LOCALE}/stats`);
-  93  |     await expect(page).not.toHaveURL(/login/);
-  94  | 
-  95  |     // ProGate overlay must NOT exist
-  96  |     await expect(
-  97  |       page.getByText("Upgrade to Pro", { exact: false })
-  98  |     ).not.toBeVisible({ timeout: 10_000 });
-  99  | 
-  100 |     await expect(
-  101 |       page.getByRole("button", { name: /upgrade now/i })
-  102 |     ).not.toBeVisible();
-  103 |   });
-  104 | 
-  105 |   test("advanced charts are accessible to PRO user", async ({ page }) => {
-  106 |     await page.goto(`/${LOCALE}/stats`);
+  89  |   test.use({
+  90  |     storageState: path.join(FIXTURES, "storage-state-proUser.json"),
+  91  |     viewport: { width: 1280, height: 720 },
+  92  |   });
+  93  | 
+  94  |   test("advanced analytics section renders without overlay", async ({ page }) => {
+  95  |     await page.goto(`/${LOCALE}/stats`);
+  96  |     await expect(page).not.toHaveURL(/login/);
+  97  | 
+  98  |     // ProGate overlay must NOT exist
+  99  |     await expect(
+  100 |       page.getByText("Upgrade to Pro", { exact: false })
+  101 |     ).not.toBeVisible({ timeout: 10_000 });
+  102 | 
+  103 |     await expect(
+  104 |       page.getByRole("button", { name: /upgrade now/i })
+  105 |     ).not.toBeVisible();
+  106 |   });
   107 | 
-  108 |     // Radar chart or routine success list should be visible (not blurred)
-  109 |     // These are inside the ProGate children — present & interactive for PRO
-  110 |     const advancedSection = page.locator(
-  111 |       "[data-testid='consistency-radar'], [data-testid='routine-success-list'], svg.recharts-surface, canvas"
-  112 |     ).first();
-  113 | 
-  114 |     await expect(advancedSection).toBeVisible({ timeout: 15_000 });
-  115 |   });
+  108 |   test("advanced charts are accessible to PRO user", async ({ page }) => {
+  109 |     await page.goto(`/${LOCALE}/stats`);
+  110 | 
+  111 |     // Radar chart or routine success list should be visible (not blurred)
+  112 |     // These are inside the ProGate children — present & interactive for PRO
+  113 |     const advancedSection = page.locator(
+  114 |       "[data-testid='consistency-radar'], [data-testid='routine-success-list'], svg.recharts-surface, canvas"
+  115 |     ).first();
   116 | 
-  117 |   test("PRO badge is visible in nav dropdown", async ({ page }) => {
-  118 |     await page.goto(`/${LOCALE}/stats`);
+  117 |     await expect(advancedSection).toBeVisible({ timeout: 15_000 });
+  118 |   });
   119 | 
-  120 |     // Open user dropdown in nav
-  121 |     const avatarBtn = page.locator("header button .rounded-full, header button [class*='Avatar']").first();
-> 122 |     await avatarBtn.click();
+  120 |   test("PRO badge is visible in nav dropdown", async ({ page }) => {
+  121 |     await page.goto(`/${LOCALE}/stats`);
+  122 | 
+  123 |     // Open user dropdown in nav
+  124 |     const avatarBtn = page.getByTestId("user-menu-btn");
+> 125 |     await avatarBtn.click();
       |                     ^ Error: locator.click: Test timeout of 35000ms exceeded.
-  123 | 
-  124 |     await expect(
-  125 |       page.getByText("PRO", { exact: true })
-  126 |     ).toBeVisible({ timeout: 5_000 });
-  127 |   });
-  128 | });
-  129 | 
+  126 | 
+  127 |     await expect(
+  128 |       page.getByText("PRO", { exact: true })
+  129 |     ).toBeVisible({ timeout: 5_000 });
+  130 |   });
+  131 | });
+  132 | 
 ```

@@ -33,20 +33,25 @@ test.describe.serial("Routine lifecycle", () => {
       await closeTourBtn.click();
       await expect(closeTourBtn).not.toBeVisible(); 
     }
-    // 2. Formu açmak için doğrudan "+" veya "Add" butonunu hedefle
+    // 2. Formu açmak için butona tıkla
     const openFormBtn = page.getByTestId("add-routine-btn")
       .or(page.getByRole("button", { name: /add|ekle|\+/i }))
       .first();
-      
-    await expect(openFormBtn).toBeVisible({ timeout: 10_000 });
-    await openFormBtn.click(); 
+    
+    await openFormBtn.click();
 
-    // 3. Form (Modal) açıldıktan sonra ilk input alanını bul ve doldur
-    const nameInput = page.locator('dialog input, [role="dialog"] input, input').first();
+    // 3. ÇÖZÜM: Formun içindeki input'u daha spesifik ve modalı bekleyerek bul
+    // 'getByRole' kullanmak, elementin etkileşime hazır (visible & enabled) olmasını bekler.
+    const nameInput = page.getByRole("dialog").getByRole("textbox").first()
+      .or(page.getByPlaceholder(/routine name|rutin adı/i))
+      .or(page.locator('input[name="title"], input[name="name"]'));
       
-    await expect(nameInput).toBeVisible({ timeout: 7_000 });
+    // Elementin sadece var olmasını değil, yazılabilir olmasını bekle
+    await expect(nameInput).toBeVisible({ timeout: 10_000 });
+    await nameInput.click(); // Bazı kütüphanelerde odağı (focus) garantilemek için
     await nameInput.fill(routineName);
-    // 4. Kaydet butonuna tıkla
+
+    // 4. Kaydet butonu
     const submitBtn = page
       .getByRole("button", { name: /save|create|kaydet|oluştur/i })
       .last();

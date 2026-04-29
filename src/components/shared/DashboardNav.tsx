@@ -177,7 +177,7 @@ export function DashboardNav() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative size-10 rounded-full p-0 touch-manipulation">
+              <Button variant="ghost" className="relative size-10 rounded-full p-0 touch-manipulation" data-testid="user-menu-btn">
                 <Avatar className="size-8">
                   <AvatarImage src={auth.user.image ?? undefined} alt={auth.user.name ?? ""} />
                   <AvatarFallback>{initials}</AvatarFallback>

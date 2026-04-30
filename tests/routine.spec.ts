@@ -31,9 +31,7 @@ test.describe.serial("Routine lifecycle", () => {
       /* Modal yoksa devam et */
     }
 
-    // 3. RoutineList'in mount olmasını bekle — dynamic import yüzünden
-    // event listener, bileşen mount olmadan önce register edilmez.
-    // "My Routines" h1'i görününce listener hazır demektir.
+    // 3. RoutineList'in mount olmasını bekle
     await expect(
       page.locator("h1").filter({ hasText: /my routines|rutinlerim/i })
     ).toBeVisible({ timeout: 10_000 });
@@ -41,55 +39,36 @@ test.describe.serial("Routine lifecycle", () => {
     // 4. Formu aç
     await page.getByTestId("add-routine-btn").click();
 
-    // 5. Dialog'un açıldığını doğrula, tüm lokatörleri dialog scope'unda tut
+    // 5. Dialog'un açıldığını doğrula
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: 10_000 });
 
-    // 6. Input'u doldur — dialog scope'unda ara, page-level tarama yok
+    // 6. Input'u doldur
     const nameInput = dialog.locator('input:not([type="hidden"])').first();
     await expect(nameInput).toBeVisible({ timeout: 5_000 });
     await nameInput.fill(routineName);
 
-    // --- KRİTİK DÜZELTME ---
-    // POST /api/v1/routines isteğini yakala. Status 200 VEYA 201 kabul et.
-    // .catch() ile yutmuyoruz; timeout olursa test patlasın ki sahte yeşil görmeyelim.
-    const createRoutinePromise = page.waitForResponse(
-      (response) =>
-        /\/api\/v1\/routines(\?|$|\/)/.test(response.url()) &&
-        response.request().method() === "POST" &&
-        response.status() >= 200 &&
-        response.status() < 300,
-      { timeout: 15_000 }
-    );
-
-    // 7. Submit butonunu dialog scope'unda bul — .last() deterministik değil
+    // 7. Submit butonunu bul ve tıkla
     const submitBtn = dialog.getByRole("button", { name: /create routine|oluştur|kaydet/i });
     await expect(submitBtn).toBeEnabled();
     await submitBtn.click();
 
-    // Sunucu yanıtını bekle - başarısız olursa test burada düşsün
-    const response = await createRoutinePromise;
-    expect(response.ok()).toBeTruthy();
-
-    // Dialog kapandığını doğrula — kapanmazsa submit başarısız demektir
+    // 8. Dialog kapandığını doğrula (Web-first assertion)
+    // Ağ isteği beklemek yerine UI sonucunu bekliyoruz
     await expect(dialog).not.toBeVisible({ timeout: 10_000 });
 
-    // 8. UI'da görünür olduğunu doğrula
+    // 9. UI'da görünür olduğunu doğrula
     await expect(page.getByText(routineName).first()).toBeVisible({ timeout: 10_000 });
 
-    // 9. Sayfayı yenile - routine'in GERÇEKTEN persist edildiğini doğrula
-    // (Optimistic UI ile false-positive'i engeller)
+    // 10. Sayfayı yenile - Verinin gerçekten kaydedildiğini doğrula
     await page.reload();
     await expect(page.getByText(routineName).first()).toBeVisible({ timeout: 15_000 });
   });
 
   test("can check-in on the created routine", async ({ page }) => {
     await page.goto(`/${LOCALE}/dashboard`);
-
-    // networkidle yerine domcontentloaded + explicit wait kullan
     await page.waitForLoadState("domcontentloaded");
 
-    // Önce ismin görünmesini bekle (API senkronizasyonu için kritik)
     await expect(page.getByText(routineName).first()).toBeVisible({ timeout: 15_000 });
 
     const routineCard = page

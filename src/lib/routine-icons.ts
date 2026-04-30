@@ -59,9 +59,9 @@ export const ICON_OPTIONS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 // â”€â”€â”€ Renk paleti â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const COLOR_OPTIONS = [
   { value: "#3b82f6", label: "Mavi" },
-  { value: "#10b981", label: "YeÅŸil" },
-  { value: "#f59e0b", label: "SarÄ±" },
-  { value: "#ef4444", label: "KÄ±rmÄ±zÄ±" },
+  { value: "#10b981", label: "Yeşil" },
+  { value: "#f59e0b", label: "Sarı" },
+  { value: "#ef4444", label: "Kırmızı" },
   { value: "#8b5cf6", label: "Mor" },
   { value: "#ec4899", label: "Pembe" },
   { value: "#06b6d4", label: "Cyan" },

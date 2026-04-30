@@ -23,7 +23,13 @@ function serializeError(err: unknown) {
 }
 
 function isMissingColumnError(err: unknown): boolean {
-  return err instanceof Error && /column .* does not exist/i.test(err.message);
+  if (!(err instanceof Error)) return false;
+  // PrismaClientKnownRequestError: migration uygulanmamış, kolon yok
+  // PrismaClientValidationError: şema güncellenmemiş, "Unknown argument" hatası
+  return (
+    /column .* does not exist/i.test(err.message) ||
+    /unknown argument/i.test(err.message)
+  );
 }
 
 function toFrequencyType(frequency: RoutineFrequency): "DAILY" | "WEEKLY" {

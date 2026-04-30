@@ -95,6 +95,7 @@ export function RoutineCard({
     <motion.div
       layout
       suppressHydrationWarning
+      data-testid="routine-card"
       initial={{ opacity: 0, y: 10 }}
       animate={{
         opacity: 1,

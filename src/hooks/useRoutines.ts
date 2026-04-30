@@ -85,7 +85,7 @@ export function useCreateRoutine() {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ROUTINES_KEY });
-      toast.success("Rutin oluÅŸturuldu.");
+      toast.success("Rutin oluşturuldu.");
     },
     onError: (err: Error) => {
       toast.error(err.message);

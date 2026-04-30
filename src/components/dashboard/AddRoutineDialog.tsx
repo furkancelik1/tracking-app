@@ -91,12 +91,12 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
       const res = await fetch("/api/v1/stripe/checkout", { method: "POST" });
       const json = await res.json();
       if (!json.success) {
-        toast.error(json.error ?? "Checkout baÅŸlatÄ±lamadÄ±.");
+        toast.error(json.error ?? "Checkout başlatılamadı.");
         return;
       }
       window.location.href = json.data.url;
     } catch {
-      toast.error("Checkout baÅŸlatÄ±lÄ±rken bir hata oluÅŸtu.");
+      toast.error("Checkout başlatılırken bir hata oluştu.");
     }
   }
 

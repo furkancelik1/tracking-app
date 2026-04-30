@@ -41,13 +41,17 @@ test.describe.serial("Routine lifecycle", () => {
     // 4. Formu aç
     await page.getByTestId("add-routine-btn").click();
 
-    // 4. Input'u doldur (Sadece dialog içindekini hedefle)
-    const nameInput = page.getByRole("dialog").locator('input:not([type="hidden"])').first();
-    await expect(nameInput).toBeVisible({ timeout: 10_000 });
+    // 5. Dialog'un açıldığını doğrula, tüm lokatörleri dialog scope'unda tut
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 10_000 });
+
+    // 6. Input'u doldur — dialog scope'unda ara, page-level tarama yok
+    const nameInput = dialog.locator('input:not([type="hidden"])').first();
+    await expect(nameInput).toBeVisible({ timeout: 5_000 });
     await nameInput.fill(routineName);
 
     // --- KRİTİK DÜZELTME ---
-    // POST /api/routines isteğini yakala. Status 200 VEYA 201 kabul et.
+    // POST /api/v1/routines isteğini yakala. Status 200 VEYA 201 kabul et.
     // .catch() ile yutmuyoruz; timeout olursa test patlasın ki sahte yeşil görmeyelim.
     const createRoutinePromise = page.waitForResponse(
       (response) =>
@@ -58,20 +62,22 @@ test.describe.serial("Routine lifecycle", () => {
       { timeout: 15_000 }
     );
 
-    // 5. Kaydet
-    await page
-      .getByRole("button", { name: /save|create|kaydet|oluştur/i })
-      .last()
-      .click();
+    // 7. Submit butonunu dialog scope'unda bul — .last() deterministik değil
+    const submitBtn = dialog.getByRole("button", { name: /create routine|oluştur|kaydet/i });
+    await expect(submitBtn).toBeEnabled();
+    await submitBtn.click();
 
     // Sunucu yanıtını bekle - başarısız olursa test burada düşsün
     const response = await createRoutinePromise;
     expect(response.ok()).toBeTruthy();
 
-    // 6. UI'da görünür olduğunu doğrula
+    // Dialog kapandığını doğrula — kapanmazsa submit başarısız demektir
+    await expect(dialog).not.toBeVisible({ timeout: 10_000 });
+
+    // 8. UI'da görünür olduğunu doğrula
     await expect(page.getByText(routineName).first()).toBeVisible({ timeout: 10_000 });
 
-    // 7. Sayfayı yenile - routine'in GERÇEKTEN persist edildiğini doğrula
+    // 9. Sayfayı yenile - routine'in GERÇEKTEN persist edildiğini doğrula
     // (Optimistic UI ile false-positive'i engeller)
     await page.reload();
     await expect(page.getByText(routineName).first()).toBeVisible({ timeout: 15_000 });

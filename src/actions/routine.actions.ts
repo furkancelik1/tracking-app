@@ -115,7 +115,7 @@ export async function createRoutineAction(input: {
     },
   });
 
-  revalidatePath("/dashboard");
+  revalidatePath("/[locale]/dashboard", "page");
   return created;
 }
 
@@ -238,7 +238,7 @@ export async function completeRoutineAction(
 
     // Challenge leaderboard cache'ini invalidate et (on-demand revalidation)
     (revalidateTag as any)("challenge-leaderboard");
-    revalidatePath("/dashboard");
+    revalidatePath("/[locale]/dashboard", "page");
     return {
       xpGain,
       totalXp: updatedUser?.xp ?? 0,
@@ -320,7 +320,7 @@ export async function undoRoutineAction(routineId: string): Promise<void> {
       data: { coins: 0 },
     });
 
-    revalidatePath("/dashboard");
+    revalidatePath("/[locale]/dashboard", "page");
   } catch (error) {
     console.error("[undoRoutineAction] Hata:", error);
     throw error;
@@ -373,7 +373,7 @@ export async function deleteRoutineAction(routineId: string): Promise<void> {
       // non-fatal
     }
 
-    revalidatePath("/dashboard");
+    revalidatePath("/[locale]/dashboard", "page");
   } catch (error) {
     console.error("[deleteRoutineAction] Hata:", error);
     throw error;

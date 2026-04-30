@@ -181,6 +181,7 @@ export function AddRoutineDialog({ open, onOpenChange, atLimit = false, routines
             <Label htmlFor="routine-title">{t("titleLabel")}</Label>
             <Input
               id="routine-title"
+              data-testid="routine-title-input"
               placeholder={t("titlePlaceholder")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}

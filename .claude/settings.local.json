@@ -32,7 +32,8 @@
       "mcp__plugin_context-mode_context-mode__ctx_execute",
       "Bash(npx tsx:*)",
       "Bash(npm list:*)",
-      "Bash(echo \"EXIT=$?\")"
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(npx playwright *)"
     ]
   }
 }

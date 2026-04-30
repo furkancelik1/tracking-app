@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { DashboardNav } from "@/components/shared/DashboardNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StreakAlert } from "@/components/dashboard/StreakAlert";
-import { DashboardEmptyState } from "@/components/dashboard/DashboardEmptyState";
 import { getSubscriptionTier } from "@/lib/stripe";
 import { LevelProgressBar } from "@/components/dashboard/LevelProgressBar";
 import { AICoachButton } from "@/components/dashboard/AICoachButton";
@@ -286,21 +285,6 @@ export default async function DashboardPage({
         };
       }
     });
-
-    const isEmpty = (raw?.length ?? 0) === 0;
-
-    // ── Empty state ─────────────────────────────────────────────────────
-    if (isEmpty) {
-      return (
-        <>
-          <DashboardNav />
-          <main className="mx-auto max-w-3xl px-4 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] pt-8 sm:px-6 sm:pb-12 sm:pt-12 md:pb-12">
-            <DashboardEmptyState />
-          </main>
-          <BottomNav />
-        </>
-      );
-    }
 
     return (
       <>

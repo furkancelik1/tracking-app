@@ -1,4 +1,5 @@
 ﻿import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSubscriptionTier } from "@/lib/stripe";
@@ -302,6 +303,7 @@ export async function POST(req: Request) {
       };
     }
 
+    revalidatePath("/[locale]/dashboard", "page");
     return NextResponse.json<ApiResponse<typeof routine>>(
       { success: true, data: routine },
       { status: 201 }

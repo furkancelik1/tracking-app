@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import {
   PlusCircle,
   CheckCircle2,
@@ -33,7 +32,6 @@ const STEPS = [
 
 export function OnboardingDialog() {
   const t = useTranslations("onboarding");
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [completing, setCompleting] = useState(false);
@@ -51,9 +49,7 @@ export function OnboardingDialog() {
     try {
       const result = await completeTour();
       setOpen(false);
-      // Refresh navbar coin display immediately
       window.dispatchEvent(new CustomEvent("coins-updated"));
-      router.refresh();
       toast.success(t("rewardToast"), { duration: 5000 });
       if (result.newBadges.length > 0) {
         const firstBadge = result.newBadges[0];
@@ -88,6 +84,8 @@ export function OnboardingDialog() {
             size="sm"
             className="absolute right-2 top-2 h-8 w-8 p-0 text-muted-foreground"
             onClick={handleSkip}
+            aria-label="Close"
+            data-testid="onboarding-close"
           >
             <X className="h-4 w-4" />
           </Button>

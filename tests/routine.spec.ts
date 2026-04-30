@@ -31,7 +31,14 @@ test.describe.serial("Routine lifecycle", () => {
       /* Modal yoksa devam et */
     }
 
-    // 3. Formu aç
+    // 3. RoutineList'in mount olmasını bekle — dynamic import yüzünden
+    // event listener, bileşen mount olmadan önce register edilmez.
+    // "My Routines" h1'i görününce listener hazır demektir.
+    await expect(
+      page.locator("h1").filter({ hasText: /my routines|rutinlerim/i })
+    ).toBeVisible({ timeout: 10_000 });
+
+    // 4. Formu aç
     await page.getByTestId("add-routine-btn").click();
 
     // 4. Input'u doldur (Sadece dialog içindekini hedefle)
